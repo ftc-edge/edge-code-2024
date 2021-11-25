@@ -3,7 +3,7 @@ This repository is a fork of the official FTC SDK from https://github.com/FIRST-
 
 ## Getting Started
 To use this repository template, you can fork this repository to your own github repositories. There are many ways to do it but I am going to describe one way which is using GitHub Desktop. If you are more familiar with other similar tools, feel free to use it instead.
-* On a web browser, enter the URL https://github.com/trc492/FtcRobotController or click this link.
+* On a web browser, enter the URL https://github.com/trc492/FtcRobotController.
 * Then, click the "fork" button on the upper right corner of the web page and answer the questions on where you want to fork this repository.
 * Once the fork is done. Clone your forked repository to your computer using your favorite GitHub tool such as GitHub Desktop.
 * On GitHub Desktop, click File->Clone repository..., select the repository you just forked and type in the path on the computer where you want to clone the repository to.
