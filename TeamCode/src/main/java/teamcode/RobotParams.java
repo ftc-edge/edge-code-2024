@@ -26,8 +26,14 @@ import android.os.Environment;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+/**
+ * This class contains robot and subsystem constants and parameters.
+ */
 public class RobotParams
 {
+    /**
+     * This class contains robot preferences. It controls enabling/disabling of various robot features.
+     */
     public static class Preferences
     {
         static boolean visionOnly = false;

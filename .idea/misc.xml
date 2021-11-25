@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="JavadocGenerationManager">
-    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../../../../../../temp/FtcTemplateDoc" />
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../FtcJavaDoc" />
     <option name="OPTION_SCOPE" value="public" />
     <option name="LOCALE" value="en" />
   </component>
