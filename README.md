@@ -15,7 +15,7 @@ Congratulations! You just clone a fork of our template repository. Now you can f
 We are very bad at creating documentation and tutorials but we want to get better at this. Our Framework Library code has JavaDoc all over. Therefore, you can get information on what each class do and their methods. We will add in some sample code to the project soon. We will also try to monitor the "FIRST Tech CHALLENGE" Discord forums. Several teams have been using our Framework Library and we welcome opportunities of collaboration in creating tutorial materials. I will try to create some JavaDocs and put out a link to it in the near future. Feel free to suggest what tutorial you want to see.
 
 ### Javadoc Reference Material
-The Javadoc reference documentation for the TRC Robotics Framework Library can be found [here](https://github.com/trc492/FtcJavaDoc/blob/cd87d588f07b735ad7d8d7d9fdcd78c0b830b5e0/index.html).
+The Javadoc reference documentation for the TRC Robotics Framework Library can be found [here](https://trc492.github.io/FtcJavaDoc/).
 
 ### Online User Forum
 For technical questions regarding our Framework Library, please visit the FIRST Tech CHALLENGE Discord forum.
