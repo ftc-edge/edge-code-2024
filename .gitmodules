@@ -7,6 +7,3 @@
 [submodule "TeamCode/src/main/java/TrcFtcLib"]
 	path = TeamCode/src/main/java/TrcFtcLib
 	url = https://github.com/trc492/TrcFtcLib
-[submodule "docs"]
-	path = docs
-	url = https://github.com/trc492/FtcJavaDoc
