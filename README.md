@@ -47,7 +47,7 @@ The Framework Library provides numerous features. We will list some of them here
 - Pathing:
 - Vision:
 - Util:
-  - Trace logging: In addition of providing information output to the dashboard on the driver station, the Framework Library also provides trace logging mainly for debugging purpose. It is a super important tool allowing post-mortem analysis of the robot performance during a match either for debugging or for performance tuning. Information written to the trace log has different levels that can be adjusted to reduce clutter. The levels are: VERBOSE, INFO, WARNING, ERROR and FATAL. For example, in regular competition match log, we will only turn up to the INFO level at the most. But for debugging, we may turn up to VERBOSE to see everything.
+  - Trace logging: In addition of providing information output to the dashboard on the driver station, the Framework Library also provides trace logging mainly for debugging purpose. It is a super important tool allowing post-mortem analysis of the robot performance of a match either for debugging or for performance tuning. Information written to the trace log has different levels that can be adjusted to reduce clutter. The levels are: VERBOSE, INFO, WARNING, ERROR and FATAL. For example, in regular competition match log, we will only turn up to the INFO level at the most. But for debugging, we may turn up to VERBOSE to see everything.
 
 ## Getting Help
 ### User Documentation and Tutorials
