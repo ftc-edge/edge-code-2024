@@ -594,7 +594,7 @@ public class FtcTest extends FtcTeleOp
         testMenu.addChoice("Sensors test", Test.SENSORS_TEST, true);
         testMenu.addChoice("Subsystems test", Test.SUBSYSTEMS_TEST, false);
         testMenu.addChoice("Drive speed test", Test.DRIVE_SPEED_TEST, false);
-        testMenu.addChoice("Motors test", Test.DRIVE_MOTORS_TEST, false);
+        testMenu.addChoice("Drive motors test", Test.DRIVE_MOTORS_TEST, false);
         testMenu.addChoice("X Timed drive", Test.X_TIMED_DRIVE, false, driveTimeMenu);
         testMenu.addChoice("Y Timed drive", Test.Y_TIMED_DRIVE, false, driveTimeMenu);
         testMenu.addChoice("PID drive", Test.PID_DRIVE, false, xTargetMenu);

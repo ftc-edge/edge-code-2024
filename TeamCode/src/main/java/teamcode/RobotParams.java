@@ -38,15 +38,15 @@ public class RobotParams
     {
         static boolean visionOnly = false;
         static boolean initSubsystems = true;
-        static boolean useExternalOdometry = true;
-        static boolean useBlinkin = true;
+        static boolean useExternalOdometry = false;
+        static boolean useBlinkin = false;
         static boolean useVuforia = false;
         static boolean showVuforiaView = false;
-        static boolean useTensorFlow = true;
-        static boolean showTensorFlowView = true;
-        static boolean useTraceLog = true;
-        static boolean useBatteryMonitor = true;
-        static boolean useLoopPerformanceMonitor = true;
+        static boolean useTensorFlow = false;
+        static boolean showTensorFlowView = false;
+        static boolean useTraceLog = false;
+        static boolean useBatteryMonitor = false;
+        static boolean useLoopPerformanceMonitor = false;
         static boolean useVelocityControl = false;
     }   //class Preferences
 
@@ -58,7 +58,7 @@ public class RobotParams
     }   //enum DriveMode
 
     static final String LOG_PATH_FOLDER                         =
-        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
+        Environment.getExternalStorageDirectory().getPath() + "/FIRST/teamxxxx";
     //
     // Hardware names.
     //
@@ -74,14 +74,13 @@ public class RobotParams
     //
     static final double FULL_FIELD_INCHES                       = 141.0;
     static final double HALF_FIELD_INCHES                       = FULL_FIELD_INCHES/2.0;
-    static final double QUAD_FIELD_INCHES                       = FULL_FIELD_INCHES/4.0;
     static final double FULL_TILE_INCHES                        = 23.75;
     static final double HALF_TILE_INCHES                        = FULL_TILE_INCHES/2.0;
     //
     // Robot dimensions.
     //
-    static final double ROBOT_LENGTH                            = 17.0;
-    static final double ROBOT_WIDTH                             = 17.0;
+    static final double ROBOT_LENGTH                            = 18.0;
+    static final double ROBOT_WIDTH                             = 18.0;
     //
     // Motor Odometries.
     //
