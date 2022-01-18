@@ -36,7 +36,7 @@ public class RobotParams
      */
     public static class Preferences
     {
-        static boolean visionOnly = false;
+        static boolean noRobot = false;
         static boolean initSubsystems = true;
         static boolean useExternalOdometry = false;
         static boolean useBlinkin = false;
@@ -58,7 +58,7 @@ public class RobotParams
     }   //enum DriveMode
 
     static final String LOG_PATH_FOLDER                         =
-        Environment.getExternalStorageDirectory().getPath() + "/FIRST/teamxxxx";
+        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftcxxxx";
     //
     // Hardware names.
     //
@@ -152,23 +152,23 @@ public class RobotParams
 
     static final double HOMOGRAPHY_CAMERA_TOPLEFT_X             = 0.0;
     static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y             = 0.0;
-    static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X            = 639;
-    static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y            = 0;
+    static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X            = 639.0;
+    static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y            = 0.0;
     static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_X          = 0.0;
-    static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y          = 479;
-    static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X         = 639;
-    static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y         = 479;
+    static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y          = 479.0;
+    static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X         = 639.0;
+    static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y         = 479.0;
 
     // These should be in real-world robot coordinates. Needs calibration after camera is actually mounted in position.
     // Measurement unit: inches
     static final double HOMOGRAPHY_WORLD_TOPLEFT_X              = -22.25;
-    static final double HOMOGRAPHY_WORLD_TOPLEFT_Y              = 60;
-    static final double HOMOGRAPHY_WORLD_TOPRIGHT_X             = 23;
-    static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y             =60;
+    static final double HOMOGRAPHY_WORLD_TOPLEFT_Y              = 60.0;
+    static final double HOMOGRAPHY_WORLD_TOPRIGHT_X             = 23.0;
+    static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y             = 60.0;
     static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_X           = -8.75;
-    static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y           = 16;
+    static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y           = 16.0;
     static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X          = 7.5;
-    static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y          = 16;
+    static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y          = 16.0;
     //
     // Vision subsystem.
     //

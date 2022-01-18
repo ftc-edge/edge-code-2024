@@ -29,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.opencv.core.Point;
 
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcHashMap;
@@ -45,7 +46,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
-import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * This class implements Vuforia/TensorFlow Vision for the game season. It creates and initializes all the vision
@@ -91,7 +92,6 @@ public class Vision
     // TensorFlow Vision.
     //
     private TensorFlowVision tensorFlowVision;
-//    private int lastDuckPosition = 0;
 
     /**
      * Constructor: Create an instance of the object. Vision is required by both Vuforia and TensorFlow and must be
@@ -139,6 +139,16 @@ public class Vision
         robot.blinkin.setNamedPatternMap(targetLEDPatternMap);
         robot.blinkin.setPatternPriorities(ledPatternPriorities);
     }   //setupBlinkin
+
+    /**
+     * This method checks if Vuforia vision is initialized.
+     *
+     * @return true if Vuforia vision is initialized, false otherwise.
+     */
+    public boolean isVuforiaVisionInitialized()
+    {
+        return vuforiaVision != null;
+    }   //isVuforiaVisionInitialized
 
     /**
      * This method enables/disables Vuforia Vision.
@@ -193,6 +203,16 @@ public class Vision
     }   //getRobotPose
 
     /**
+     * This method checks if TensorFlow vision is initialized.
+     *
+     * @return true if TensorFlow vision is initialized, false otherwise.
+     */
+    public boolean isTensorFlowVisionInitialized()
+    {
+        return tensorFlowVision != null;
+    }   //isTensorFlowVisionInitialized
+
+    /**
      * This method enables/disables TensorFlow.
      *
      * @param enabled specifies true to enable TensorFlow, false to disable.
@@ -208,6 +228,13 @@ public class Vision
         }
     }   //setTensorFlowEnabled
 
+    public void setTensorFlowZoomFactor(double factor)
+    {
+        if (tensorFlowVision == null) throw new RuntimeException("TensorFlow Vision is not initialized!");
+
+        tensorFlowVision.tensorFlow.setZoom(factor, 16.0/9.0);
+    }   //setTensorFlowZoomFactor
+
     /**
      * This method shuts down TensorFlow.
      */
@@ -219,16 +246,61 @@ public class Vision
     }   //tensorFlowShutdown
 
     /**
-     * This method returns the best detected targets from TensorFlow vision.
+     * This method detects targets that matches the given label and filtering criteria.
      *
-     * @param label specifies the label of the targets to detect for, can be null for detecting any target.
-     * @return the best detected target info.
+     * @param label specifies the target label to detect, can be null if detects any target.
+     * @param filter specifies the filter method to call to filter out false positives, can be null if not provided.
+     * @param comparator specifies the comparator to sort the array if provided, can be null if not provided.
+     *
+     * @return an array of detected targets, null if none found at the moment.
      */
-    public FtcTensorFlow.TargetInfo getBestDetectedTargetInfo(String label)
+    public FtcTensorFlow.TargetInfo[] getDetectedTargetsInfo(
+        String label, FtcTensorFlow.FilterTarget filter, Comparator<? super FtcTensorFlow.TargetInfo> comparator)
     {
         if (tensorFlowVision == null) throw new RuntimeException("TensorFlow Vision is not initialized!");
 
-        return tensorFlowVision.getDetectedTargetsInfo(label, null)[0];
+        return tensorFlowVision.getDetectedTargetsInfo(label, filter, comparator);
+    }   //getDetectedTargetsInfo
+
+    /**
+     * This method returns the best detected targets from TensorFlow vision.
+     *
+     * @param label specifies the label of the targets to detect for, can be null for detecting any target.
+     * @param filter specifies the filter method to call to filter out false positives, can be null if not provided.
+     * @param comparator specifies the comparator to sort the array if provided, can be null if not provided.
+     * @param showAllTargets specifies true to display info for all detected targets.
+     * @return the best detected target info.
+     */
+    public FtcTensorFlow.TargetInfo getBestDetectedTargetInfo(
+        String label, FtcTensorFlow.FilterTarget filter,
+        Comparator<? super FtcTensorFlow.TargetInfo> comparator, boolean showAllTargets)
+    {
+        FtcTensorFlow.TargetInfo[] targets = getDetectedTargetsInfo(label, filter, comparator);
+
+        if (targets != null && showAllTargets)
+        {
+            for (int i = 0; i < targets.length; i++)
+            {
+                tracer.traceInfo(
+                    "Vision.getBestDetectedTargetInfo", "[%d] Target=%s", i, targets[i]);
+            }
+        }
+
+        return targets != null? targets[0]: null;
+    }   //getBestDetectedTargetInfo
+
+    /**
+     * This method returns the best detected targets from TensorFlow vision.
+     *
+     * @param label specifies the label of the targets to detect for, can be null for detecting any target.
+     * @param filter specifies the filter method to call to filter out false positives, can be null if not provided.
+     * @param comparator specifies the comparator to sort the array if provided, can be null if not provided.
+     * @return the best detected target info.
+     */
+    public FtcTensorFlow.TargetInfo getBestDetectedTargetInfo(
+        String label, FtcTensorFlow.FilterTarget filter, Comparator<? super FtcTensorFlow.TargetInfo> comparator)
+    {
+        return getBestDetectedTargetInfo(label, filter, comparator, false);
     }   //getBestDetectedTargetInfo
 
     /**
@@ -453,13 +525,11 @@ public class Vision
      */
     private class TensorFlowVision
     {
-        private final String OPENCV_NATIVE_LIBRARY_NAME = "opencv_java3";
-        private final String TFOD_MODEL_ASSET = "GameModel.tflite";
-        private final String[] OBJECT_LABELS = {LABEL_1, LABEL_2, LABEL_3};
+        private static final String OPENCV_NATIVE_LIBRARY_NAME = "opencv_java3";
+        private static final String TFOD_MODEL_ASSET = "GameModel.tflite";
+        private static final float TFOD_MIN_CONFIDENCE = 0.8f;
 
-        private final float TFOD_MIN_CONFIDENCE = 0.8f;
-
-        private FtcTensorFlow tensorFlow = null;
+        private FtcTensorFlow tensorFlow;
 
         /**
          * Constructor: Create an instance of the object.
@@ -482,20 +552,20 @@ public class Vision
             tfodParams.inputSize = 320;
 
             TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
-                    RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
-                    RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_Y,
-                    RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y,
-                    RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y);
+                RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
+                RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_Y,
+                RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y,
+                RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y);
 
             TrcHomographyMapper.Rectangle worldRect = new TrcHomographyMapper.Rectangle(
-                    RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_X, RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_Y,
-                    RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_Y,
-                    RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_Y,
-                    RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y);
+                RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_X, RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_Y,
+                RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_Y,
+                RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_Y,
+                RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y);
 
             tensorFlow = new FtcTensorFlow(
-                    vuforia, tfodParams, TFOD_MODEL_ASSET, OBJECT_LABELS, cameraRect, worldRect,
-                    tracer);
+                vuforia, tfodParams, TFOD_MODEL_ASSET, new String[] {LABEL_1, LABEL_2, LABEL_3}, cameraRect, worldRect,
+                tracer);
         }   //TensorFlowVision
 
         /**
@@ -511,35 +581,41 @@ public class Vision
         }   //shutdown
 
         /**
-         * This method is called by the Arrays.sort to sort the target object by decreasing confidence.
-         *
-         * @param a specifies the first target
-         * @param b specifies the second target.
-         * @return negative value if a has higher confidence than b, 0 if a and b have equal confidence, positive value
-         *         if a has lower confidence than b.
-         */
-        private int compareConfidence(FtcTensorFlow.TargetInfo a, FtcTensorFlow.TargetInfo b)
-        {
-            return (int)((b.confidence - a.confidence)*100);
-        }   //compareConfidence
-
-        /**
          * This method returns an array of detected targets from TensorFlow vision.
          *
          * @param label specifies the label of the targets to detect for, can be null for detecting any target.
          * @param filter specifies the filter to call to filter out false positive targets.
+         * @param comparator specifies the comparator to sort the array if provided, can be null if not provided.
          * @return array of detected target info.
          */
-        private FtcTensorFlow.TargetInfo[] getDetectedTargetsInfo(String label, FtcTensorFlow.FilterTarget filter)
+        private FtcTensorFlow.TargetInfo[] getDetectedTargetsInfo(
+            String label, FtcTensorFlow.FilterTarget filter, Comparator<? super FtcTensorFlow.TargetInfo> comparator)
         {
-            FtcTensorFlow.TargetInfo[] detectedTargets = tensorFlow.getDetectedTargetsInfo(label, filter);
-            if (detectedTargets != null)
-            {
-                Arrays.sort(detectedTargets, this::compareConfidence);
-            }
-
-            return detectedTargets;
+            return tensorFlow.getDetectedTargetsInfo(label, filter, comparator);
         }   //getDetectedTargetsInfo
+
+        /**
+         * This method maps a camera screen point to a real-world point.
+         *
+         * @param point specifies the camera screen point.
+         * @return real-world point.
+         */
+        public Point mapPoint(Point point)
+        {
+            return tensorFlow != null? tensorFlow.mapPoint(point): null;
+        }   //mapPoint
+
+        /**
+         * This method maps a camera screen point to a real-world point.
+         *
+         * @param x specifies the camera screen point x.
+         * @param y specifies the camera screen point y.
+         * @return real-world point.
+         */
+        public Point mapPoint(double x, double y)
+        {
+            return mapPoint(new Point(x, y));
+        }   //mapPoint
 
     }   //class TensorFlowVision
 

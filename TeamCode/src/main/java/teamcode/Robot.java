@@ -98,7 +98,7 @@ public class Robot
         // If visionOnly is true, the robot controller is disconnected from the robot for testing vision.
         // In this case, we should not instantiate any robot hardware.
         //
-        if (!RobotParams.Preferences.visionOnly)
+        if (!RobotParams.Preferences.noRobot)
         {
             //
             // Create and initialize sensors and indicators.
@@ -115,12 +115,13 @@ public class Robot
                 }
             }
 
-            androidTone = new FtcAndroidTone("androidTone");
-
             if (RobotParams.Preferences.useBatteryMonitor)
             {
                 battery = new FtcRobotBattery();
             }
+
+            androidTone = new FtcAndroidTone("androidTone");
+
             //
             // Create and initialize RobotDrive.
             //
@@ -241,80 +242,6 @@ public class Robot
             }
         }
     }   //stopMode
-
-    /**
-     * This method is typically called in the autonomous state machine to log the autonomous state info as a state
-     * event in the trace log file. The logged event can be used to play back autonomous path movement.
-     *
-     * @param state specifies the current state of the state machine.
-     */
-    public void traceStateInfo(Object state)
-    {
-        final String funcName = "traceStateInfo";
-
-        if (robotDrive != null)
-        {
-            StringBuilder msg = new StringBuilder();
-
-            msg.append(String.format(Locale.US, "tag=\">>>>>\" state=\"%s\"", state));
-            if (robotDrive.pidDrive.isActive())
-            {
-                TrcPose2D robotPose = robotDrive.driveBase.getFieldPosition();
-                TrcPose2D targetPose = robotDrive.pidDrive.getAbsoluteTargetPose();
-
-                if (robotDrive.encoderXPidCtrl != null)
-                {
-                    msg.append(String.format(Locale.US, " xPos=%6.2f xTarget=%6.2f", robotPose.x, targetPose.x));
-                }
-
-                if (robotDrive.encoderYPidCtrl != null)
-                {
-                    msg.append(String.format(Locale.US, " yPos=%6.2f yTarget=%6.2f", robotPose.y, targetPose.y));
-                }
-
-                if (robotDrive.gyroPidCtrl != null)
-                {
-                    msg.append(String.format(Locale.US, " heading=%6.2f headingTarget=%6.2f",
-                                             robotPose.angle, targetPose.angle));
-                }
-            }
-            else if (robotDrive.purePursuitDrive.isActive())
-            {
-                TrcPose2D robotPose = robotDrive.driveBase.getFieldPosition();
-                TrcPose2D robotVel = robotDrive.driveBase.getFieldVelocity();
-                TrcPose2D targetPose = robotDrive.purePursuitDrive.getTargetFieldPosition();
-
-                if (robotDrive.xPosPidCoeff != null)
-                {
-                    msg.append(String.format(Locale.US, " xPos=%6.2f xTarget=%6.2f", robotPose.x, targetPose.x));
-                }
-
-                if (robotDrive.yPosPidCoeff != null)
-                {
-                    msg.append(String.format(Locale.US, " yPos=%6.2f yTarget=%6.2f", robotPose.y, targetPose.y));
-                }
-
-                if (robotDrive.turnPidCoeff != null)
-                {
-                    msg.append(String.format(Locale.US, " heading=%6.2f headingTarget=%6.2f",
-                                             robotPose.angle, targetPose.angle));
-                }
-
-                if (robotDrive.velPidCoeff != null)
-                {
-                    msg.append(String.format(Locale.US, " vel=%6.2f", TrcUtil.magnitude(robotVel.x, robotVel.y)));
-                }
-            }
-
-            if (battery != null)
-            {
-                msg.append(String.format(
-                    Locale.US, " volt=\"%5.2fV(%5.2fV)\"", battery.getVoltage(), battery.getLowestVoltage()));
-            }
-
-            globalTracer.logEvent(funcName, "StateInfo", "%s", msg);
-        }
-    }   //traceStateInfo
 
     /**
      * This method sends the text string to the Driver Station to be spoken using text to speech.
