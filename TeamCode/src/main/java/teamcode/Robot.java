@@ -170,7 +170,7 @@ public class Robot
             //
             if (runMode == TrcRobot.RunMode.AUTO_MODE || runMode == TrcRobot.RunMode.TEST_MODE)
             {
-                robotDrive.setOdometryEnabled(true);
+                robotDrive.driveBase.setOdometryEnabled(true);
             }
         }
         //
@@ -232,7 +232,7 @@ public class Robot
             //
             // Disable odometry.
             //
-            robotDrive.setOdometryEnabled(false);
+            robotDrive.driveBase.setOdometryEnabled(false);
             //
             // Disable gyro task.
             //
