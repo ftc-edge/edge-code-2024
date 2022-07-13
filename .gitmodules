@@ -1,6 +1,3 @@
-[submodule "OpenCVLib310"]
-	path = OpenCVLib310
-	url = https://github.com/trc492/OpenCVLib310
 [submodule "TeamCode/src/main/java/TrcCommonLib"]
 	path = TeamCode/src/main/java/TrcCommonLib
 	url = https://github.com/trc492/TrcCommonLib
