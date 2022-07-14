@@ -47,6 +47,7 @@ public class RobotParams
         static boolean useTensorFlow = false;
         static boolean showTensorFlowView = false;
         static boolean useEasyOpenCV = true;
+        static boolean showEasyOpenCvView = true;
         static boolean useTraceLog = false;
         static boolean useBatteryMonitor = false;
         static boolean useLoopPerformanceMonitor = false;
