@@ -105,14 +105,14 @@ public class FtcTeleOp extends FtcOpMode
     }   //stopMode
 
     /**
-     * This method is called periodically about 50 times a second. Typically, you put code that doesn't require
-     * frequent update here. For example, TeleOp joystick code can be put here since human responses are considered
-     * slow.
+     * This method is called periodically at a slow rate. Typically, you put code that doesn't require frequent
+     * update here. For example, TeleOp joystick code or status display code can be put here since human responses
+     * are considered slow.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
      */
     @Override
-    public void runPeriodic(double elapsedTime)
+    public void slowPeriodic(double elapsedTime)
     {
         //
         // DriveBase subsystem.
@@ -170,7 +170,7 @@ public class FtcTeleOp extends FtcOpMode
      * This method is called when driver gamepad button event is detected.
      *
      * @param gamepad specifies the game controller object that generated the event.
-     * @param button specifies the button ID that generates the event
+     * @param button specifies the button ID that generates the event.
      * @param pressed specifies true if the button is pressed, false otherwise.
      */
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
@@ -217,7 +217,7 @@ public class FtcTeleOp extends FtcOpMode
      * This method is called when operator gamepad button event is detected.
      *
      * @param gamepad specifies the game controller object that generated the event.
-     * @param button specifies the button ID that generates the event
+     * @param button specifies the button ID that generates the event.
      * @param pressed specifies true if the button is pressed, false otherwise.
      */
     public void operatorButtonEvent(TrcGameController gamepad, int button, boolean pressed)

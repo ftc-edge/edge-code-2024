@@ -158,16 +158,16 @@ public class FtcAuto extends FtcOpMode
 
         if (robot.vision != null)
         {
-            if (RobotParams.Preferences.useVuforia)
+            if (robot.vision.vuforiaVision != null)
             {
                 robot.globalTracer.traceInfo(funcName, "Enabling Vuforia.");
-                robot.vision.setVuforiaEnabled(true);
+                robot.vision.vuforiaVision.setEnabled(true);
             }
 
-            if (RobotParams.Preferences.useTensorFlow)
+            if (robot.vision.tensorFlowVision != null)
             {
                 robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
-                robot.vision.setTensorFlowEnabled(true);
+                robot.vision.tensorFlowVision.setEnabled(true);
             }
         }
     }   //initRobot
@@ -258,14 +258,14 @@ public class FtcAuto extends FtcOpMode
     }   //stopMode
 
     /**
-     * This method is called periodically as fast as the control system allows. Typically, you put code that requires
-     * servicing at a higher frequency here. To make the robot as responsive and as accurate as possible especially
-     * in autonomous mode, you will typically put that code here.
+     * This method is called periodically at a fast rate. Typically, you put code that requires servicing at a
+     * high frequency here. To make the robot as responsive and as accurate as possible especially in autonomous
+     * mode, you will typically put that code here.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
      */
     @Override
-    public void runContinuous(double elapsedTime)
+    public void fastPeriodic(double elapsedTime)
     {
         if (autoCommand != null)
         {
@@ -274,7 +274,7 @@ public class FtcAuto extends FtcOpMode
             //
             autoCommand.cmdPeriodic(elapsedTime);
         }
-    }   //runContinuous
+    }   //fastPeriodic
 
     /**
      * This method creates the autonomous menus, displays them and stores the choices.

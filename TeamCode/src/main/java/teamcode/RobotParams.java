@@ -26,6 +26,8 @@ import android.os.Environment;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import TrcCommonLib.trclib.TrcHomographyMapper;
+
 /**
  * This class contains robot and subsystem constants and parameters.
  */
@@ -44,6 +46,7 @@ public class RobotParams
         static boolean showVuforiaView = false;
         static boolean useTensorFlow = false;
         static boolean showTensorFlowView = false;
+        static boolean useEasyOpenCV = true;
         static boolean useTraceLog = false;
         static boolean useBatteryMonitor = false;
         static boolean useLoopPerformanceMonitor = false;
@@ -124,6 +127,9 @@ public class RobotParams
     static final double GYRO_KD                                 = 0.001;
     static final double GYRO_TOLERANCE                          = 2.0;
 
+    static final double ODWHEEL_X_INCHES_PER_COUNT              = 7.6150160901199168116026724971383e-4;
+    static final double ODWHEEL_Y_INCHES_PER_COUNT              = 7.6301149255006038191364659148717e-4;
+
     static final double PIDDRIVE_STALL_TIMEOUT                  = 0.2;  //in seconds.
     //
     // Pure Pursuit parameters.
@@ -144,11 +150,6 @@ public class RobotParams
     static final double PPD_FOLLOWING_DISTANCE                  = 6.0;
     static final double PPD_POS_TOLERANCE                       = 2.0;
     static final double PPD_TURN_TOLERANCE                      = 1.0;
-    //
-    // Odometry Wheel Deployer subsystem.
-    //
-    static final double ODWHEEL_X_INCHES_PER_COUNT              = 7.6150160901199168116026724971383e-4;
-    static final double ODWHEEL_Y_INCHES_PER_COUNT              = 8.3527984931543701389098271890307e-4;
 
     static final double HOMOGRAPHY_CAMERA_TOPLEFT_X             = 0.0;
     static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y             = 0.0;
@@ -169,6 +170,17 @@ public class RobotParams
     static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y           = 16.0;
     static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X          = 7.5;
     static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y          = 16.0;
+
+    static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
+        RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y);
+    static final TrcHomographyMapper.Rectangle worldRect = new TrcHomographyMapper.Rectangle(
+        RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_X, RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y);
     //
     // Vision subsystem.
     //
@@ -176,5 +188,7 @@ public class RobotParams
     static final double CAMERA_FRONT_OFFSET                     = 7.5;  //Camera offset from front of robot in inches
     static final double CAMERA_HEIGHT_OFFSET                    = 16.0; //Camera offset from floor in inches
     static final double CAMERA_LEFT_OFFSET                      = 8.875;//Camera offset from left of robot in inches
+    static final int IMAGE_WIDTH                                = 320;
+    static final int IMAGE_HEIGHT                               = 240;
 
 }   //class RobotInfo

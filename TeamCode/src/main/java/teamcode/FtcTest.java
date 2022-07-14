@@ -37,12 +37,12 @@ import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcUtil;
+import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcChoiceMenu;
 import TrcFtcLib.ftclib.FtcDcMotor;
 import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcMenu;
 import TrcFtcLib.ftclib.FtcPidCoeffCache;
-import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcValueMenu;
 
 /**
@@ -256,16 +256,16 @@ public class FtcTest extends FtcTeleOp
                     //
                     // Vision generally will impact performance, so we only enable it if it's needed.
                     //
-                    if (RobotParams.Preferences.useVuforia)
+                    if (robot.vision.vuforiaVision != null)
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling Vuforia.");
-                        robot.vision.setVuforiaEnabled(true);
+                        robot.vision.vuforiaVision.setEnabled(true);
                     }
 
-                    if (RobotParams.Preferences.useTensorFlow)
+                    if (robot.vision.tensorFlowVision != null)
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
-                        robot.vision.setTensorFlowEnabled(true);
+                        robot.vision.tensorFlowVision.setEnabled(true);
                     }
                 }
                 break;
@@ -316,13 +316,13 @@ public class FtcTest extends FtcTeleOp
             //
             // Vision generally will impact performance, so we only enable it if it's needed.
             //
-            if (RobotParams.Preferences.useVuforia)
+            if (robot.vision.vuforiaVision != null)
             {
                 robot.globalTracer.traceInfo(funcName, "Disabling Vuforia.");
-                robot.vision.setVuforiaEnabled(false);
+                robot.vision.vuforiaVision.setEnabled(false);
             }
 
-            if (RobotParams.Preferences.useTensorFlow)
+            if (robot.vision.tensorFlowVision != null)
             {
                 robot.globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
                 robot.vision.tensorFlowShutdown();
@@ -333,39 +333,14 @@ public class FtcTest extends FtcTeleOp
     }   //stopMode
 
     /**
-     * This method is called periodically during test mode to perform low frequency tasks such as teleop control or
-     * displaying status or test results.
+     * This method is called periodically at a fast rate. Typically, you put code that requires servicing at a
+     * high frequency here. To make the robot as responsive and as accurate as possible especially in autonomous
+     * mode, you will typically put that code here.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
      */
     @Override
-    public void runPeriodic(double elapsedTime)
-    {
-        if (allowTeleOp())
-        {
-            //
-            // Allow TeleOp to run so we can control the robot in subsystem test or drive speed test modes.
-            //
-            super.runPeriodic(elapsedTime);
-        }
-
-        switch (testChoices.test)
-        {
-            case SENSORS_TEST:
-            case SUBSYSTEMS_TEST:
-                doSensorsTest();
-                doVisionTest();
-                break;
-        }
-    }   //runPeriodic
-
-    /**
-     * This method is called continuously during test mode to execute the test command.
-     *
-     * @param elapsedTime specifies the elapsed time since the mode started.
-     */
-    @Override
-    public void runContinuous(double elapsedTime)
+    public void fastPeriodic(double elapsedTime)
     {
         //
         // Run the testCommand if any.
@@ -481,7 +456,35 @@ public class FtcTest extends FtcTeleOp
                 elapsedTimer.getAverageElapsedTime(), elapsedTimer.getMinElapsedTime(),
                 elapsedTimer.getMaxElapsedTime());
         }
-    }   //runContinuous
+    }   //fastPeriodic
+
+    /**
+     * This method is called periodically at a slow rate. Typically, you put code that doesn't require frequent
+     * update here. For example, TeleOp joystick code or status display code can be put here since human responses
+     * are considered slow.
+     *
+     * @param elapsedTime specifies the elapsed time since the mode started.
+     */
+    @Override
+    public void slowPeriodic(double elapsedTime)
+    {
+        if (allowTeleOp())
+        {
+            //
+            // Allow TeleOp to run so we can control the robot in subsystem test or drive speed test modes.
+            //
+            super.slowPeriodic(elapsedTime);
+        }
+
+        switch (testChoices.test)
+        {
+            case SENSORS_TEST:
+            case SUBSYSTEMS_TEST:
+                doSensorsTest();
+                doVisionTest();
+                break;
+        }
+    }   //slowPeriodic
 
     //
     // Overrides TrcGameController.ButtonHandler in TeleOp.
@@ -809,20 +812,27 @@ public class FtcTest extends FtcTeleOp
     {
         if (robot.vision != null)
         {
-            if (RobotParams.Preferences.useTensorFlow)
+            if (RobotParams.Preferences.useTensorFlow || RobotParams.Preferences.useEasyOpenCV)
             {
-                FtcTensorFlow.TargetInfo[] targetsInfo = robot.vision.getDetectedTargetsInfo(null, null, null);
                 final int maxNumLines = 3;
                 int lineIndex = 10;
                 int endLine = lineIndex + maxNumLines;
+                int numTargets;
 
-                if (targetsInfo != null)
+                if (robot.vision.tensorFlowVision != null || robot.vision.eocvVision != null)
                 {
-                    int numTargets = Math.min(targetsInfo.length, maxNumLines);
-                    for (int i = 0; i < numTargets; i++)
+                    TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedDucksInfo();
+
+                    if (targetsInfo != null)
                     {
-                        robot.dashboard.displayPrintf(lineIndex, "%s", targetsInfo[i]);
-                        lineIndex++;
+                        numTargets = Math.min(targetsInfo.length, maxNumLines);
+                        for (int i = 0; i < numTargets; i++)
+                        {
+                            robot.dashboard.displayPrintf(
+                                lineIndex, "[%d] %s (pos=%d)",
+                                i, targetsInfo[i], robot.vision.determineDuckPosition(targetsInfo[i]));
+                            lineIndex++;
+                        }
                     }
                 }
 
@@ -835,9 +845,9 @@ public class FtcTest extends FtcTeleOp
 
             if (RobotParams.Preferences.useVuforia)
             {
-                TrcPose2D robotPose = robot.vision.getRobotPose(null, false);
+                TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
                 robot.dashboard.displayPrintf(13, "RobotLoc %s: %s",
-                                              robot.vision.getLastSeenVuforiaImageName(), robotPose);
+                                              robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
             }
         }
     }   //doVisionTest

@@ -27,17 +27,13 @@ import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcDigitalInput;
 import TrcCommonLib.trclib.TrcMotor;
-import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcServo;
-import TrcCommonLib.trclib.TrcUtil;
 import TrcFtcLib.ftclib.FtcAndroidTone;
 import TrcFtcLib.ftclib.FtcDashboard;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcRevBlinkin;
 import TrcFtcLib.ftclib.FtcRobotBattery;
-
-import java.util.Locale;
 
 /**
  * This class creates the robot object that consists of sensors, indicators, drive base and all the subsystems.
@@ -89,13 +85,15 @@ public class Robot
         //
         // Initialize vision subsystems.
         //
-        if ((RobotParams.Preferences.useVuforia || RobotParams.Preferences.useTensorFlow) &&
+        if ((RobotParams.Preferences.useVuforia ||
+             RobotParams.Preferences.useTensorFlow ||
+             RobotParams.Preferences.useEasyOpenCV) &&
             (runMode == TrcRobot.RunMode.AUTO_MODE || runMode == TrcRobot.RunMode.TEST_MODE))
         {
-            vision = new Vision(this, RobotParams.Preferences.useVuforia, RobotParams.Preferences.useTensorFlow);
+            vision = new Vision(this);
         }
         //
-        // If visionOnly is true, the robot controller is disconnected from the robot for testing vision.
+        // If noRobot is true, the robot controller is disconnected from the robot for testing vision.
         // In this case, we should not instantiate any robot hardware.
         //
         if (!RobotParams.Preferences.noRobot)
@@ -103,7 +101,7 @@ public class Robot
             //
             // Create and initialize sensors and indicators.
             //
-            if (RobotParams.Preferences.useBlinkin )
+            if (RobotParams.Preferences.useBlinkin)
             {
                 blinkin = new FtcRevBlinkin(RobotParams.HWNAME_BLINKIN);
                 //
@@ -121,7 +119,6 @@ public class Robot
             }
 
             androidTone = new FtcAndroidTone("androidTone");
-
             //
             // Create and initialize RobotDrive.
             //
@@ -214,13 +211,13 @@ public class Robot
         //
         if (vision != null)
         {
-            if (RobotParams.Preferences.useVuforia)
+            if (vision.vuforiaVision != null)
             {
                 globalTracer.traceInfo(funcName, "Disabling Vuforia.");
-                vision.setVuforiaEnabled(false);
+                vision.vuforiaVision.setEnabled(false);
             }
 
-            if (RobotParams.Preferences.useTensorFlow)
+            if (vision.tensorFlowVision != null)
             {
                 globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
                 vision.tensorFlowShutdown();
