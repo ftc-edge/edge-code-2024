@@ -222,6 +222,11 @@ public class Robot
                 globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
                 vision.tensorFlowShutdown();
             }
+            else if (vision.eocvVision != null)
+            {
+                globalTracer.traceInfo(funcName, "Disabling EocvVision.");
+                vision.eocvVision.setEnabled(false);
+            }
         }
 
         if (robotDrive != null)

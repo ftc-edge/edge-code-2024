@@ -267,6 +267,11 @@ public class FtcTest extends FtcTeleOp
                         robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
                         robot.vision.tensorFlowVision.setEnabled(true);
                     }
+                    else if (robot.vision.eocvVision != null)
+                    {
+                        robot.globalTracer.traceInfo(funcName, "Enabling EocvVision.");
+                        robot.vision.eocvVision.setEnabled(true);
+                    }
                 }
                 break;
 
@@ -324,8 +329,13 @@ public class FtcTest extends FtcTeleOp
 
             if (robot.vision.tensorFlowVision != null)
             {
-                robot.globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
-                robot.vision.tensorFlowShutdown();
+                robot.globalTracer.traceInfo(funcName, "Disabling TensorFlow.");
+                robot.vision.tensorFlowVision.setEnabled(false);
+            }
+            else if (robot.vision.eocvVision != null)
+            {
+                robot.globalTracer.traceInfo(funcName, "Disabling EocvVision.");
+                robot.vision.eocvVision.setEnabled(false);
             }
         }
 
