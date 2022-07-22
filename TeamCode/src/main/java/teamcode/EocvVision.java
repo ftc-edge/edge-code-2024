@@ -33,6 +33,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcOpenCVDetector;
+import TrcCommonLib.trclib.TrcUtil;
 import TrcFtcLib.ftclib.FtcEocvDetector;
 
 /**
@@ -41,10 +42,13 @@ import TrcFtcLib.ftclib.FtcEocvDetector;
  */
 public class EocvVision extends FtcEocvDetector
 {
-    private final OpenCvCamera openCvCam;
-    private final boolean showEocvView;
+    private final TrcDbgTrace tracer;
     private final GripPipeline gripPipeline;
     private TrcOpenCVDetector.DetectedObject[] detectedObjects = null;
+
+    private double totalTime = 0.0;
+    private long totalFrames = 0;
+    private double taskStartTime = 0.0;
 
     /**
      * Constructor: Create an instance of the object.
@@ -65,25 +69,11 @@ public class EocvVision extends FtcEocvDetector
         TrcHomographyMapper.Rectangle cameraRect, TrcHomographyMapper.Rectangle worldRect,
         OpenCvCamera openCvCam, OpenCvCameraRotation cameraRotation, boolean showEocvView, TrcDbgTrace tracer)
     {
-        super(instanceName, imageWidth, imageHeight, cameraRect, worldRect, openCvCam, cameraRotation, tracer);
+        super(instanceName, imageWidth, imageHeight, cameraRect, worldRect, openCvCam, cameraRotation,
+              showEocvView, tracer);
 
-        this.openCvCam = openCvCam;
-        this.showEocvView = showEocvView;
+        this.tracer = tracer;
         gripPipeline = new GripPipeline();
-        openCvCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                openCvCam.startStreaming(imageWidth, imageHeight, cameraRotation);
-            }
-
-            @Override
-            public void onError(int errorCode)
-            {
-            }
-        });
-        openCvCam.pauseViewport();
     }   //EocvVision
 
     /**
@@ -91,20 +81,21 @@ public class EocvVision extends FtcEocvDetector
      *
      * @param enabled specifies true to start pipeline processing, false to stop.
      */
+    @Override
     public void setEnabled(boolean enabled)
     {
-        if (enabled)
+        if (enabled && !isEnabled())
         {
-            openCvCam.setPipeline(this);
-            if (showEocvView)
-            {
-                openCvCam.resumeViewport();
-            }
+            detectedObjects = null;
+            totalTime = 0.0;
+            totalFrames = 0;
+            taskStartTime = TrcUtil.getCurrentTime();
+            super.setEnabled(true);
         }
-        else
+        else if (!enabled && isEnabled())
         {
-            openCvCam.pauseViewport();
-            openCvCam.setPipeline(null);
+            super.setEnabled(false);
+            detectedObjects = null;
         }
     }   //setEnabled
 
@@ -143,11 +134,19 @@ public class EocvVision extends FtcEocvDetector
             dbgTrace.traceEnter(funcName, TrcDbgTrace.TraceLevel.CALLBK);
         }
 
+        double startTime = TrcUtil.getCurrentTime();
         gripPipeline.process(input);
-        //
-        // Process the image to detect the targets we are looking for and put them into targetRects.
-        //
         MatOfKeyPoint detectedTargets = gripPipeline.findBlobsOutput();
+        double elapsedTime = TrcUtil.getCurrentTime() - startTime;
+
+        totalTime += elapsedTime;
+        totalFrames++;
+        if (tracer != null)
+        {
+            tracer.traceInfo(
+                funcName, "AvgProcessTime=%.3f sec, FrameRate=%.1f",
+                totalTime/totalFrames, totalFrames/(TrcUtil.getCurrentTime() - taskStartTime));
+        }
 
         if (detectedTargets != null)
         {
