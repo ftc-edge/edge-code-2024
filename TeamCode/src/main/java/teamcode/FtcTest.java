@@ -222,7 +222,7 @@ public class FtcTest extends FtcTeleOp
         //
         // Only SENSORS_TEST and SUBSYSTEMS_TEST need TensorFlow, shut it down for all other tests.
         //
-        if (robot.vision != null && RobotParams.Preferences.useTensorFlow &&
+        if (robot.vision != null && robot.vision.tensorFlowVision != null &&
             testChoices.test != Test.SENSORS_TEST && testChoices.test != Test.SUBSYSTEMS_TEST)
         {
             robot.globalTracer.traceInfo("TestInit", "Shutting down TensorFlow.");
@@ -517,10 +517,21 @@ public class FtcTest extends FtcTeleOp
             // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the
             // FtcTeleOp gamepad actions.
             //
-            robot.dashboard.displayPrintf(
-                7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
+            robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
             switch (button)
             {
+                case FtcGamepad.GAMEPAD_A:
+                    break;
+
+                case FtcGamepad.GAMEPAD_B:
+                    break;
+
+                case FtcGamepad.GAMEPAD_X:
+                    break;
+
+                case FtcGamepad.GAMEPAD_Y:
+                    break;
+
                 case FtcGamepad.GAMEPAD_DPAD_UP:
                     break;
 
@@ -560,10 +571,21 @@ public class FtcTest extends FtcTeleOp
             // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the
             // FtcTeleOp gamepad actions.
             //
-            robot.dashboard.displayPrintf(
-                7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
+            robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
             switch (button)
             {
+                case FtcGamepad.GAMEPAD_A:
+                    break;
+
+                case FtcGamepad.GAMEPAD_B:
+                    break;
+
+                case FtcGamepad.GAMEPAD_X:
+                    break;
+
+                case FtcGamepad.GAMEPAD_Y:
+                    break;
+
                 case FtcGamepad.GAMEPAD_DPAD_UP:
                     break;
 
@@ -871,6 +893,6 @@ public class FtcTest extends FtcTeleOp
     {
         return !RobotParams.Preferences.noRobot &&
                (testChoices.test == Test.SUBSYSTEMS_TEST || testChoices.test == Test.DRIVE_SPEED_TEST);
-    }   //shouldDoTeleOp
+    }   //allowTeleOp
 
 }   //class FtcTest

@@ -153,6 +153,8 @@ public class Robot
      */
     public void startMode(TrcRobot.RunMode runMode)
     {
+        final String funcName = "startMode";
+
         if (robotDrive != null)
         {
             //

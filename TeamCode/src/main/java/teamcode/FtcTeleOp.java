@@ -160,7 +160,7 @@ public class FtcTeleOp extends FtcOpMode
         //
         // Other subsystems.
         //
-    }   //runPeriodic
+    }   //slowPeriodic
 
     //
     // Implements TrcGameController.ButtonHandler interface.

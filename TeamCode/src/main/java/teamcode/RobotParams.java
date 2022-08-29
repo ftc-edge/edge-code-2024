@@ -62,7 +62,7 @@ public class RobotParams
     }   //enum DriveMode
 
     static final String LOG_PATH_FOLDER                         =
-        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftcxxxx";
+        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftclogs";
     //
     // Hardware names.
     //
@@ -130,8 +130,6 @@ public class RobotParams
 
     static final double ODWHEEL_X_INCHES_PER_COUNT              = 7.6150160901199168116026724971383e-4;
     static final double ODWHEEL_Y_INCHES_PER_COUNT              = 7.6301149255006038191364659148717e-4;
-
-    static final double PIDDRIVE_STALL_TIMEOUT                  = 0.2;  //in seconds.
     //
     // Pure Pursuit parameters.
     //
@@ -192,4 +190,4 @@ public class RobotParams
     static final int IMAGE_WIDTH                                = 320;
     static final int IMAGE_HEIGHT                               = 240;
 
-}   //class RobotInfo
+}   //class RobotParams
