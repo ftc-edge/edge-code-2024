@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,7 @@
  * SOFTWARE.
  */
 
-package teamcode;
-
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+package multiteams;
 
 import TrcCommonLib.trclib.TrcGameController;
 import TrcCommonLib.trclib.TrcRobot;
@@ -33,7 +31,6 @@ import TrcFtcLib.ftclib.FtcOpMode;
 /**
  * This class contains the TeleOp Mode program.
  */
-@TeleOp(name="FtcTeleOp", group="Ftcxxxx")
 public class FtcTeleOp extends FtcOpMode
 {
     public enum DriveOrientation
@@ -70,10 +67,6 @@ public class FtcTeleOp extends FtcOpMode
     @Override
     public void initRobot()
     {
-        //
-        // Create and initialize robot object.
-        //
-        robot = new Robot(TrcRobot.getRunMode());
         //
         // Create and initialize Gamepads.
         //
@@ -150,9 +143,6 @@ public class FtcTeleOp extends FtcOpMode
 
             robot.dashboard.displayPrintf(2, "Pose:%s", robot.robotDrive.driveBase.getFieldPosition());
         }
-        //
-        // Other subsystems.
-        //
     }   //slowPeriodic
 
     /**
@@ -167,7 +157,7 @@ public class FtcTeleOp extends FtcOpMode
         double mag;
         double newMag;
 
-        switch (RobotParams.ROBOT_DRIVE_MODE)
+        switch (RobotParams.robotDriveMode)
         {
             case HOLONOMIC_MODE:
                 x = driverGamepad.getLeftStickX(false);
@@ -273,7 +263,7 @@ public class FtcTeleOp extends FtcOpMode
 
             case FtcGamepad.GAMEPAD_RBUMPER:
                 // Press and hold for slow drive.
-                drivePowerScale = pressed? RobotParams.SLOW_DRIVE_POWER_SCALE: 1.0;
+                drivePowerScale = pressed? RobotParams.slowDrivePowerScale: 1.0;
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_UP:
