@@ -172,7 +172,7 @@ public class FtcTest3543 extends FtcTeleOp3543
             //
             // If the control was not processed by this method, pass it back to TeleOp.
             //
-            if (!processed)
+            if (!processed && !ftcTest.driverButtonEvent(gamepad, button, pressed))
             {
                 super.driverButtonEvent(gamepad, button, pressed);
             }
@@ -227,11 +227,12 @@ public class FtcTest3543 extends FtcTeleOp3543
             //
             // If the control was not processed by this method, pass it back to TeleOp.
             //
-            if (!processed)
+            if (!processed && !ftcTest.operatorButtonEvent(gamepad, button, pressed))
             {
+
                 super.operatorButtonEvent(gamepad, button, pressed);
             }
         }
     }   //operatorButtonEvent
 
-}   //class FtcTest
+}   //class FtcTest3543

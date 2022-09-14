@@ -67,8 +67,7 @@ public class TensorFlowVision
 
         this.tracer = tracer;
         tensorFlow = new FtcTensorFlow(
-            vuforia, tfodParams, TFOD_MODEL_ASSET,
-            new String[] {Vision.LABEL_TARGET},
+            vuforia, tfodParams, TFOD_MODEL_ASSET, Vision.TARGET_LABELS,
             RobotParams.cameraRect, RobotParams.worldRect, tracer);
     }   //TensorFlowVision
 

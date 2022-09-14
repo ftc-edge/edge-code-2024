@@ -81,7 +81,6 @@ public class RobotParams
     public static final double FULL_FIELD_INCHES                = 141.0;
     public static final double HALF_FIELD_INCHES                = FULL_FIELD_INCHES/2.0;
     public static final double FULL_TILE_INCHES                 = 23.75;
-    public static final double HALF_TILE_INCHES                 = FULL_TILE_INCHES/2.0;
     //
     // Robot dimensions.
     //
@@ -153,7 +152,6 @@ public class RobotParams
     //
     // Vision subsystem.
     //
-    public static final String TRACKABLE_IMAGES_FILE            = "TrackableImagesFileName";
     public static double cameraFrontOffset;
     public static double cameraLeftOffset;
     public static double cameraHeightOffset;

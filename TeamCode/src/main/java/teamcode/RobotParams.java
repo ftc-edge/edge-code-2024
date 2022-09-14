@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -160,7 +160,6 @@ public class RobotParams
     //
     // Vision subsystem.
     //
-    public static final String TRACKABLE_IMAGES_FILE            = "TrackableImagesFileName";
     public static final double CAMERA_FRONT_OFFSET              = 7.5;  //Camera offset from front of robot in inches
     public static final double CAMERA_LEFT_OFFSET               = 8.875;//Camera offset from left of robot in inches
     public static final double CAMERA_HEIGHT_OFFSET             = 16.0; //Camera offset from floor in inches

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,7 @@ public class TensorFlowVision
 
         this.tracer = tracer;
         tensorFlow = new FtcTensorFlow(
-            vuforia, tfodParams, TFOD_MODEL_ASSET,
-            new String[] {Vision.LABEL_TARGET},
+            vuforia, tfodParams, TFOD_MODEL_ASSET, Vision.TARGET_LABELS,
             RobotParams.cameraRect, RobotParams.worldRect, tracer);
     }   //TensorFlowVision
 

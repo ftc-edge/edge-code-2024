@@ -30,13 +30,16 @@ import TrcCommonLib.command.CmdPurePursuitDrive;
 import TrcCommonLib.command.CmdTimedDrive;
 
 import TrcCommonLib.trclib.TrcElapsedTimer;
+import TrcCommonLib.trclib.TrcGameController;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
+import TrcCommonLib.trclib.TrcSwerveDriveBase;
 import TrcCommonLib.trclib.TrcUtil;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcChoiceMenu;
 import TrcFtcLib.ftclib.FtcDcMotor;
+import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcMenu;
 import TrcFtcLib.ftclib.FtcPidCoeffCache;
 import TrcFtcLib.ftclib.FtcValueMenu;
@@ -61,7 +64,8 @@ public class FtcTest
         TUNE_X_PID,
         TUNE_Y_PID,
         TUNE_TURN_PID,
-        PURE_PURSUIT_DRIVE
+        PURE_PURSUIT_DRIVE,
+        CALIBRATE_SWERVE_STEERING
     }   //enum Test
 
     /**
@@ -113,6 +117,8 @@ public class FtcTest
     private double maxDriveAcceleration = 0.0;
     private double prevTime = 0.0;
     private double prevVelocity = 0.0;
+    private double steerServoPosition = 0.5;
+    private double calibrateStepSize = 0.1;
 
     /**
      * This method is called to initialize the robot. In FTC, this is called when the "Init" button on the Driver
@@ -263,23 +269,33 @@ public class FtcTest
             case TUNE_X_PID:
             case TUNE_Y_PID:
             case TUNE_TURN_PID:
-                robot.robotDrive.pidDrive.setMsgTracer(robot.globalTracer, logEvents, debugPid);
+                if (robot.robotDrive != null)
+                {
+                    robot.robotDrive.pidDrive.setMsgTracer(robot.globalTracer, logEvents, debugPid);
+                }
                 break;
 
             case PURE_PURSUIT_DRIVE:
-                robot.robotDrive.purePursuitDrive.setMsgTracer(robot.globalTracer, logEvents, debugPid);
-                //
-                // Doing a 48x48-inch square box with robot heading always pointing to the center of the box.
-                //
-                // Set the current position as the absolute field origin so the path can be an absolute path.
-                robot.robotDrive.driveBase.setFieldPosition(new TrcPose2D(0.0, 0.0, 0.0));
-                ((CmdPurePursuitDrive)testCommand).start(
-                    robot.robotDrive.driveBase.getFieldPosition(), false,
-                    new TrcPose2D(-24.0, 0, 45.0),
-                    new TrcPose2D(-24.0, 48.0, 135.0),
-                    new TrcPose2D(24.0, 48.0, 225.0),
-                    new TrcPose2D(24.0, 0.0, 315.0),
-                    new TrcPose2D(0.0, 0.0, 0.0));
+                if (robot.robotDrive != null)
+                {
+                    robot.robotDrive.purePursuitDrive.setMsgTracer(robot.globalTracer, logEvents, debugPid);
+                    //
+                    // Doing a 48x48-inch square box with robot heading always pointing to the center of the box.
+                    //
+                    // Set the current position as the absolute field origin so the path can be an absolute path.
+                    robot.robotDrive.driveBase.setFieldPosition(new TrcPose2D(0.0, 0.0, 0.0));
+                    ((CmdPurePursuitDrive)testCommand).start(
+                        robot.robotDrive.driveBase.getFieldPosition(), false,
+                        new TrcPose2D(-24.0, 0, 45.0),
+                        new TrcPose2D(-24.0, 48.0, 135.0),
+                        new TrcPose2D(24.0, 48.0, 225.0),
+                        new TrcPose2D(24.0, 0.0, 315.0),
+                        new TrcPose2D(0.0, 0.0, 0.0));
+                }
+                break;
+
+            case CALIBRATE_SWERVE_STEERING:
+                steerServoPosition = 0.5;
                 break;
         }
     }   //startMode
@@ -464,8 +480,160 @@ public class FtcTest
                 doSensorsTest();
                 doVisionTest();
                 break;
+
+            case CALIBRATE_SWERVE_STEERING:
+                if (robot.robotDrive != null && (robot.robotDrive.driveBase instanceof TrcSwerveDriveBase))
+                {
+                    SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                    swerveDrive.lfSwerveModule.setSteerAngle(steerServoPosition);
+                    swerveDrive.rfSwerveModule.setSteerAngle(steerServoPosition);
+                    swerveDrive.lbSwerveModule.setSteerAngle(steerServoPosition);
+                    swerveDrive.rbSwerveModule.setSteerAngle(steerServoPosition);
+
+                    robot.dashboard.displayPrintf(
+                        4, "lf: SteerAngle=%.3f, SteerPosition=%.3f",
+                        swerveDrive.lfSwerveModule.getSteerAngle(), swerveDrive.lfSwerveModule.getLogicalPosition());
+                    robot.dashboard.displayPrintf(
+                        5, "rf: SteerAngle=%.3f, SteerPosition=%.3f",
+                        swerveDrive.rfSwerveModule.getSteerAngle(), swerveDrive.rfSwerveModule.getLogicalPosition());
+                    robot.dashboard.displayPrintf(
+                        6, "lb: SteerAngle=%.3f, SteerPosition=%.3f",
+                        swerveDrive.lbSwerveModule.getSteerAngle(), swerveDrive.lbSwerveModule.getLogicalPosition());
+                    robot.dashboard.displayPrintf(
+                        7, "rb: SteerAngle=%.3f, SteerPosition=%.3f",
+                        swerveDrive.rbSwerveModule.getSteerAngle(), swerveDrive.rbSwerveModule.getLogicalPosition());
+                }
+                break;
         }
     }   //slowPeriodic
+
+    /**
+     * This method is called when a driver gamepad button event occurs.
+     *
+     * @param gamepad specifies the game controller object that generated the event.
+     * @param button specifies the button ID that generates the event
+     * @param pressed specifies true if the button is pressed, false otherwise.
+     * @return true if the button event is processed, false otherwise.
+     */
+    public boolean driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
+    {
+        boolean processed = false;
+        //
+        // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the
+        // FtcTeleOp gamepad actions.
+        //
+        robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
+        switch (button)
+        {
+            case FtcGamepad.GAMEPAD_A:
+                break;
+
+            case FtcGamepad.GAMEPAD_B:
+                break;
+
+            case FtcGamepad.GAMEPAD_X:
+                break;
+
+            case FtcGamepad.GAMEPAD_Y:
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_UP:
+                if (pressed)
+                {
+                    // Do not increment beyond 1.0.
+                    if (steerServoPosition + calibrateStepSize <= 1.0)
+                    {
+                        steerServoPosition += calibrateStepSize;
+                    }
+                }
+                processed = true;
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_DOWN:
+                if (pressed)
+                {
+                    // Do not decrement below 0.001.
+                    if (steerServoPosition - calibrateStepSize >= 0.001)
+                    {
+                        steerServoPosition -= calibrateStepSize;
+                    }
+                }
+                processed = true;
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_LEFT:
+                if (pressed)
+                {
+                    // Maximum step size is 0.1.
+                    if (calibrateStepSize * 10.0 <= 0.1)
+                    {
+                        calibrateStepSize *= 10.0;
+                    }
+                }
+                processed = true;
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_RIGHT:
+                if (pressed)
+                {
+                    // Minimum step size is 0.001.
+                    if (calibrateStepSize / 10.0 >= 0.001)
+                    {
+                        calibrateStepSize /= 10.0;
+                    }
+                }
+                processed = true;
+                break;
+        }
+
+        return processed;
+    }   //driverButtonEvent
+
+    /**
+     * This method is called when a driver gamepad button event occurs.
+     *
+     * @param gamepad specifies the game controller object that generated the event.
+     * @param button specifies the button ID that generates the event
+     * @param pressed specifies true if the button is pressed, false otherwise.
+     * @return true if the button event is processed, false otherwise.
+     */
+    public boolean operatorButtonEvent(TrcGameController gamepad, int button, boolean pressed)
+    {
+        boolean processed = false;
+        //
+        // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the
+        // FtcTeleOp gamepad actions.
+        //
+        robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed ? "Pressed" : "Released");
+        switch (button)
+        {
+            case FtcGamepad.GAMEPAD_A:
+                break;
+
+            case FtcGamepad.GAMEPAD_B:
+                break;
+
+            case FtcGamepad.GAMEPAD_X:
+                break;
+
+            case FtcGamepad.GAMEPAD_Y:
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_UP:
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_DOWN:
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_LEFT:
+                break;
+
+            case FtcGamepad.GAMEPAD_DPAD_RIGHT:
+                break;
+        }
+
+        return processed;
+    }   //operatorButtonEvent
 
     /**
      * This method creates and displays the test menus and record the selected choices.
@@ -520,6 +688,7 @@ public class FtcTest
         testMenu.addChoice("Tune Y PID", Test.TUNE_Y_PID, false, tuneKpMenu);
         testMenu.addChoice("Tune Turn PID", Test.TUNE_TURN_PID, false, tuneKpMenu);
         testMenu.addChoice("Pure Pursuit Drive", Test.PURE_PURSUIT_DRIVE, false);
+        testMenu.addChoice("Calibrate Swerve Steering", Test.CALIBRATE_SWERVE_STEERING, false);
 
         xTargetMenu.setChildMenu(yTargetMenu);
         yTargetMenu.setChildMenu(turnTargetMenu);
@@ -712,7 +881,7 @@ public class FtcTest
 
                 if (robot.vision.tensorFlowVision != null || robot.vision.eocvVision != null)
                 {
-                    TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedTargetsInfo(Vision.LABEL_TARGET);
+                    TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedTargetsInfo(null);
 
                     if (targetsInfo != null)
                     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,13 +47,23 @@ public class Vision
     public static final String IMAGE2_NAME = "Image2";
     public static final String IMAGE3_NAME = "Image3";
     public static final String IMAGE4_NAME = "Image4";
-    public static final String LABEL_TARGET = "Target";
+    public static final String LABEL_TARGET1 = "Target1";
+    public static final String LABEL_TARGET2 = "Target2";
+    public static final String LABEL_TARGET3 = "Target3";
+    public static final String[] TARGET_LABELS = {LABEL_TARGET1, LABEL_TARGET2, LABEL_TARGET3};
     public static final String GOT_TARGET = "GotTarget";
     public static final String SAW_TARGET = "SawTarget";
 
     private final TrcRevBlinkin.Pattern[] ledPatternPriorities = {
+        new TrcRevBlinkin.Pattern(LABEL_TARGET1, TrcRevBlinkin.RevLedPattern.SolidRed),
+        new TrcRevBlinkin.Pattern(LABEL_TARGET2, TrcRevBlinkin.RevLedPattern.SolidGreen),
+        new TrcRevBlinkin.Pattern(LABEL_TARGET3, TrcRevBlinkin.RevLedPattern.SolidBlue),
         new TrcRevBlinkin.Pattern(SAW_TARGET, TrcRevBlinkin.RevLedPattern.SolidViolet),
-        new TrcRevBlinkin.Pattern(GOT_TARGET, TrcRevBlinkin.RevLedPattern.SolidAqua)
+        new TrcRevBlinkin.Pattern(GOT_TARGET, TrcRevBlinkin.RevLedPattern.SolidAqua),
+        new TrcRevBlinkin.Pattern(IMAGE1_NAME, TrcRevBlinkin.RevLedPattern.FixedStrobeRed),
+        new TrcRevBlinkin.Pattern(IMAGE2_NAME, TrcRevBlinkin.RevLedPattern.FixedStrobeBlue),
+        new TrcRevBlinkin.Pattern(IMAGE3_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseRed),
+        new TrcRevBlinkin.Pattern(IMAGE4_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseBlue)
     };
 
     private final Robot robot;
