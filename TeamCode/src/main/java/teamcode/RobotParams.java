@@ -83,7 +83,6 @@ public class RobotParams
     public static final double FULL_FIELD_INCHES                = 141.0;
     public static final double HALF_FIELD_INCHES                = FULL_FIELD_INCHES/2.0;
     public static final double FULL_TILE_INCHES                 = 23.75;
-    public static final double HALF_TILE_INCHES                 = FULL_TILE_INCHES/2.0;
     //
     // Robot dimensions.
     //
