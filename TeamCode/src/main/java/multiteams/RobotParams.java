@@ -48,6 +48,8 @@ public class RobotParams
         public static boolean showTensorFlowView = false;
         public static boolean useEasyOpenCV = false;
         public static boolean showEasyOpenCvView = false;
+        public static boolean useAprilTag = false;
+        public static boolean showAprilTagView = false;
         public static boolean useTraceLog = true;
         public static boolean useBatteryMonitor = false;
         public static boolean useLoopPerformanceMonitor = true;
@@ -55,8 +57,8 @@ public class RobotParams
     }   //class Preferences
 
     public static String robotName;
-    public static String logPathFolder;
-
+    public static String teamFolderPath;
+    public static String logFolderPath;
     //
     // Hardware names.
     //
@@ -91,10 +93,16 @@ public class RobotParams
     //
     // Game positions.
     //
-    public static TrcPose2D startPosRed1;
-    public static TrcPose2D startPosRed2;
-    public static TrcPose2D startPosBlue1;
-    public static TrcPose2D startPosBlue2;
+    public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
+    public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - robotLength/2.0;
+    public static TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
+        -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
+    public static TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
+        STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
+    public static TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
+        STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
+    public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
+        -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     //
     // Motor Odometries.
     //
@@ -106,6 +114,26 @@ public class RobotParams
     //
     // DriveBase subsystem.
     //
+    public static double steerLowLimit;
+    public static double steerHighLimit;
+    public static double lfSteerMinus90;
+    public static double lfSteerPlus90;
+    public static double rfSteerMinus90;
+    public static double rfSteerPlus90;
+    public static double lbSteerMinus90;
+    public static double lbSteerPlus90;
+    public static double rbSteerMinus90;
+    public static double rbSteerPlus90;
+
+    public static boolean lfDriveInverted;
+    public static boolean rfDriveInverted;
+    public static boolean lbDriveInverted;
+    public static boolean rbDriveInverted;
+    public static boolean lfSteerInverted;
+    public static boolean rfSteerInverted;
+    public static boolean lbSteerInverted;
+    public static boolean rbSteerInverted;
+
     public static DcMotor.RunMode driveMotorMode;
     public static boolean driveWheelBrakeModeOn;
     public static boolean leftWheelInverted;
@@ -155,8 +183,15 @@ public class RobotParams
     public static double cameraFrontOffset;
     public static double cameraLeftOffset;
     public static double cameraHeightOffset;
-    public static final int CAMERA_IMAGE_WIDTH                  = 320;
-    public static final int CAMERA_IMAGE_HEIGHT                 = 240;
+    public static double cameraTiltDown;
+    public static double cameraTagSize;
+    // Camera: Logitech C310
+    public static final int CAMERA_IMAGE_WIDTH                  = 640;
+    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
+    public static final double CAMERA_FX                        = 821.993;  // in pixels
+    public static final double CAMERA_FY                        = 821.993;  // in pixels
+    public static final double CAMERA_CX                        = 330.489;  // in pixels
+    public static final double CAMERA_CY                        = 248.997;  // in pixels
     public static final int FRAME_QUEUE_CAPACITY                = 2;
     public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
         // topLeftX, topLeftY, topRightX, topRightY

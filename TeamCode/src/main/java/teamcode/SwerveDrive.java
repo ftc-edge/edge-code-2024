@@ -22,8 +22,14 @@
 
 package teamcode;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.PrintStream;
+import java.util.Scanner;
+
+import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcDriveBaseOdometry;
-import TrcCommonLib.trclib.TrcEnhancedServo;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPidDrive;
 import TrcCommonLib.trclib.TrcPurePursuitDrive;
@@ -39,12 +45,22 @@ public class SwerveDrive extends RobotDrive
 {
     private static final boolean logPoseEvents = false;
     private static final boolean tracePidInfo = false;
+
+    private static final String STEERING_CALIBRATION_DATA_FILE = "SteerCalibration.txt";
+    public static final String[] servoNames = {
+        RobotParams.HWNAME_LFSTEER_SERVO1, RobotParams.HWNAME_RFSTEER_SERVO1,
+        RobotParams.HWNAME_LBSTEER_SERVO1, RobotParams.HWNAME_RBSTEER_SERVO1};
+    public double[][] servoPositions = {
+        {RobotParams.LFSTEER_MINUS90, RobotParams.LFSTEER_PLUS90},
+        {RobotParams.RFSTEER_MINUS90, RobotParams.RFSTEER_PLUS90},
+        {RobotParams.LBSTEER_MINUS90, RobotParams.LBSTEER_PLUS90},
+        {RobotParams.RBSTEER_MINUS90, RobotParams.RBSTEER_PLUS90}
+    };
     //
     // Swerve steering motors and modules.
     //
     public final FtcServo lfSteerServo1, lfSteerServo2, lbSteerServo1, lbSteerServo2;
     public final FtcServo rfSteerServo1, rfSteerServo2, rbSteerServo1, rbSteerServo2;
-    public final TrcEnhancedServo lfSteerServo, lbSteerServo, rfSteerServo, rbSteerServo;
     public final TrcSwerveModule lfSwerveModule, lbSwerveModule, rfSwerveModule, rbSwerveModule;
 
     /**
@@ -56,29 +72,51 @@ public class SwerveDrive extends RobotDrive
     {
         super();
 
-        lfDriveMotor = createDriveMotor(RobotParams.HWNAME_LFDRIVE_MOTOR, false);
-        lbDriveMotor = createDriveMotor(RobotParams.HWNAME_LBDRIVE_MOTOR, false);
-        rfDriveMotor = createDriveMotor(RobotParams.HWNAME_RFDRIVE_MOTOR, false);
-        rbDriveMotor = createDriveMotor(RobotParams.HWNAME_RBDRIVE_MOTOR, false);
+        lfDriveMotor = createDriveMotor(RobotParams.HWNAME_LFDRIVE_MOTOR, RobotParams.LFDRIVE_INVERTED);
+        lbDriveMotor = createDriveMotor(RobotParams.HWNAME_LBDRIVE_MOTOR, RobotParams.LBDRIVE_INVERTED);
+        rfDriveMotor = createDriveMotor(RobotParams.HWNAME_RFDRIVE_MOTOR, RobotParams.RFDRIVE_INVERTED);
+        rbDriveMotor = createDriveMotor(RobotParams.HWNAME_RBDRIVE_MOTOR, RobotParams.RBDRIVE_INVERTED);
 
-        lfSteerServo1 = new FtcServo(RobotParams.HWNAME_LFSTEER_SERVO1);
-        lfSteerServo2 = new FtcServo(RobotParams.HWNAME_LFSTEER_SERVO2);
-        lbSteerServo1 = new FtcServo(RobotParams.HWNAME_LBSTEER_SERVO1);
-        lbSteerServo2 = new FtcServo(RobotParams.HWNAME_LBSTEER_SERVO2);
-        rfSteerServo1 = new FtcServo(RobotParams.HWNAME_RFSTEER_SERVO1);
-        rfSteerServo2 = new FtcServo(RobotParams.HWNAME_RFSTEER_SERVO2);
-        rbSteerServo1 = new FtcServo(RobotParams.HWNAME_RBSTEER_SERVO1);
-        rbSteerServo2 = new FtcServo(RobotParams.HWNAME_RBSTEER_SERVO2);
+        lfSteerServo1 = createSteerServo(
+            RobotParams.HWNAME_LFSTEER_SERVO1, servoPositions[0][0], servoPositions[0][1],
+            RobotParams.LFSTEER_INVERTED);
+        lfSteerServo2 = createSteerServo(
+            RobotParams.HWNAME_LFSTEER_SERVO2, servoPositions[0][0], servoPositions[0][1],
+            RobotParams.LFSTEER_INVERTED);
+        lfSteerServo1.addFollower(lfSteerServo2);
 
-        lfSteerServo = new TrcEnhancedServo("lfSteerServo", lfSteerServo1, lfSteerServo2);
-        lbSteerServo = new TrcEnhancedServo("lbSteerServo", lbSteerServo1, lbSteerServo2);
-        rfSteerServo = new TrcEnhancedServo("rfSteerServo", rfSteerServo1, rfSteerServo2);
-        rbSteerServo = new TrcEnhancedServo("rbSteerServo", rbSteerServo1, rbSteerServo2);
+        lbSteerServo1 = createSteerServo(
+            RobotParams.HWNAME_LBSTEER_SERVO1, servoPositions[1][0], servoPositions[1][1],
+            RobotParams.LBSTEER_INVERTED);
+        lbSteerServo2 = createSteerServo(
+            RobotParams.HWNAME_LBSTEER_SERVO2, servoPositions[1][0], servoPositions[1][1],
+            RobotParams.LBSTEER_INVERTED);
+        lbSteerServo1.addFollower(lbSteerServo2);
 
-        lfSwerveModule = new TrcSwerveModule("lfSwerveModule", lfDriveMotor, lfSteerServo);
-        lbSwerveModule = new TrcSwerveModule("lbSwerveModule", lbDriveMotor, lbSteerServo);
-        rfSwerveModule = new TrcSwerveModule("rfSwerveModule", rfDriveMotor, rfSteerServo);
-        rbSwerveModule = new TrcSwerveModule("rbSwerveModule", rbDriveMotor, rbSteerServo);
+        rfSteerServo1 = createSteerServo(
+            RobotParams.HWNAME_RFSTEER_SERVO1, servoPositions[2][0], servoPositions[2][1],
+            RobotParams.RFSTEER_INVERTED);
+        rfSteerServo2 = createSteerServo(
+            RobotParams.HWNAME_RFSTEER_SERVO2, servoPositions[2][0], servoPositions[2][1],
+            RobotParams.RFSTEER_INVERTED);
+        rfSteerServo1.addFollower(rfSteerServo2);
+
+        rbSteerServo1 = createSteerServo(
+            RobotParams.HWNAME_RBSTEER_SERVO1, servoPositions[3][0], servoPositions[3][1],
+            RobotParams.RBSTEER_INVERTED);
+        rbSteerServo2 = createSteerServo(
+            RobotParams.HWNAME_RBSTEER_SERVO2, servoPositions[3][0], servoPositions[3][1],
+            RobotParams.RBSTEER_INVERTED);
+        rbSteerServo1.addFollower(rbSteerServo2);
+
+        lfSwerveModule = new TrcSwerveModule("lfSwerveModule", lfDriveMotor, lfSteerServo1);
+        lbSwerveModule = new TrcSwerveModule("lbSwerveModule", lbDriveMotor, lbSteerServo1);
+        rfSwerveModule = new TrcSwerveModule("rfSwerveModule", rfDriveMotor, rfSteerServo1);
+        rbSwerveModule = new TrcSwerveModule("rbSwerveModule", rbDriveMotor, rbSteerServo1);
+        lfSwerveModule.setSteeringLimits(RobotParams.STEER_LOW_LIMIT, RobotParams.STEER_HIGH_LIMIT);
+        lbSwerveModule.setSteeringLimits(RobotParams.STEER_LOW_LIMIT, RobotParams.STEER_HIGH_LIMIT);
+        rfSwerveModule.setSteeringLimits(RobotParams.STEER_LOW_LIMIT, RobotParams.STEER_HIGH_LIMIT);
+        rbSwerveModule.setSteeringLimits(RobotParams.STEER_LOW_LIMIT, RobotParams.STEER_HIGH_LIMIT);
 
         driveBase = new TrcSwerveDriveBase(
             lfSwerveModule, lbSwerveModule, rfSwerveModule, rbSwerveModule, gyro,
@@ -107,7 +145,7 @@ public class SwerveDrive extends RobotDrive
          }
          else
          {
-             driveBase.setOdometryScales(RobotParams.XPOS_INCHES_PER_COUNT, RobotParams.YPOS_INCHES_PER_COUNT);
+             driveBase.setOdometryScales(RobotParams.YPOS_INCHES_PER_COUNT, RobotParams.YPOS_INCHES_PER_COUNT);
          }
 
         //
@@ -141,6 +179,26 @@ public class SwerveDrive extends RobotDrive
     }   //SwerveDrive
 
     /**
+     * This method creates and configures a steering servo.
+     *
+     * @param servoName specifies the name of the servo.
+     * @param steerMinus90 specifies the logical position of -90 degree.
+     * @param steerPlus90 specifies the logical position of +90 degree.
+     * @param inverted specifies true if servo direction is reversed, false otherwise.
+     * @return created steering servo.
+     */
+    private FtcServo createSteerServo(String servoName, double steerMinus90, double steerPlus90, boolean inverted)
+    {
+        FtcServo servo = new FtcServo(servoName);
+
+        servo.setInverted(inverted);
+        servo.setPhysicalRange(-90.0, 90.0);
+        servo.setLogicalRange(steerMinus90, steerPlus90);
+
+        return servo;
+    }   //createSteerServo
+
+    /**
      * This method checks if anti-defense mode is enabled.
      *
      * @return true if anti-defense mode is enabled, false if disabled.
@@ -169,5 +227,103 @@ public class SwerveDrive extends RobotDrive
             }
         }
     }   //setAntiDefenseEnabled
+
+    /**
+     * This method returns the servo position value for the given wheel index and position index.
+     *
+     * @param wheelIndex specifies the wheel index.
+     * @param posIndex specifies -1 for zero position, 0 for minus90 and 1 for plus90.
+     * @return servo position value.
+     */
+    public double getSteeringServoPosition(int wheelIndex, int posIndex)
+    {
+        return posIndex == -1?
+            (servoPositions[wheelIndex][0] + servoPositions[wheelIndex][1])/2.0:
+            servoPositions[wheelIndex][posIndex];
+    }   //getSterringServoPosition
+
+    /**
+     * This method sets all the swerve steering servos to the selected angle.
+     *
+     * @param posIndex specifies -1 for zero position, 0 for minus90 and 1 for plus90.
+     */
+    public void setSteeringServoPosition(int posIndex)
+    {
+        double pos;
+
+        pos = getSteeringServoPosition(0, posIndex);
+        lfSteerServo1.setLogicalPosition(pos);
+        lfSteerServo2.setLogicalPosition(pos);
+        pos = getSteeringServoPosition(1, posIndex);
+        rfSteerServo1.setLogicalPosition(pos);
+        rfSteerServo2.setLogicalPosition(pos);
+        pos = getSteeringServoPosition(2, posIndex);
+        lbSteerServo1.setLogicalPosition(pos);
+        lbSteerServo2.setLogicalPosition(pos);
+        pos = getSteeringServoPosition(3, posIndex);
+        rbSteerServo1.setLogicalPosition(pos);
+        rbSteerServo2.setLogicalPosition(pos);
+    }  //setSteeringServoPosition
+
+    /**
+     * This method saves the calibration data to a file on the Robot Controller.
+     */
+    public void saveSteeringCalibrationData()
+    {
+        final String funcName = "saveSteeringCalibrationData";
+
+        try (PrintStream out = new PrintStream(new FileOutputStream(
+            RobotParams.TEAM_FOLDER_PATH + "/" + STEERING_CALIBRATION_DATA_FILE)))
+        {
+            for (int i = 0; i < servoNames.length; i++)
+            {
+                out.printf("%s: %f, %f\n", servoNames[i], servoPositions[i][0], servoPositions[i][1]);
+            }
+            out.close();
+            TrcDbgTrace.getGlobalTracer().traceInfo(funcName, "Saved steering calibration data!");
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }   //saveSteeringCalibrationData
+
+    /**
+     * This method reads the steering calibration data from a file on the Robot Controller.
+     *
+     * @throws RuntimeException if file contains invalid data.
+     */
+    public void readSteeringCalibrationData()
+    {
+        final String funcName = "readSteeringCalibrationData";
+
+        try (Scanner in = new Scanner(new FileReader(
+            RobotParams.TEAM_FOLDER_PATH + "/" + STEERING_CALIBRATION_DATA_FILE)))
+        {
+            for (int i = 0; i < servoNames.length; i++)
+            {
+                String line = in.nextLine();
+                int colonPos = line.indexOf(':');
+                String name = colonPos == -1? null: line.substring(0, colonPos);
+
+                if (name == null || !name.equals(servoNames[i]))
+                {
+                    throw new RuntimeException("Invalid servo name in line " + line);
+                }
+
+                String[] numbers = line.substring(colonPos + 1).split(",", 2);
+
+                for (int j = 0; j < servoPositions[0].length; j++)
+                {
+                    servoPositions[i][j] = Double.parseDouble(numbers[j]);
+                }
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            TrcDbgTrace.getGlobalTracer().traceWarn(
+                funcName, "Steering calibration data file not found, using built-in defaults.");
+        }
+    }   //readSteeringCalibrationData
 
 }   //class SwerveDrive

@@ -34,7 +34,6 @@ import TrcCommonLib.trclib.TrcGameController;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
-import TrcCommonLib.trclib.TrcSwerveDriveBase;
 import TrcCommonLib.trclib.TrcUtil;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcChoiceMenu;
@@ -107,7 +106,7 @@ public class FtcTest
 
     private Robot robot;
     private final FtcPidCoeffCache pidCoeffCache =
-        new FtcPidCoeffCache("PIDTuning", RobotParams.logPathFolder);
+        new FtcPidCoeffCache("PIDTuning", RobotParams.teamFolderPath);
     private final TestChoices testChoices = new TestChoices();
     private TrcElapsedTimer elapsedTimer = null;
     private FtcChoiceMenu<Test> testMenu = null;
@@ -117,8 +116,18 @@ public class FtcTest
     private double maxDriveAcceleration = 0.0;
     private double prevTime = 0.0;
     private double prevVelocity = 0.0;
-    private double steerServoPosition = 0.5;
-    private double calibrateStepSize = 0.1;
+    //
+    // Swerve Steering calibration.
+    //
+    private static final double STEER_CALIBRATE_STEP = 0.01;
+    private static final String[] posNames = {"Zero", "Minus90", "Plus90"};
+    private static final int[] posDataIndices = {-1, 0, 1};
+    private int posIndex = 0;
+    private int wheelIndex = 0;
+
+    //
+    // Overrides FtcOpMode abstract method.
+    //
 
     /**
      * This method is called to initialize the robot. In FTC, this is called when the "Init" button on the Driver
@@ -262,6 +271,11 @@ public class FtcTest
                         robot.globalTracer.traceInfo(funcName, "Enabling EocvVision.");
                         robot.vision.eocvVision.setEnabled(true);
                     }
+                    else if (robot.vision.aprilTagVision != null)
+                    {
+                        robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
+                        robot.vision.aprilTagVision.setEnabled(true);
+                    }
                 }
                 break;
 
@@ -295,7 +309,16 @@ public class FtcTest
                 break;
 
             case CALIBRATE_SWERVE_STEERING:
-                steerServoPosition = 0.5;
+                if (robot.robotDrive != null && (robot.robotDrive instanceof SwerveDrive))
+                {
+                    posIndex = 0;
+                    wheelIndex = 0;
+                    ((SwerveDrive) robot.robotDrive).setSteeringServoPosition(posDataIndices[posIndex]);
+                }
+                else
+                {
+                    throw new RuntimeException("Steering calibration can only be done on Swerve Drive.");
+                }
                 break;
         }
     }   //startMode
@@ -335,6 +358,11 @@ public class FtcTest
             {
                 robot.globalTracer.traceInfo(funcName, "Disabling EocvVision.");
                 robot.vision.eocvVision.setEnabled(false);
+            }
+            else if (robot.vision.aprilTagVision != null)
+            {
+                robot.globalTracer.traceInfo(funcName, "Disabling AprilTagVision.");
+                robot.vision.aprilTagVision.setEnabled(false);
             }
         }
     }   //stopMode
@@ -482,26 +510,21 @@ public class FtcTest
                 break;
 
             case CALIBRATE_SWERVE_STEERING:
-                if (robot.robotDrive != null && (robot.robotDrive.driveBase instanceof TrcSwerveDriveBase))
+                if (robot.robotDrive != null && (robot.robotDrive instanceof SwerveDrive))
                 {
                     SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
-                    swerveDrive.lfSwerveModule.setSteerAngle(steerServoPosition);
-                    swerveDrive.rfSwerveModule.setSteerAngle(steerServoPosition);
-                    swerveDrive.lbSwerveModule.setSteerAngle(steerServoPosition);
-                    swerveDrive.rbSwerveModule.setSteerAngle(steerServoPosition);
 
+                    swerveDrive.setSteeringServoPosition(posDataIndices[posIndex]);
                     robot.dashboard.displayPrintf(
-                        4, "lf: SteerAngle=%.3f, SteerPosition=%.3f",
-                        swerveDrive.lfSwerveModule.getSteerAngle(), swerveDrive.lfSwerveModule.getLogicalPosition());
+                        1, "State: pos=%s, wheel=%s", posNames[posIndex], SwerveDrive.servoNames[wheelIndex]);
                     robot.dashboard.displayPrintf(
-                        5, "rf: SteerAngle=%.3f, SteerPosition=%.3f",
-                        swerveDrive.rfSwerveModule.getSteerAngle(), swerveDrive.rfSwerveModule.getLogicalPosition());
+                        2, "Front Steer: lfPos=%.2f, rfPos=%.2f",
+                        swerveDrive.getSteeringServoPosition(0, posDataIndices[posIndex]),
+                        swerveDrive.getSteeringServoPosition(1, posDataIndices[posIndex]));
                     robot.dashboard.displayPrintf(
-                        6, "lb: SteerAngle=%.3f, SteerPosition=%.3f",
-                        swerveDrive.lbSwerveModule.getSteerAngle(), swerveDrive.lbSwerveModule.getLogicalPosition());
-                    robot.dashboard.displayPrintf(
-                        7, "rb: SteerAngle=%.3f, SteerPosition=%.3f",
-                        swerveDrive.rbSwerveModule.getSteerAngle(), swerveDrive.rbSwerveModule.getLogicalPosition());
+                        3, "Back Steer: lbPos=%.2f, rbPos=%.2f",
+                        swerveDrive.getSteeringServoPosition(2, posDataIndices[posIndex]),
+                        swerveDrive.getSteeringServoPosition(3, posDataIndices[posIndex]));
                 }
                 break;
         }
@@ -526,9 +549,25 @@ public class FtcTest
         switch (button)
         {
             case FtcGamepad.GAMEPAD_A:
+                if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
+                {
+                    if (pressed)
+                    {
+                        posIndex = (posIndex + 1) % posNames.length;
+                    }
+                    processed = true;
+                }
                 break;
 
             case FtcGamepad.GAMEPAD_B:
+                if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
+                {
+                    if (pressed)
+                    {
+                        ((SwerveDrive) robot.robotDrive).saveSteeringCalibrationData();
+                    }
+                    processed = true;
+                }
                 break;
 
             case FtcGamepad.GAMEPAD_X:
@@ -538,51 +577,47 @@ public class FtcTest
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_UP:
-                if (pressed)
+                if (pressed && testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
                 {
-                    // Do not increment beyond 1.0.
-                    if (steerServoPosition + calibrateStepSize <= 1.0)
+                    SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+
+                    if (posDataIndices[posIndex] != -1 &&
+                        swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] + STEER_CALIBRATE_STEP
+                        <= 1.0)
                     {
-                        steerServoPosition += calibrateStepSize;
+                        swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] += STEER_CALIBRATE_STEP;
                     }
+                    processed = true;
                 }
-                processed = true;
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_DOWN:
-                if (pressed)
+                if (pressed && testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
                 {
-                    // Do not decrement below 0.001.
-                    if (steerServoPosition - calibrateStepSize >= 0.001)
+                    SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+
+                    if (posDataIndices[posIndex] != -1 &&
+                        swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] - STEER_CALIBRATE_STEP
+                        >= 0.0)
                     {
-                        steerServoPosition -= calibrateStepSize;
+                        swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] -= STEER_CALIBRATE_STEP;
                     }
+                    processed = true;
                 }
-                processed = true;
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_LEFT:
-                if (pressed)
-                {
-                    // Maximum step size is 0.1.
-                    if (calibrateStepSize * 10.0 <= 0.1)
-                    {
-                        calibrateStepSize *= 10.0;
-                    }
-                }
-                processed = true;
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_RIGHT:
-                if (pressed)
+                if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
                 {
-                    // Minimum step size is 0.001.
-                    if (calibrateStepSize / 10.0 >= 0.001)
+                    if (pressed)
                     {
-                        calibrateStepSize /= 10.0;
+                        wheelIndex = (wheelIndex + 1) % SwerveDrive.servoNames.length;
                     }
+                    processed = true;
                 }
-                processed = true;
                 break;
         }
 
@@ -590,7 +625,7 @@ public class FtcTest
     }   //driverButtonEvent
 
     /**
-     * This method is called when a driver gamepad button event occurs.
+     * This method is called when a operator gamepad button event occurs.
      *
      * @param gamepad specifies the game controller object that generated the event.
      * @param button specifies the button ID that generates the event
@@ -872,25 +907,23 @@ public class FtcTest
     {
         if (robot.vision != null)
         {
-            if (RobotParams.Preferences.useTensorFlow || RobotParams.Preferences.useEasyOpenCV)
+            if (robot.vision.tensorFlowVision != null ||
+                robot.vision.eocvVision != null ||
+                robot.vision.aprilTagVision != null)
             {
                 final int maxNumLines = 3;
                 int lineIndex = 10;
                 int endLine = lineIndex + maxNumLines;
                 int numTargets;
+                TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedTargetsInfo(null);
 
-                if (robot.vision.tensorFlowVision != null || robot.vision.eocvVision != null)
+                if (targetsInfo != null)
                 {
-                    TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedTargetsInfo(null);
-
-                    if (targetsInfo != null)
+                    numTargets = Math.min(targetsInfo.length, maxNumLines);
+                    for (int i = 0; i < numTargets; i++)
                     {
-                        numTargets = Math.min(targetsInfo.length, maxNumLines);
-                        for (int i = 0; i < numTargets; i++)
-                        {
-                            robot.dashboard.displayPrintf(lineIndex, "[%d] %s", i, targetsInfo[i]);
-                            lineIndex++;
-                        }
+                        robot.dashboard.displayPrintf(lineIndex, "[%d] %s", i, targetsInfo[i]);
+                        lineIndex++;
                     }
                 }
 
@@ -901,7 +934,7 @@ public class FtcTest
                 }
             }
 
-            if (RobotParams.Preferences.useVuforia)
+            if (robot.vision.vuforiaVision != null)
             {
                 TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
                 robot.dashboard.displayPrintf(13, "RobotLoc %s: %s",
@@ -920,5 +953,18 @@ public class FtcTest
         return !RobotParams.Preferences.noRobot &&
                (testChoices.test == Test.SUBSYSTEMS_TEST || testChoices.test == Test.DRIVE_SPEED_TEST);
     }   //allowTeleOp
+
+    /**
+     * This method is called to determine if Test mode is allowed to do button control of the robot.
+     *
+     * @return true to allow and false otherwise.
+     */
+    public boolean allowButtonControl()
+    {
+        return !RobotParams.Preferences.noRobot &&
+               (testChoices.test == Test.SUBSYSTEMS_TEST ||
+                testChoices.test == Test.DRIVE_SPEED_TEST ||
+                testChoices.test == Test.CALIBRATE_SWERVE_STEERING);
+    }   //allowButtonControl
 
 }   //class FtcTest

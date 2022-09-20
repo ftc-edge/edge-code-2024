@@ -40,7 +40,7 @@ import TrcFtcLib.ftclib.FtcVuforia;
 public class TensorFlowVision
 {
     private static final String TFOD_MODEL_ASSET = "Targets.tflite";
-    private static final float TFOD_MIN_CONFIDENCE = 0.8f;
+    private static final float TFOD_MIN_CONFIDENCE = 0.75f;
 
     private final TrcDbgTrace tracer;
     private FtcTensorFlow tensorFlow;
@@ -63,7 +63,7 @@ public class TensorFlowVision
                 new TFObjectDetector.Parameters() : new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParams.minResultConfidence = TFOD_MIN_CONFIDENCE;
         tfodParams.isModelTensorFlow2 = true;
-        tfodParams.inputSize = RobotParams.CAMERA_IMAGE_WIDTH;
+        tfodParams.inputSize = 300;
 
         this.tracer = tracer;
         tensorFlow = new FtcTensorFlow(
@@ -109,18 +109,17 @@ public class TensorFlowVision
      * @param label specifies the label of the targets to detect for, can be null for detecting any target.
      * @param filter specifies the filter to call to filter out false positive targets.
      * @param comparator specifies the comparator to sort the array if provided, can be null if not provided.
-     * @param traceTargets specifies true to display info for all detected targets.
      * @return array of detected target info.
      */
     public TrcVisionTargetInfo<FtcTensorFlow.DetectedObject>[] getDetectedTargetsInfo(
         String label, FtcTensorFlow.FilterTarget filter,
-        Comparator<? super TrcVisionTargetInfo<FtcTensorFlow.DetectedObject>> comparator, boolean traceTargets)
+        Comparator<? super TrcVisionTargetInfo<FtcTensorFlow.DetectedObject>> comparator)
     {
         final String funcName = "getDetectedTargetsInfo";
         TrcVisionTargetInfo<FtcTensorFlow.DetectedObject>[] targets =
             tensorFlow.getDetectedTargetsInfo(label, filter, comparator);
 
-        if (targets != null && traceTargets)
+        if (tracer != null && targets != null)
         {
             for (int i = 0; i < targets.length; i++)
             {

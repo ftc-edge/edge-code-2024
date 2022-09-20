@@ -50,33 +50,31 @@ public class RobotParams3543
         RobotParams.Preferences.showTensorFlowView = false;
         RobotParams.Preferences.useEasyOpenCV = false;
         RobotParams.Preferences.showEasyOpenCvView = false;
+        RobotParams.Preferences.useAprilTag = false;
+        RobotParams.Preferences.showAprilTagView = false;
         RobotParams.Preferences.useTraceLog = true;
         RobotParams.Preferences.useBatteryMonitor = false;
         RobotParams.Preferences.useLoopPerformanceMonitor = true;
         RobotParams.Preferences.useVelocityControl = false;
 
         RobotParams.robotName = "Ftc3543";
-        RobotParams.logPathFolder = Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
+        RobotParams.teamFolderPath = Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
+        RobotParams.logFolderPath = RobotParams.teamFolderPath + "/logs";
         //
         // Robot dimensions.
         //
         RobotParams.robotLength = 17.0;
         RobotParams.robotWidth = 13.0;
-        RobotParams.driveBaseLength = 17.0;
-        RobotParams.driveBaseWidth = 17.0;
-        //
-        // Game positions.
-        //
-        RobotParams.startPosRed1 = new TrcPose2D();
-        RobotParams.startPosRed2 = new TrcPose2D();
-        RobotParams.startPosBlue1 = new TrcPose2D();
-        RobotParams.startPosBlue2 = new TrcPose2D();
+        RobotParams.driveBaseLength = 13.25;
+        RobotParams.driveBaseWidth = 11.25;
         //
         // Vision subsystem.
         //
         RobotParams.cameraFrontOffset = 7.5;    //Camera offset from front of robot in inches
         RobotParams.cameraLeftOffset = 6.0;     //Camera offset from left of robot in inches
         RobotParams.cameraHeightOffset = 16.0;  //Camera offset from floor in inches
+        RobotParams.cameraTiltDown = 36.0;      //Camera tilt down angle from horizontal in deg
+        RobotParams.cameraTagSize = 0.035;      //in meters
         // These should be in real-world robot coordinates. Needs calibration after camera is actually mounted in position.
         // Measurement unit: inches
         RobotParams.worldRect = new TrcHomographyMapper.Rectangle(
@@ -85,6 +83,26 @@ public class RobotParams3543
         //
         // DriveBase subsystem.
         //
+        RobotParams.steerLowLimit = -90.0;
+        RobotParams.steerHighLimit = 90.0;
+        RobotParams.lfSteerMinus90 = 0.20;
+        RobotParams.lfSteerPlus90 = 0.85;
+        RobotParams.rfSteerMinus90 = 0.21;
+        RobotParams.rfSteerPlus90 = 0.87;
+        RobotParams.lbSteerMinus90 = 0.26;
+        RobotParams.lbSteerPlus90 = 0.94;
+        RobotParams.rbSteerMinus90 = 0.18;
+        RobotParams.rbSteerPlus90 = 0.85;
+
+        RobotParams.lfDriveInverted = true;
+        RobotParams.rfDriveInverted = true;
+        RobotParams.lbDriveInverted = true;
+        RobotParams.rbDriveInverted = true;
+        RobotParams.lfSteerInverted = false;
+        RobotParams.rfSteerInverted = false;
+        RobotParams.lbSteerInverted = false;
+        RobotParams.rbSteerInverted = false;
+
         RobotParams.driveMotorMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
         RobotParams.driveWheelBrakeModeOn = true;
         RobotParams.leftWheelInverted = true;

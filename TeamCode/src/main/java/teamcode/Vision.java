@@ -24,6 +24,7 @@ package teamcode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -31,6 +32,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import TrcCommonLib.trclib.TrcOpenCVDetector;
 import TrcCommonLib.trclib.TrcRevBlinkin;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
+import TrcFtcLib.ftclib.FtcAprilTagDetector;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcVuforia;
@@ -70,6 +72,7 @@ public class Vision
     public VuforiaVision vuforiaVision;
     public TensorFlowVision tensorFlowVision;
     public EocvVision eocvVision;
+    public FtcAprilTagDetector aprilTagVision;
 
     /**
      * Constructor: Create an instance of the object. Vision is required by both Vuforia and TensorFlow and must be
@@ -85,15 +88,28 @@ public class Vision
                 "cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
 
         this.robot = robot;
-        if (RobotParams.Preferences.useEasyOpenCV)
+        if (RobotParams.Preferences.useEasyOpenCV || RobotParams.Preferences.useAprilTag)
         {
             OpenCvCamera webcam =
                 OpenCvCameraFactory.getInstance().createWebcam(
                     opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM), cameraViewId);
-            eocvVision = new EocvVision(
-                "EocvVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
-                RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT,
-                RobotParams.Preferences.showEasyOpenCvView, null);
+            if (RobotParams.Preferences.useEasyOpenCV)
+            {
+                eocvVision = new EocvVision(
+                    "EocvVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
+                    RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT,
+                    RobotParams.Preferences.showEasyOpenCvView, null);
+            }
+            else
+            {
+                aprilTagVision = new FtcAprilTagDetector(
+                    "AprilTagVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
+                    RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT,
+                    RobotParams.Preferences.showAprilTagView, null,
+                    AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.CAMERA_TAGSIZE,
+                    RobotParams.CAMERA_FX, RobotParams.CAMERA_FY,
+                    RobotParams.CAMERA_CX, RobotParams.CAMERA_CY);
+            }
         }
         else
         {
@@ -152,11 +168,15 @@ public class Vision
 
         if (tensorFlowVision != null)
         {
-            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareConfidence, false);
+            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareConfidence);
         }
         else if (eocvVision != null)
         {
             targets = eocvVision.getDetectedTargetsInfo(null, this::compareObjectSize);
+        }
+        else if (aprilTagVision != null)
+        {
+            targets = aprilTagVision.getDetectedTargetsInfo(null, null);
         }
 
         return targets;
@@ -187,11 +207,15 @@ public class Vision
 
         if (tensorFlowVision != null)
         {
-            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareDistanceFromCamera, false);
+            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareDistanceFromCamera);
         }
         else if (eocvVision != null)
         {
             targets = eocvVision.getDetectedTargetsInfo(null, this::compareDistanceFromCamera);
+        }
+        else if (aprilTagVision != null)
+        {
+            targets = aprilTagVision.getDetectedTargetsInfo(null, this::compareDistanceFromCamera);
         }
 
         return targets != null? targets[0]: null;

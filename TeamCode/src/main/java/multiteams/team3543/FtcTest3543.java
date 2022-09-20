@@ -134,7 +134,7 @@ public class FtcTest3543 extends FtcTeleOp3543
     @Override
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        if (ftcTest.allowTeleOp())
+        if (ftcTest.allowButtonControl())
         {
             //
             // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the
@@ -189,7 +189,7 @@ public class FtcTest3543 extends FtcTeleOp3543
     @Override
     public void operatorButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        if (ftcTest.allowTeleOp())
+        if (ftcTest.allowButtonControl())
         {
             //
             // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the

@@ -50,6 +50,8 @@ public class RobotParams
         public static boolean showTensorFlowView = false;
         public static boolean useEasyOpenCV = false;
         public static boolean showEasyOpenCvView = false;
+        public static boolean useAprilTag = false;
+        public static boolean showAprilTagView = false;
         public static boolean useTraceLog = true;
         public static boolean useBatteryMonitor = false;
         public static boolean useLoopPerformanceMonitor = true;
@@ -57,8 +59,9 @@ public class RobotParams
     }   //class Preferences
 
     public static final String ROBOT_NAME                       = "Robotxxxx";
-    public static final String LOG_PATH_FOLDER                  =
-        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftclogs";
+    public static final String TEAM_FOLDER_PATH                 =
+        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
+    public static final String LOG_FOLDER_PATH                  = TEAM_FOLDER_PATH + "/logs";
     //
     // Hardware names.
     //
@@ -86,17 +89,23 @@ public class RobotParams
     //
     // Robot dimensions.
     //
-    public static final double ROBOT_LENGTH                     = 18.0;
-    public static final double ROBOT_WIDTH                      = 18.0;
-    public static final double DRIVE_BASE_LENGTH                = 17.0;
-    public static final double DRIVE_BASE_WIDTH                 = 17.0;
+    public static final double ROBOT_LENGTH                     = 17.0;
+    public static final double ROBOT_WIDTH                      = 13.0;
+    public static final double DRIVE_BASE_LENGTH                = 13.25;
+    public static final double DRIVE_BASE_WIDTH                 = 11.25;
     //
     // Game positions.
     //
-    public static TrcPose2D STARTPOS_RED1 = new TrcPose2D();
-    public static TrcPose2D STARTPOS_RED2 = new TrcPose2D();
-    public static TrcPose2D STARTPOS_BLUE1 = new TrcPose2D();
-    public static TrcPose2D STARTPOS_BLUE2 = new TrcPose2D();
+    public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
+    public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - ROBOT_LENGTH/2.0;
+    public static TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
+        -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
+    public static TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
+        STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
+    public static TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
+        STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
+    public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
+        -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     //
     // Motor Odometries.
     //
@@ -108,6 +117,26 @@ public class RobotParams
     //
     // DriveBase subsystem.
     //
+    public static final double STEER_LOW_LIMIT                  = -90.0;
+    public static final double STEER_HIGH_LIMIT                 = 90.0;
+    public static final double LFSTEER_MINUS90                  = 0.20;
+    public static final double LFSTEER_PLUS90                   = 0.85;
+    public static final double RFSTEER_MINUS90                  = 0.21;
+    public static final double RFSTEER_PLUS90                   = 0.87;
+    public static final double LBSTEER_MINUS90                  = 0.26;
+    public static final double LBSTEER_PLUS90                   = 0.94;
+    public static final double RBSTEER_MINUS90                  = 0.18;
+    public static final double RBSTEER_PLUS90                   = 0.85;
+
+    public static final boolean LFDRIVE_INVERTED                = true;
+    public static final boolean RFDRIVE_INVERTED                = true;
+    public static final boolean LBDRIVE_INVERTED                = true;
+    public static final boolean RBDRIVE_INVERTED                = true;
+    public static final boolean LFSTEER_INVERTED                = false;
+    public static final boolean RFSTEER_INVERTED                = false;
+    public static final boolean LBSTEER_INVERTED                = false;
+    public static final boolean RBSTEER_INVERTED                = false;
+
     public static final DcMotor.RunMode DRIVE_MOTOR_MODE        = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
     public static final boolean DRIVE_WHEEL_BRAKE_MODE_ON       = true;
     public static final boolean LEFT_WHEEL_INVERTED             = true;
@@ -117,7 +146,7 @@ public class RobotParams
     public static final double X_ODOMETRY_WHEEL_OFFSET          = ROBOT_LENGTH/2.0 - (3.875 + 9.5); //behind centroid
     public static final double Y_LEFT_ODOMETRY_WHEEL_OFFSET     = -15.25/2.0;
     public static final double Y_RIGHT_ODOMETRY_WHEEL_OFFSET    = 15.25/2.0;
-    public static final RobotDrive.DriveMode ROBOT_DRIVE_MODE   = RobotDrive.DriveMode.ARCADE_MODE;
+    public static final RobotDrive.DriveMode ROBOT_DRIVE_MODE   = RobotDrive.DriveMode.HOLONOMIC_MODE;
     //
     // Velocity controlled constants.
     //
@@ -160,10 +189,17 @@ public class RobotParams
     // Vision subsystem.
     //
     public static final double CAMERA_FRONT_OFFSET              = 7.5;  //Camera offset from front of robot in inches
-    public static final double CAMERA_LEFT_OFFSET               = 8.875;//Camera offset from left of robot in inches
+    public static final double CAMERA_LEFT_OFFSET               = 6.0;  //Camera offset from left of robot in inches
     public static final double CAMERA_HEIGHT_OFFSET             = 16.0; //Camera offset from floor in inches
-    public static final int CAMERA_IMAGE_WIDTH                  = 320;
-    public static final int CAMERA_IMAGE_HEIGHT                 = 240;
+    public static final double CAMERA_TILT_DOWN                 = 36.0; //Camera tilt down angle from horizontal in deg
+    public static final double CAMERA_TAGSIZE                   = 0.035;// in meters
+    // Camera: Logitech C310
+    public static final int CAMERA_IMAGE_WIDTH                  = 640;
+    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
+    public static final double CAMERA_FX                        = 821.993;  // in pixels
+    public static final double CAMERA_FY                        = 821.993;  // in pixels
+    public static final double CAMERA_CX                        = 330.489;  // in pixels
+    public static final double CAMERA_CY                        = 248.997;  // in pixels
     public static final int FRAME_QUEUE_CAPACITY                = 2;
 
     public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;
