@@ -106,7 +106,7 @@ public class Vision
                     "AprilTagVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
                     RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT,
                     RobotParams.Preferences.showAprilTagView, null,
-                    AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.cameraTagSize,
+                    AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.CAMERA_TAGSIZE,
                     RobotParams.CAMERA_FX, RobotParams.CAMERA_FY,
                     RobotParams.CAMERA_CX, RobotParams.CAMERA_CY);
             }
@@ -168,15 +168,18 @@ public class Vision
 
         if (tensorFlowVision != null)
         {
-            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareConfidence);
+            targets = tensorFlowVision.getDetectedTargetsInfo(
+                label, null, this::compareConfidence, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
         else if (eocvVision != null)
         {
-            targets = eocvVision.getDetectedTargetsInfo(null, this::compareObjectSize);
+            targets = eocvVision.getDetectedTargetsInfo(
+                null, this::compareObjectSize, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
         else if (aprilTagVision != null)
         {
-            targets = aprilTagVision.getDetectedTargetsInfo(null, null);
+            targets = aprilTagVision.getDetectedTargetsInfo(
+                null, null, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
 
         return targets;
@@ -207,15 +210,19 @@ public class Vision
 
         if (tensorFlowVision != null)
         {
-            targets = tensorFlowVision.getDetectedTargetsInfo(label, null, this::compareDistanceFromCamera);
+            targets = tensorFlowVision.getDetectedTargetsInfo(
+                label, null, this::compareDistanceFromCamera,
+                RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
         else if (eocvVision != null)
         {
-            targets = eocvVision.getDetectedTargetsInfo(null, this::compareDistanceFromCamera);
+            targets = eocvVision.getDetectedTargetsInfo(
+                null, this::compareDistanceFromCamera, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
         else if (aprilTagVision != null)
         {
-            targets = aprilTagVision.getDetectedTargetsInfo(null, this::compareDistanceFromCamera);
+            targets = aprilTagVision.getDetectedTargetsInfo(
+                null, this::compareDistanceFromCamera, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
         }
 
         return targets != null? targets[0]: null;

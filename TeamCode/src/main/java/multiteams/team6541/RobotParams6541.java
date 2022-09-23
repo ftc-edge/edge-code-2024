@@ -74,7 +74,6 @@ public class RobotParams6541
         RobotParams.cameraLeftOffset = 6.0;     //Camera offset from left of robot in inches
         RobotParams.cameraHeightOffset = 16.0;  //Camera offset from floor in inches
         RobotParams.cameraTiltDown = 36.0;      //Camera tilt down angle from horizontal in deg
-        RobotParams.cameraTagSize = 0.035;      //in meters
         // These should be in real-world robot coordinates. Needs calibration after camera is actually mounted in position.
         // Measurement unit: inches
         RobotParams.worldRect = new TrcHomographyMapper.Rectangle(
