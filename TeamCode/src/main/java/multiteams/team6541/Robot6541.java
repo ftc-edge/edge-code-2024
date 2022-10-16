@@ -23,7 +23,6 @@
 package multiteams.team6541;
 
 import TrcCommonLib.trclib.TrcRobot;
-import multiteams.MecanumDrive;
 import multiteams.Robot;
 import multiteams.RobotParams;
 
@@ -50,10 +49,6 @@ public class Robot6541 extends Robot
         //
         if (!RobotParams.Preferences.noRobot)
         {
-            //
-            // Create and initialize RobotDrive.
-            //
-            robotDrive = new MecanumDrive(this);
             //
             // Create and initialize other subsystems.
             //

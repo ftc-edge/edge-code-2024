@@ -38,22 +38,26 @@ public class RobotParams
      */
     public static class Preferences
     {
-        public static boolean noRobot = false;
-        public static boolean initSubsystems = true;
-        public static boolean useExternalOdometry = false;
+        // Miscellaneous
+        public static boolean useTraceLog = false;
+        public static boolean useLoopPerformanceMonitor = false;
         public static boolean useBlinkin = false;
+        public static boolean useBatteryMonitor = false;
+        // Vision
         public static boolean useVuforia = false;
         public static boolean showVuforiaView = false;
         public static boolean useTensorFlow = false;
         public static boolean showTensorFlowView = false;
         public static boolean useEasyOpenCV = false;
         public static boolean showEasyOpenCvView = false;
-        public static boolean useAprilTag = false;
-        public static boolean showAprilTagView = false;
-        public static boolean useTraceLog = true;
-        public static boolean useBatteryMonitor = false;
-        public static boolean useLoopPerformanceMonitor = true;
+        // Robot
+        public static boolean noRobot = false;
+        public static boolean swerveRobot = false;
+        // Drive Base
+        public static boolean useExternalOdometry = false;
         public static boolean useVelocityControl = false;
+        // Subsystems
+        public static boolean initSubsystems = true;
     }   //class Preferences
 
     public static String robotName;
@@ -103,6 +107,29 @@ public class RobotParams
         STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
+    //
+    // Vision subsystem.
+    //
+    public static double cameraFrontOffset;
+    public static double cameraLeftOffset;
+    public static double cameraHeightOffset;
+    public static double cameraTiltDown;
+    public static final double CAMERA_TAGSIZE                   = 0.05; // in meters
+    public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
+    // Camera: Logitech C310
+    public static final int CAMERA_IMAGE_WIDTH                  = 640;
+    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
+    public static final double CAMERA_FX                        = 821.993;  // in pixels
+    public static final double CAMERA_FY                        = 821.993;  // in pixels
+    public static final double CAMERA_CX                        = 330.489;  // in pixels
+    public static final double CAMERA_CY                        = 248.997;  // in pixels
+    public static final int FRAME_QUEUE_CAPACITY                = 2;
+    public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
+        // topLeftX, topLeftY, topRightX, topRightY
+        0.0, 0.0, CAMERA_IMAGE_WIDTH - 1, 0.0,
+        // bottomLeftX, bottomLeftY, bottomRightX, bottomRightY
+        0.0, CAMERA_IMAGE_HEIGHT - 1, CAMERA_IMAGE_WIDTH - 1, CAMERA_IMAGE_HEIGHT - 1);
+    public static TrcHomographyMapper.Rectangle worldRect;
     //
     // Motor Odometries.
     //
@@ -177,28 +204,5 @@ public class RobotParams
     public static double ppdFollowingDistance;
     public static double ppdPosTolerance;
     public static double ppdTurnTolerance;
-    //
-    // Vision subsystem.
-    //
-    public static double cameraFrontOffset;
-    public static double cameraLeftOffset;
-    public static double cameraHeightOffset;
-    public static double cameraTiltDown;
-    public static final double CAMERA_TAGSIZE                   = 0.05; // in meters
-    public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
-    // Camera: Logitech C310
-    public static final int CAMERA_IMAGE_WIDTH                  = 640;
-    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
-    public static final double CAMERA_FX                        = 821.993;  // in pixels
-    public static final double CAMERA_FY                        = 821.993;  // in pixels
-    public static final double CAMERA_CX                        = 330.489;  // in pixels
-    public static final double CAMERA_CY                        = 248.997;  // in pixels
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
-    public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
-        // topLeftX, topLeftY, topRightX, topRightY
-        0.0, 0.0, CAMERA_IMAGE_WIDTH - 1, 0.0,
-        // bottomLeftX, bottomLeftY, bottomRightX, bottomRightY
-        0.0, CAMERA_IMAGE_HEIGHT - 1, CAMERA_IMAGE_WIDTH - 1, CAMERA_IMAGE_HEIGHT - 1);
-    public static TrcHomographyMapper.Rectangle worldRect;
 
 }   //class RobotParams

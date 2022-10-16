@@ -86,8 +86,7 @@ public class Robot
         //
         if ((RobotParams.Preferences.useVuforia ||
              RobotParams.Preferences.useTensorFlow ||
-             RobotParams.Preferences.useEasyOpenCV ||
-             RobotParams.Preferences.useAprilTag) &&
+             RobotParams.Preferences.useEasyOpenCV) &&
             (runMode == TrcRobot.RunMode.AUTO_MODE || runMode == TrcRobot.RunMode.TEST_MODE))
         {
             vision = new Vision(this);
@@ -119,6 +118,10 @@ public class Robot
             }
 
             androidTone = new FtcAndroidTone("androidTone");
+            //
+            // Create and initialize RobotDrive.
+            //
+            robotDrive = RobotParams.Preferences.swerveRobot? new SwerveDrive(this): new MecanumDrive(this);
         }
     }   //Robot
 
@@ -210,15 +213,11 @@ public class Robot
                 globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
                 vision.tensorFlowShutdown();
             }
-            else if (vision.eocvVision != null)
+
+            if (vision.eocvVision != null)
             {
                 globalTracer.traceInfo(funcName, "Disabling EocvVision.");
                 vision.eocvVision.setEnabled(false);
-            }
-            else if (vision.aprilTagVision != null)
-            {
-                globalTracer.traceInfo(funcName, "Disabling AprilTagVision.");
-                vision.aprilTagVision.setEnabled(false);
             }
         }
 

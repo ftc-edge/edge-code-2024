@@ -35,26 +35,38 @@ public class FtcTeleOp extends FtcOpMode
 {
     public enum DriveOrientation
     {
-        ROBOT(0), FIELD(1), INVERTED(2);
+        ROBOT, FIELD, INVERTED;
 
-        int value;
-
-        DriveOrientation(int val)
+        static DriveOrientation nextDriveOrientation(DriveOrientation driveOrientation)
         {
-            this.value = val;
-        }
+            DriveOrientation nextDriveOrientation;
 
-        void increment()
-        {
-            value = (value + 1) % 3;
-        }
+            switch (driveOrientation)
+            {
+                case ROBOT:
+                    nextDriveOrientation = FIELD;
+                    break;
+
+                case FIELD:
+                    nextDriveOrientation = INVERTED;
+                    break;
+
+                default:
+                case INVERTED:
+                    nextDriveOrientation = ROBOT;
+                    break;
+            }
+
+            return nextDriveOrientation;
+        }   //nextDriveOrientation
+
     }   //enum DriveOrientation
 
     protected Robot robot;
     protected FtcGamepad driverGamepad;
     protected FtcGamepad operatorGamepad;
     private double drivePowerScale = 1.0;
-    private final DriveOrientation driveOrientation = DriveOrientation.FIELD;
+    private DriveOrientation driveOrientation = DriveOrientation.FIELD;
 
     //
     // Implements FtcOpMode abstract method.
@@ -231,6 +243,33 @@ public class FtcTeleOp extends FtcOpMode
         return angle;
     }   //getDriveGyroAngle
 
+    /**
+     * This method updates the blinkin LEDs to show the drive orientation mode.
+     */
+    private void updateDriveModeLeds()
+    {
+        if (robot.blinkin != null)
+        {
+            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_FIELD, false);
+            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_ROBOT, false);
+            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_INVERTED, false);
+            switch (driveOrientation)
+            {
+                case FIELD:
+                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_FIELD, true);
+                    break;
+
+                case ROBOT:
+                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_ROBOT, true);
+                    break;
+
+                case INVERTED:
+                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_INVERTED, true);
+                    break;
+            }
+        }
+    }   //updateDriveModeLeds
+
     //
     // Implements TrcGameController.ButtonHandler interface.
     //
@@ -244,8 +283,8 @@ public class FtcTeleOp extends FtcOpMode
      */
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        robot.dashboard.displayPrintf(
-            7, "%s: %04x->%s", gamepad, button, pressed? "Pressed": "Released");
+        robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed? "Pressed": "Released");
+        robot.dashboard.displayPrintf(8, "Drive Mode:%s", driveOrientation.toString());
 
         switch (button)
         {
@@ -264,7 +303,8 @@ public class FtcTeleOp extends FtcOpMode
             case FtcGamepad.GAMEPAD_LBUMPER:
                 if (pressed)
                 {
-                    driveOrientation.increment();
+                    driveOrientation = DriveOrientation.nextDriveOrientation(driveOrientation);
+                    updateDriveModeLeds();
                 }
                 break;
 
@@ -299,8 +339,7 @@ public class FtcTeleOp extends FtcOpMode
      */
     public void operatorButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        robot.dashboard.displayPrintf(
-            7, "%s: %04x->%s", gamepad, button, pressed? "Pressed": "Released");
+        robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed? "Pressed": "Released");
 
         switch (button)
         {

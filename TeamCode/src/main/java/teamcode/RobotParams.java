@@ -40,22 +40,26 @@ public class RobotParams
      */
     public static class Preferences
     {
-        public static boolean noRobot = false;
-        public static boolean initSubsystems = true;
-        public static boolean useExternalOdometry = false;
+        // Miscellaneous
+        public static boolean useTraceLog = false;
+        public static boolean useLoopPerformanceMonitor = false;
         public static boolean useBlinkin = false;
+        public static boolean useBatteryMonitor = false;
+        // Vision
         public static boolean useVuforia = false;
         public static boolean showVuforiaView = false;
         public static boolean useTensorFlow = false;
         public static boolean showTensorFlowView = false;
         public static boolean useEasyOpenCV = false;
         public static boolean showEasyOpenCvView = false;
-        public static boolean useAprilTag = false;
-        public static boolean showAprilTagView = false;
-        public static boolean useTraceLog = true;
-        public static boolean useBatteryMonitor = false;
-        public static boolean useLoopPerformanceMonitor = true;
+        // Robot
+        public static boolean noRobot = false;
+        public static boolean swerveRobot = false;
+        // Drive Base
+        public static boolean useExternalOdometry = false;
         public static boolean useVelocityControl = false;
+        // Subsystems
+        public static boolean initSubsystems = true;
     }   //class Preferences
 
     public static final String ROBOT_NAME                       = "Robotxxxx";
@@ -106,6 +110,54 @@ public class RobotParams
         STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
+    //
+    // Vision subsystem.
+    //
+    public static final double CAMERA_FRONT_OFFSET              = 7.5;  //Camera offset from front of robot in inches
+    public static final double CAMERA_LEFT_OFFSET               = 6.0;  //Camera offset from left of robot in inches
+    public static final double CAMERA_HEIGHT_OFFSET             = 16.0; //Camera offset from floor in inches
+    public static final double CAMERA_TILT_DOWN                 = 36.0; //Camera tilt down angle from horizontal in deg
+    public static final double CAMERA_TAGSIZE                   = 0.05; // in meters
+    public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
+    // Camera: Logitech C310
+    public static final int CAMERA_IMAGE_WIDTH                  = 640;
+    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
+    public static final double CAMERA_FX                        = 821.993;  // in pixels
+    public static final double CAMERA_FY                        = 821.993;  // in pixels
+    public static final double CAMERA_CX                        = 330.489;  // in pixels
+    public static final double CAMERA_CY                        = 248.997;  // in pixels
+    public static final int FRAME_QUEUE_CAPACITY                = 2;
+
+    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;
+    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y      = 0.0;
+    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X     = CAMERA_IMAGE_WIDTH - 1;
+    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y     = 0.0;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_X   = 0.0;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y   = CAMERA_IMAGE_HEIGHT - 1;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X  = CAMERA_IMAGE_WIDTH - 1;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y  = CAMERA_IMAGE_HEIGHT - 1;
+
+    // These should be in real-world robot coordinates. Needs calibration after camera is actually mounted in position.
+    // Measurement unit: inches
+    public static final double HOMOGRAPHY_WORLD_TOPLEFT_X       = -22.25;
+    public static final double HOMOGRAPHY_WORLD_TOPLEFT_Y       = 60.0;
+    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_X      = 23.0;
+    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y      = 60.0;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_X    = -8.75;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y    = 16.0;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X   = 7.5;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y   = 16.0;
+
+    public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
+        RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y,
+        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y);
+    public static final TrcHomographyMapper.Rectangle worldRect = new TrcHomographyMapper.Rectangle(
+        RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_X, RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_Y,
+        RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y);
     //
     // Motor Odometries.
     //
@@ -185,53 +237,5 @@ public class RobotParams
     public static final double PPD_FOLLOWING_DISTANCE           = 6.0;
     public static final double PPD_POS_TOLERANCE                = 2.0;
     public static final double PPD_TURN_TOLERANCE               = 1.0;
-    //
-    // Vision subsystem.
-    //
-    public static final double CAMERA_FRONT_OFFSET              = 7.5;  //Camera offset from front of robot in inches
-    public static final double CAMERA_LEFT_OFFSET               = 6.0;  //Camera offset from left of robot in inches
-    public static final double CAMERA_HEIGHT_OFFSET             = 16.0; //Camera offset from floor in inches
-    public static final double CAMERA_TILT_DOWN                 = 36.0; //Camera tilt down angle from horizontal in deg
-    public static final double CAMERA_TAGSIZE                   = 0.05; // in meters
-    public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
-    // Camera: Logitech C310
-    public static final int CAMERA_IMAGE_WIDTH                  = 640;
-    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
-    public static final double CAMERA_FX                        = 821.993;  // in pixels
-    public static final double CAMERA_FY                        = 821.993;  // in pixels
-    public static final double CAMERA_CX                        = 330.489;  // in pixels
-    public static final double CAMERA_CY                        = 248.997;  // in pixels
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
-
-    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y      = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X     = CAMERA_IMAGE_WIDTH - 1;
-    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y     = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_X   = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y   = CAMERA_IMAGE_HEIGHT - 1;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X  = CAMERA_IMAGE_WIDTH - 1;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y  = CAMERA_IMAGE_HEIGHT - 1;
-
-    // These should be in real-world robot coordinates. Needs calibration after camera is actually mounted in position.
-    // Measurement unit: inches
-    public static final double HOMOGRAPHY_WORLD_TOPLEFT_X       = -22.25;
-    public static final double HOMOGRAPHY_WORLD_TOPLEFT_Y       = 60.0;
-    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_X      = 23.0;
-    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y      = 60.0;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_X    = -8.75;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y    = 16.0;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X   = 7.5;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y   = 16.0;
-
-    public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
-        RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
-        RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPRIGHT_Y,
-        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y,
-        RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y);
-    public static final TrcHomographyMapper.Rectangle worldRect = new TrcHomographyMapper.Rectangle(
-        RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_X, RobotParams.HOMOGRAPHY_WORLD_TOPLEFT_Y,
-        RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_TOPRIGHT_Y,
-        RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMLEFT_Y,
-        RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_X, RobotParams.HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y);
 
 }   //class RobotParams

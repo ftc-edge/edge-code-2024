@@ -25,7 +25,6 @@ package multiteams.team3543;
 import TrcCommonLib.trclib.TrcRobot;
 import multiteams.Robot;
 import multiteams.RobotParams;
-import multiteams.SwerveDrive;
 
 /**
  * This class creates the robot object that consists of sensors, indicators, drive base and all the subsystems.
@@ -50,10 +49,6 @@ public class Robot3543 extends Robot
         //
         if (!RobotParams.Preferences.noRobot)
         {
-            //
-            // Create and initialize RobotDrive.
-            //
-            robotDrive = new SwerveDrive(this);
             //
             // Create and initialize other subsystems.
             //

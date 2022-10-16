@@ -55,6 +55,7 @@ public class FtcTest
     {
         SENSORS_TEST,
         SUBSYSTEMS_TEST,
+        VISION_TEST,
         DRIVE_SPEED_TEST,
         DRIVE_MOTORS_TEST,
         X_TIMED_DRIVE,
@@ -221,10 +222,9 @@ public class FtcTest
                 break;
         }
         //
-        // Only SENSORS_TEST and SUBSYSTEMS_TEST need TensorFlow, shut it down for all other tests.
+        // Only VISION_TEST needs TensorFlow, shut it down for all other tests.
         //
-        if (robot.vision != null && robot.vision.tensorFlowVision != null &&
-            testChoices.test != Test.SENSORS_TEST && testChoices.test != Test.SUBSYSTEMS_TEST)
+        if (robot.vision != null && robot.vision.tensorFlowVision != null && testChoices.test != Test.VISION_TEST)
         {
             robot.globalTracer.traceInfo("TestInit", "Shutting down TensorFlow.");
             robot.vision.tensorFlowShutdown();
@@ -248,8 +248,7 @@ public class FtcTest
 
         switch (testChoices.test)
         {
-            case SENSORS_TEST:
-            case SUBSYSTEMS_TEST:
+            case VISION_TEST:
                 if (robot.vision != null)
                 {
                     //
@@ -261,20 +260,15 @@ public class FtcTest
                         robot.vision.vuforiaVision.setEnabled(true);
                     }
 
-                    if (robot.vision.tensorFlowVision != null)
-                    {
-                        robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
-                        robot.vision.tensorFlowVision.setEnabled(true);
-                    }
-                    else if (robot.vision.eocvVision != null)
+                    if (robot.vision.eocvVision != null)
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling EocvVision.");
                         robot.vision.eocvVision.setEnabled(true);
                     }
-                    else if (robot.vision.aprilTagVision != null)
+                    else if (robot.vision.tensorFlowVision != null)
                     {
-                        robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
-                        robot.vision.aprilTagVision.setEnabled(true);
+                        robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
+                        robot.vision.tensorFlowVision.setEnabled(true);
                     }
                 }
                 break;
@@ -331,39 +325,9 @@ public class FtcTest
      */
     public void stopMode(TrcRobot.RunMode prevMode, TrcRobot.RunMode nextMode)
     {
-        final String funcName = "stopMode";
-
         if (testCommand != null)
         {
             testCommand.cancel();
-        }
-
-        if (robot.vision != null)
-        {
-            //
-            // Vision generally will impact performance, so we only enable it if it's needed.
-            //
-            if (robot.vision.vuforiaVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Disabling Vuforia.");
-                robot.vision.vuforiaVision.setEnabled(false);
-            }
-
-            if (robot.vision.tensorFlowVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Disabling TensorFlow.");
-                robot.vision.tensorFlowVision.setEnabled(false);
-            }
-            else if (robot.vision.eocvVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Disabling EocvVision.");
-                robot.vision.eocvVision.setEnabled(false);
-            }
-            else if (robot.vision.aprilTagVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Disabling AprilTagVision.");
-                robot.vision.aprilTagVision.setEnabled(false);
-            }
         }
     }   //stopMode
 
@@ -506,6 +470,9 @@ public class FtcTest
             case SENSORS_TEST:
             case SUBSYSTEMS_TEST:
                 doSensorsTest();
+                break;
+
+            case VISION_TEST:
                 doVisionTest();
                 break;
 
@@ -560,6 +527,28 @@ public class FtcTest
                 break;
 
             case FtcGamepad.GAMEPAD_B:
+                if (testChoices.test == Test.VISION_TEST)
+                {
+                    if (pressed && robot.vision != null && robot.vision.eocvVision != null)
+                    {
+                        robot.vision.eocvVision.setNextObjectType();
+                    }
+                    processed = true;
+                }
+                break;
+
+            case FtcGamepad.GAMEPAD_X:
+                if (testChoices.test == Test.VISION_TEST)
+                {
+                    if (pressed && robot.vision != null && robot.vision.eocvVision != null)
+                    {
+                        robot.vision.eocvVision.toggleColorFilterOutput();
+                    }
+                    processed = true;
+                }
+                break;
+
+            case FtcGamepad.GAMEPAD_Y:
                 if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
                 {
                     if (pressed)
@@ -568,12 +557,6 @@ public class FtcTest
                     }
                     processed = true;
                 }
-                break;
-
-            case FtcGamepad.GAMEPAD_X:
-                break;
-
-            case FtcGamepad.GAMEPAD_Y:
                 break;
 
             case FtcGamepad.GAMEPAD_DPAD_UP:
@@ -625,7 +608,7 @@ public class FtcTest
     }   //driverButtonEvent
 
     /**
-     * This method is called when a operator gamepad button event occurs.
+     * This method is called when an operator gamepad button event occurs.
      *
      * @param gamepad specifies the game controller object that generated the event.
      * @param button specifies the button ID that generates the event
@@ -714,6 +697,7 @@ public class FtcTest
         //
         testMenu.addChoice("Sensors test", Test.SENSORS_TEST, true);
         testMenu.addChoice("Subsystems test", Test.SUBSYSTEMS_TEST, false);
+        testMenu.addChoice("Vision test", Test.VISION_TEST, false);
         testMenu.addChoice("Drive speed test", Test.DRIVE_SPEED_TEST, false);
         testMenu.addChoice("Drive motors test", Test.DRIVE_MOTORS_TEST, false);
         testMenu.addChoice("X Timed drive", Test.X_TIMED_DRIVE, false, driveTimeMenu);
@@ -907,9 +891,7 @@ public class FtcTest
     {
         if (robot.vision != null)
         {
-            if (robot.vision.tensorFlowVision != null ||
-                robot.vision.eocvVision != null ||
-                robot.vision.aprilTagVision != null)
+            if (robot.vision.tensorFlowVision != null || robot.vision.eocvVision != null)
             {
                 final int maxNumLines = 3;
                 int lineIndex = 10;
@@ -953,6 +935,16 @@ public class FtcTest
         return !RobotParams.Preferences.noRobot &&
                (testChoices.test == Test.SUBSYSTEMS_TEST || testChoices.test == Test.DRIVE_SPEED_TEST);
     }   //allowTeleOp
+
+    /**
+     * This method checks if we are running the vision test.
+     *
+     * @return true if we are running the vision test, false otherwise.
+     */
+    public boolean isVisionTest()
+    {
+        return testChoices.test == Test.VISION_TEST;
+    }   //isVisionTest
 
     /**
      * This method is called to determine if Test mode is allowed to do button control of the robot.

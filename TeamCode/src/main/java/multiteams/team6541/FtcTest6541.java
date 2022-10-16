@@ -134,7 +134,7 @@ public class FtcTest6541 extends FtcTeleOp6541
     @Override
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        if (ftcTest.allowButtonControl())
+        if (ftcTest.allowButtonControl() || ftcTest.isVisionTest())
         {
             //
             // In addition to or instead of the gamepad controls handled by FtcTeleOp, we can add to or override the

@@ -22,34 +22,67 @@
 
 package multiteams;
 
-import org.opencv.core.KeyPoint;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
+import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcHomographyMapper;
-import TrcCommonLib.trclib.TrcOpenCVDetector;
-import TrcCommonLib.trclib.TrcUtil;
+import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
+import TrcCommonLib.trclib.TrcOpenCvPipeline;
+import TrcFtcLib.ftclib.FtcEocvAprilTagPipeline;
+import TrcFtcLib.ftclib.FtcEocvColorBlobPipeline;
 import TrcFtcLib.ftclib.FtcEocvDetector;
 
 /**
- * This class implements EOCV Vision that provides the capability to detect color blobs and return their location
- * info.
+ * This class implements EOCV Vision that provides the capability to detect AprilTag or color blobs and return their
+ * detected info.
  */
 public class EocvVision extends FtcEocvDetector
 {
-    private static final Scalar ANNOTATE_RECT_COLOR = new Scalar(0, 255, 0);
-    private final TrcDbgTrace tracer;
-    private final GripPipeline gripPipeline;
-    private TrcOpenCVDetector.DetectedObject[] detectedObjects = null;
+    private static final double[] colorThresholdsRedBlob = {128.0, 255.0, 0.0, 100.0, 0.0, 60.0};
+    private static final double[] colorThresholdsBlueBlob = {0.0, 100.0, 0.0, 100.0, 100.0, 255.0};
+    private static final double[] colorThresholdsYellowBlob = {128.0, 255.0, 128.0, 255.0, 0.0, 60.0};
 
-    private double totalTime = 0.0;
-    private long totalFrames = 0;
-    private double taskStartTime = 0.0;
+    public enum ObjectType
+    {
+        APRIL_TAG, RED_BLOB, BLUE_BLOB, YELLOW_BLOB;
+
+        static ObjectType nextObjectType(ObjectType objType)
+        {
+            ObjectType nextObjType;
+
+            switch (objType)
+            {
+                case APRIL_TAG:
+                    nextObjType = RED_BLOB;
+                    break;
+
+                case RED_BLOB:
+                    nextObjType = BLUE_BLOB;
+                    break;
+
+                case BLUE_BLOB:
+                    nextObjType = YELLOW_BLOB;
+                    break;
+
+                default:
+                case YELLOW_BLOB:
+                    nextObjType = APRIL_TAG;
+                    break;
+            }
+
+            return nextObjType;
+        }   //nextObjectType
+
+    }   //enum ObjectType
+
+    private final TrcDbgTrace tracer;
+    private final FtcEocvColorBlobPipeline redBlobPipeline;
+    private final FtcEocvColorBlobPipeline blueBlobPipeline;
+    private final FtcEocvColorBlobPipeline yellowBlobPipeline;
+    private final FtcEocvAprilTagPipeline aprilTagPipeline;
+    private ObjectType objectType = ObjectType.APRIL_TAG;
 
     /**
      * Constructor: Create an instance of the object.
@@ -69,111 +102,93 @@ public class EocvVision extends FtcEocvDetector
         TrcHomographyMapper.Rectangle cameraRect, TrcHomographyMapper.Rectangle worldRect,
         OpenCvCamera openCvCam, OpenCvCameraRotation cameraRotation, boolean showEocvView, TrcDbgTrace tracer)
     {
-        super(instanceName, imageWidth, imageHeight, cameraRect, worldRect, openCvCam, cameraRotation,
-              showEocvView, tracer);
+        super(instanceName, openCvCam, imageWidth, imageHeight, cameraRotation, showEocvView, cameraRect, worldRect,
+              tracer);
 
         this.tracer = tracer;
-        gripPipeline = new GripPipeline();
+        TrcOpenCvColorBlobPipeline.FilterContourParams filterContourParams =
+            new TrcOpenCvColorBlobPipeline.FilterContourParams()
+                .setMinArea(100.0)
+                .setMinPerimeter(100.0)
+                .setWidthRange(10.0, 1000.0)
+                .setHeightRange(100.0, 1000.0)
+                .setSolidityRange(0.0, 100.0)
+                .setVerticesRange(0.0, 1000.0)
+                .setAspectRatioRange(0.0, 1000.0);
+        redBlobPipeline = new FtcEocvColorBlobPipeline(
+            "redBlobPipeline", false, colorThresholdsRedBlob, filterContourParams, tracer);
+        blueBlobPipeline = new FtcEocvColorBlobPipeline(
+            "blueBlobPipeline", false, colorThresholdsBlueBlob, filterContourParams, tracer);
+        yellowBlobPipeline = new FtcEocvColorBlobPipeline(
+            "yellowBlobPipeliine", false, colorThresholdsYellowBlob, filterContourParams, tracer);
+        aprilTagPipeline = new FtcEocvAprilTagPipeline(
+            AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.CAMERA_TAGSIZE,
+            RobotParams.CAMERA_FX, RobotParams.CAMERA_FY, RobotParams.CAMERA_CX, RobotParams.CAMERA_CY, tracer);
+        updatePipeline();
     }   //EocvVision
 
     /**
-     * This method pauses/resumes pipeline processing.
-     *
-     * @param enabled specifies true to start pipeline processing, false to stop.
+     * This method updates the pipeline to detect the currently selected object type.
      */
-    @Override
-    public void setEnabled(boolean enabled)
+    private void updatePipeline()
     {
-        if (enabled && !isEnabled())
-        {
-            detectedObjects = null;
-            totalTime = 0.0;
-            totalFrames = 0;
-            taskStartTime = TrcUtil.getCurrentTime();
-            super.setEnabled(true);
-        }
-        else if (!enabled && isEnabled())
-        {
-            super.setEnabled(false);
-            detectedObjects = null;
-        }
-    }   //setEnabled
-
-    /**
-     * This method returns the currently detect objects in a thread safe manner.
-     *
-     * @return array of detected objects.
-     */
-    public synchronized TrcOpenCVDetector.DetectedObject[] getDetectedObjects()
-    {
-        TrcOpenCVDetector.DetectedObject[] targets = detectedObjects;
-        detectedObjects = null;
-        return targets;
-    }   //getDetectedObjects
-
-    //
-    // Implements FtcEocvDetector abstract methods.
-    //
-
-    /**
-     * This method is called by EasyOpenCV.OpenCVPipeline to process an image frame. It calls the grip pipeline to
-     * process the image and converts the detected object into an array of TrcOpenCvDetector.DetectedObject. It also
-     * annotates the original image with rectangles around the detected objects.
-     *
-     * @param input specifies the image frame.
-     * @return annotated image frame.
-     */
-    @Override
-    public Mat processFrame(Mat input)
-    {
-        final String funcName = "processFrame";
-        TrcOpenCVDetector.DetectedObject[] targets = null;
-
-        if (debugEnabled)
-        {
-            dbgTrace.traceEnter(funcName, TrcDbgTrace.TraceLevel.CALLBK);
-        }
-
-        double startTime = TrcUtil.getCurrentTime();
-        gripPipeline.process(input);
-        MatOfKeyPoint detectedTargets = gripPipeline.findBlobsOutput();
-        double elapsedTime = TrcUtil.getCurrentTime() - startTime;
-
-        totalTime += elapsedTime;
-        totalFrames++;
         if (tracer != null)
         {
-            tracer.traceInfo(
-                funcName, "AvgProcessTime=%.3f sec, FrameRate=%.1f",
-                totalTime/totalFrames, totalFrames/(TrcUtil.getCurrentTime() - taskStartTime));
+            tracer.traceInfo("updatePipeline", "objType=%s", objectType);
         }
 
-        if (detectedTargets != null)
+        switch (objectType)
         {
-            KeyPoint[] targetPoints = detectedTargets.toArray();
-            targets = new TrcOpenCVDetector.DetectedObject[targetPoints.length];
-            for (int i = 0; i < targets.length; i++)
-            {
-                double radius = targetPoints[i].size/2;
-                targets[i] = new TrcOpenCVDetector.DetectedObject(
-                    new Rect((int)(targetPoints[i].pt.x - radius), (int)(targetPoints[i].pt.y - radius),
-                             (int)targetPoints[i].size, (int)targetPoints[i].size),
-                    targetPoints[i].angle, targetPoints[i].response, targetPoints[i].octave, targetPoints[i].class_id);
-            }
-            detectedTargets.release();
-            TrcOpenCVDetector.drawRectangles(input, targets, ANNOTATE_RECT_COLOR, 0);
-            synchronized (this)
-            {
-                detectedObjects = targets;
-            }
-        }
+            case APRIL_TAG:
+                setPipeline(aprilTagPipeline);
+                break;
 
-        if (debugEnabled)
+            case RED_BLOB:
+                setPipeline(redBlobPipeline);
+                break;
+
+            case BLUE_BLOB:
+                setPipeline(blueBlobPipeline);
+                break;
+
+            case YELLOW_BLOB:
+                setPipeline(yellowBlobPipeline);
+                break;
+        }
+    }   //updatePipeline
+
+    /**
+     * This method sets the object type to detect.
+     *
+     * @param objType specifies the object type to detect.
+     */
+    public void setDetectObjectType(ObjectType objType)
+    {
+        objectType = objType;
+        updatePipeline();
+    }   //setDetectObjectType
+
+    /**
+     * This method sets the detect object type to the next type.
+     */
+    public void setNextObjectType()
+    {
+        setDetectObjectType(ObjectType.nextObjectType(objectType));
+    }   //setNextObjectType
+
+    /**
+     * This method toggles the colorblob pipeline to display either the annotated input or the color filter output.
+     * This is mainly for debugging the color filtering of the pipeline so one can see what the color filtering output
+     * looks like.
+     */
+    public void toggleColorFilterOutput()
+    {
+        TrcOpenCvPipeline<?> pipeline = getPipeline();
+
+        if (pipeline == redBlobPipeline || pipeline == blueBlobPipeline || pipeline == yellowBlobPipeline)
         {
-            dbgTrace.traceExit(funcName, TrcDbgTrace.TraceLevel.CALLBK, "=%s", targets != null);
+            ((FtcEocvColorBlobPipeline) pipeline).toggleColorFilterOutput();
         }
-
-        return input;
-    }   //processFrame
+    }   //toggleColorFilterOutput
 
 }   //class EocvVision

@@ -28,7 +28,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcPidController;
-import TrcCommonLib.trclib.TrcPose2D;
 import multiteams.RobotDrive;
 import multiteams.RobotParams;
 
@@ -39,23 +38,26 @@ public class RobotParams3543
 {
     public RobotParams3543()
     {
-        // Preferences.
-        RobotParams.Preferences.noRobot = false;
-        RobotParams.Preferences.initSubsystems = true;
-        RobotParams.Preferences.useExternalOdometry = false;
-        RobotParams.Preferences.useBlinkin = true;
+        // Miscellaneous
+        RobotParams.Preferences.useTraceLog = false;
+        RobotParams.Preferences.useLoopPerformanceMonitor = false;
+        RobotParams.Preferences.useBlinkin = false;
+        RobotParams.Preferences.useBatteryMonitor = false;
+        // Vision
         RobotParams.Preferences.useVuforia = false;
         RobotParams.Preferences.showVuforiaView = false;
         RobotParams.Preferences.useTensorFlow = false;
         RobotParams.Preferences.showTensorFlowView = false;
         RobotParams.Preferences.useEasyOpenCV = false;
         RobotParams.Preferences.showEasyOpenCvView = false;
-        RobotParams.Preferences.useAprilTag = false;
-        RobotParams.Preferences.showAprilTagView = false;
-        RobotParams.Preferences.useTraceLog = true;
-        RobotParams.Preferences.useBatteryMonitor = false;
-        RobotParams.Preferences.useLoopPerformanceMonitor = true;
+        // Robot
+        RobotParams.Preferences.noRobot = false;
+        RobotParams.Preferences.swerveRobot = false;
+        // Drive Base
+        RobotParams.Preferences.useExternalOdometry = false;
         RobotParams.Preferences.useVelocityControl = false;
+        // Subsystems
+        RobotParams.Preferences.initSubsystems = true;
 
         RobotParams.robotName = "Ftc3543";
         RobotParams.teamFolderPath = Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
