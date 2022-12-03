@@ -257,7 +257,7 @@ public class FtcAuto extends FtcOpMode
 
         printPerformanceMetrics(robot.globalTracer);
 
-        if (robot.globalTracer.tracerLogIsOpened())
+        if (robot.globalTracer.isTraceLogOpened())
         {
             robot.globalTracer.closeTraceLog();
         }

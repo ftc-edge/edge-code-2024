@@ -114,7 +114,7 @@ public class RobotParams
     public static double cameraLeftOffset;
     public static double cameraHeightOffset;
     public static double cameraTiltDown;
-    public static final double CAMERA_TAGSIZE                   = 0.05; // in meters
+    public static final double APRILTAG_SIZE                    = 0.05; // in meters
     public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
     // Camera: Logitech C310
     public static final int CAMERA_IMAGE_WIDTH                  = 640;

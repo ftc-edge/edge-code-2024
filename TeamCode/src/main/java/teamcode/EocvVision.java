@@ -22,6 +22,7 @@
 
 package teamcode;
 
+import org.opencv.imgproc.Imgproc;
 import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -40,9 +41,9 @@ import TrcFtcLib.ftclib.FtcEocvDetector;
  */
 public class EocvVision extends FtcEocvDetector
 {
-    private static final double[] colorThresholdsRedBlob = {128.0, 255.0, 0.0, 100.0, 0.0, 60.0};
-    private static final double[] colorThresholdsBlueBlob = {0.0, 100.0, 0.0, 100.0, 100.0, 255.0};
-    private static final double[] colorThresholdsYellowBlob = {128.0, 255.0, 128.0, 255.0, 0.0, 60.0};
+    private static final double[] colorThresholdsRedBlob = {100.0, 255.0, 0.0, 100.0, 0.0, 60.0};
+    private static final double[] colorThresholdsBlueBlob = {0.0, 60.0, 0.0, 100.0, 100, 255.0};
+    private static final double[] colorThresholdsYellowBlob = {128.0, 255.0, 128.0, 255.0, 0.0, 120.0};
 
     public enum ObjectType
     {
@@ -78,11 +79,11 @@ public class EocvVision extends FtcEocvDetector
     }   //enum ObjectType
 
     private final TrcDbgTrace tracer;
+    private final FtcEocvAprilTagPipeline aprilTagPipeline;
     private final FtcEocvColorBlobPipeline redBlobPipeline;
     private final FtcEocvColorBlobPipeline blueBlobPipeline;
     private final FtcEocvColorBlobPipeline yellowBlobPipeline;
-    private final FtcEocvAprilTagPipeline aprilTagPipeline;
-    private ObjectType objectType = ObjectType.APRIL_TAG;
+    private ObjectType objectType = null;
 
     /**
      * Constructor: Create an instance of the object.
@@ -94,37 +95,55 @@ public class EocvVision extends FtcEocvDetector
      * @param worldRect specifies the homography world coordinate rectangle, can be null if not provided.
      * @param openCvCam specifies the OpenCV camera object.
      * @param cameraRotation specifies the camera orientation.
-     * @param showEocvView specifies true to show the annotated image on robot controller screen, false to hide it.
      * @param tracer specifies the tracer for trace info, null if none provided.
      */
     public EocvVision(
         String instanceName, int imageWidth, int imageHeight,
         TrcHomographyMapper.Rectangle cameraRect, TrcHomographyMapper.Rectangle worldRect,
-        OpenCvCamera openCvCam, OpenCvCameraRotation cameraRotation, boolean showEocvView, TrcDbgTrace tracer)
+        OpenCvCamera openCvCam, OpenCvCameraRotation cameraRotation, TrcDbgTrace tracer)
     {
-        super(instanceName, openCvCam, imageWidth, imageHeight, cameraRotation, showEocvView, cameraRect, worldRect,
-              tracer);
+        super(instanceName, openCvCam, imageWidth, imageHeight, cameraRotation, cameraRect, worldRect, tracer);
 
         this.tracer = tracer;
-        TrcOpenCvColorBlobPipeline.FilterContourParams filterContourParams =
+        TrcOpenCvColorBlobPipeline.FilterContourParams redBlobFilterContourParams =
             new TrcOpenCvColorBlobPipeline.FilterContourParams()
-                .setMinArea(100.0)
+                .setMinArea(500)
                 .setMinPerimeter(100.0)
-                .setWidthRange(10.0, 1000.0)
-                .setHeightRange(100.0, 1000.0)
+                .setWidthRange(50.0, 1000.0)
+                .setHeightRange(50.0, 1000.0)
                 .setSolidityRange(0.0, 100.0)
                 .setVerticesRange(0.0, 1000.0)
                 .setAspectRatioRange(0.0, 1000.0);
-        redBlobPipeline = new FtcEocvColorBlobPipeline(
-            "redBlobPipeline", false, colorThresholdsRedBlob, filterContourParams, tracer);
-        blueBlobPipeline = new FtcEocvColorBlobPipeline(
-            "blueBlobPipeline", false, colorThresholdsBlueBlob, filterContourParams, tracer);
-        yellowBlobPipeline = new FtcEocvColorBlobPipeline(
-            "yellowBlobPipeliine", false, colorThresholdsYellowBlob, filterContourParams, tracer);
+        TrcOpenCvColorBlobPipeline.FilterContourParams blueBlobFilterContourParams =
+            new TrcOpenCvColorBlobPipeline.FilterContourParams()
+                .setMinArea(1000)
+                .setMinPerimeter(100.0)
+                .setWidthRange(50.0, 1000.0)
+                .setHeightRange(20.0, 1000.0)
+                .setSolidityRange(0.0, 100.0)
+                .setVerticesRange(0.0, 1000.0)
+                .setAspectRatioRange(0.0, 1000.0);
+        TrcOpenCvColorBlobPipeline.FilterContourParams yellowBlobFilterContourParams =
+            new TrcOpenCvColorBlobPipeline.FilterContourParams()
+                .setMinArea(5000.0)
+                .setMinPerimeter(500.0)
+                .setWidthRange(100.0, 1000.0)
+                .setHeightRange(250.0, 1000.0)
+                .setSolidityRange(0.0, 100.0)
+                .setVerticesRange(0.0, 1000.0)
+                .setAspectRatioRange(0.0, 1000.0);
+
         aprilTagPipeline = new FtcEocvAprilTagPipeline(
-            AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.CAMERA_TAGSIZE,
+            AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.APRILTAG_SIZE,
             RobotParams.CAMERA_FX, RobotParams.CAMERA_FY, RobotParams.CAMERA_CX, RobotParams.CAMERA_CY, tracer);
-        updatePipeline();
+        redBlobPipeline = new FtcEocvColorBlobPipeline(
+            "redBlobPipeline", Imgproc.COLOR_RGBA2RGB, colorThresholdsRedBlob, redBlobFilterContourParams, tracer);
+        blueBlobPipeline = new FtcEocvColorBlobPipeline(
+            "blueBlobPipeline", Imgproc.COLOR_RGBA2RGB, colorThresholdsBlueBlob, blueBlobFilterContourParams, tracer);
+        yellowBlobPipeline = new FtcEocvColorBlobPipeline(
+            "yellowBlobPipeliine", Imgproc.COLOR_RGBA2RGB, colorThresholdsYellowBlob, yellowBlobFilterContourParams, tracer);
+        // Set default pipeline and enable it.
+        setDetectObjectType(ObjectType.APRIL_TAG);
     }   //EocvVision
 
     /**
@@ -175,6 +194,16 @@ public class EocvVision extends FtcEocvDetector
     {
         setDetectObjectType(ObjectType.nextObjectType(objectType));
     }   //setNextObjectType
+
+    /**
+     * This method returns the detect object type.
+     *
+     * @return detect object type.
+     */
+    public ObjectType getDetectObjectType()
+    {
+        return objectType;
+    }   //getDetectObjectType
 
     /**
      * This method toggles the colorblob pipeline to display either the annotated input or the color filter output.
