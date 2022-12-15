@@ -61,7 +61,7 @@ For technical questions regarding our Framework Library, please post questions o
 
 ### Sample OpModes
 
-# Release Information
+# FTC SDK Release Information
 
 ## Version 8.1.1 (20221201-150726)
 
