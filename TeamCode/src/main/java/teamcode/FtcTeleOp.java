@@ -24,9 +24,11 @@ package teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import java.util.Locale;
+
+import TrcCommonLib.trclib.TrcDriveBase;
 import TrcCommonLib.trclib.TrcGameController;
 import TrcCommonLib.trclib.TrcRobot;
-import TrcCommonLib.trclib.TrcUtil;
 import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcOpMode;
 
@@ -36,40 +38,12 @@ import TrcFtcLib.ftclib.FtcOpMode;
 @TeleOp(name="FtcTeleOp", group="Ftcxxxx")
 public class FtcTeleOp extends FtcOpMode
 {
-    public enum DriveOrientation
-    {
-        ROBOT, FIELD, INVERTED;
-
-        static DriveOrientation nextDriveOrientation(DriveOrientation driveOrientation)
-        {
-            DriveOrientation nextDriveOrientation;
-
-            switch (driveOrientation)
-            {
-                case ROBOT:
-                    nextDriveOrientation = FIELD;
-                    break;
-
-                case FIELD:
-                    nextDriveOrientation = INVERTED;
-                    break;
-
-                default:
-                case INVERTED:
-                    nextDriveOrientation = ROBOT;
-                    break;
-            }
-
-            return nextDriveOrientation;
-        }   //nextDriveOrientation
-
-    }   //enum DriveOrientation
-
+    private static final String moduleName = "FtcTeleOp";
     protected Robot robot;
     protected FtcGamepad driverGamepad;
     protected FtcGamepad operatorGamepad;
+    private TrcDriveBase.DriveOrientation driveOrientation = TrcDriveBase.DriveOrientation.FIELD;
     private double drivePowerScale = 1.0;
-    private DriveOrientation driveOrientation = DriveOrientation.FIELD;
 
     //
     // Implements FtcOpMode abstract method.
@@ -86,6 +60,16 @@ public class FtcTeleOp extends FtcOpMode
         // Create and initialize robot object.
         //
         robot = new Robot(TrcRobot.getRunMode());
+        //
+        // Open trace log.
+        //
+        if (RobotParams.Preferences.useTraceLog)
+        {
+            String filePrefix = Robot.matchInfo != null?
+                String.format(Locale.US, "%s%02d_TeleOp", Robot.matchInfo.matchType, Robot.matchInfo.matchNumber):
+                "Unknown_TeleOp";
+            robot.globalTracer.openTraceLog(RobotParams.LOG_FOLDER_PATH, filePrefix);
+        }
         //
         // Create and initialize Gamepads.
         //
@@ -110,11 +94,17 @@ public class FtcTeleOp extends FtcOpMode
     @Override
     public void startMode(TrcRobot.RunMode prevMode, TrcRobot.RunMode nextMode)
     {
+        if (robot.globalTracer.isTraceLogOpened())
+        {
+            robot.globalTracer.setTraceLogEnabled(true);
+        }
+        robot.globalTracer.traceInfo(moduleName, "***** Starting TeleOp *****");
         robot.dashboard.clearDisplay();
         //
         // Tell robot object opmode is about to start so it can do the necessary start initialization for the mode.
         //
         robot.startMode(nextMode);
+        updateDriveModeLEDs();
     }   //startMode
 
     /**
@@ -132,6 +122,12 @@ public class FtcTeleOp extends FtcOpMode
         //
         robot.stopMode(prevMode);
         printPerformanceMetrics(robot.globalTracer);
+        robot.globalTracer.traceInfo(moduleName, "***** Stopping TeleOp *****");
+
+        if (robot.globalTracer.isTraceLogOpened())
+        {
+            robot.globalTracer.closeTraceLog();
+        }
     }   //stopMode
 
     /**
@@ -149,11 +145,13 @@ public class FtcTeleOp extends FtcOpMode
         //
         if (robot.robotDrive != null)
         {
-            double[] inputs = getDriveInputs();
+            double[] inputs = driverGamepad.getDriveInputs(RobotParams.ROBOT_DRIVE_MODE, true, drivePowerScale);
 
             if (robot.robotDrive.driveBase.supportsHolonomicDrive())
             {
-                robot.robotDrive.driveBase.holonomicDrive(null, inputs[0], inputs[1], inputs[2], getDriveGyroAngle());
+                robot.robotDrive.driveBase.holonomicDrive(
+                    null, inputs[0], inputs[1], inputs[2],
+                    robot.robotDrive.driveBase.getDriveGyroAngle(driveOrientation));
             }
             else
             {
@@ -168,117 +166,31 @@ public class FtcTeleOp extends FtcOpMode
     }   //slowPeriodic
 
     /**
-     * This method reads various joystick/gamepad control values and returns the drive powers for all three degrees
-     * of robot movement.
-     *
-     * @return an array of 3 values for x, y and rotation power.
-     */
-    public double[] getDriveInputs()
-    {
-        double x = 0.0, y = 0.0, rot = 0.0;
-        double mag;
-        double newMag;
-
-        switch (RobotParams.ROBOT_DRIVE_MODE)
-        {
-            case HOLONOMIC_MODE:
-                x = driverGamepad.getLeftStickX(false);
-                y = driverGamepad.getRightStickY(false);
-                rot = (driverGamepad.getRightTrigger(true) - driverGamepad.getLeftTrigger(true));
-                robot.dashboard.displayPrintf(1, "Holonomic:x=%.1f,y=%.1f,rot=%.1f", x, y, rot);
-                break;
-
-            case ARCADE_MODE:
-                x = driverGamepad.getRightStickX(false);
-                y = driverGamepad.getRightStickY(false);
-                rot = driverGamepad.getLeftStickX(true);
-                robot.dashboard.displayPrintf(1, "Arcade:x=%.1f,y=%.1f,rot=%.1f", x, y, rot);
-                break;
-
-            case TANK_MODE:
-                double leftPower = driverGamepad.getLeftStickY(false);
-                double rightPower = driverGamepad.getRightStickY(false);
-                x = 0.0;
-                y = (leftPower + rightPower)/2.0;
-                rot = (leftPower - rightPower)/2.0;
-                robot.dashboard.displayPrintf(1, "Tank:left=%.1f,right=%.1f", leftPower, rightPower);
-                break;
-        }
-        mag = TrcUtil.magnitude(x, y);
-        if (mag > 1.0)
-        {
-            x /= mag;
-            y /= mag;
-            mag = 1.0;
-        }
-        newMag = Math.pow(mag, 3);
-
-        newMag *= drivePowerScale;
-        rot *= drivePowerScale;
-
-        if (mag != 0.0)
-        {
-            x *= newMag / mag;
-            y *= newMag / mag;
-        }
-
-        return new double[] { x, y, rot };
-    }   //getDriveInput
-
-    /**
-     * This method returns robot heading to be maintained in teleop drive according to drive orientation mode.
-     *
-     * @return robot heading to be maintained.
-     */
-    private double getDriveGyroAngle()
-    {
-        double angle;
-
-        switch (driveOrientation)
-        {
-            case ROBOT:
-                angle = 0.0;
-                break;
-
-            case INVERTED:
-                angle = 180.0;
-                break;
-
-            default:
-            case FIELD:
-                angle = robot.robotDrive.gyro != null? robot.robotDrive.gyro.getZHeading().value: 0.0;
-                break;
-        }
-
-        return angle;
-    }   //getDriveGyroAngle
-
-    /**
      * This method updates the blinkin LEDs to show the drive orientation mode.
      */
-    private void updateDriveModeLeds()
+    private void updateDriveModeLEDs()
     {
         if (robot.blinkin != null)
         {
-            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_FIELD, false);
-            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_ROBOT, false);
-            robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_INVERTED, false);
+            robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_FIELD, false);
+            robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_ROBOT, false);
+            robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_INVERTED, false);
             switch (driveOrientation)
             {
                 case FIELD:
-                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_FIELD, true);
+                    robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_FIELD, true);
                     break;
 
                 case ROBOT:
-                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_ROBOT, true);
+                    robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_ROBOT, true);
                     break;
 
                 case INVERTED:
-                    robot.blinkin.setPatternState(Vision.DRIVE_ORIENTATION_INVERTED, true);
+                    robot.blinkin.setPatternState(BlinkinLEDs.DRIVE_ORIENTATION_INVERTED, true);
                     break;
             }
         }
-    }   //updateDriveModeLeds
+    }   //updateDriveModeLEDs
 
     //
     // Implements TrcGameController.ButtonHandler interface.
@@ -313,8 +225,8 @@ public class FtcTeleOp extends FtcOpMode
             case FtcGamepad.GAMEPAD_LBUMPER:
                 if (pressed)
                 {
-                    driveOrientation = DriveOrientation.nextDriveOrientation(driveOrientation);
-                    updateDriveModeLeds();
+                    driveOrientation = TrcDriveBase.DriveOrientation.nextDriveOrientation(driveOrientation);
+                    updateDriveModeLEDs();
                 }
                 break;
 

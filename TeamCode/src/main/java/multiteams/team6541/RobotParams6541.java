@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcPidController;
-import multiteams.RobotDrive;
+import TrcFtcLib.ftclib.FtcGamepad;
 import multiteams.RobotParams;
 
 /**
@@ -113,7 +113,7 @@ public class RobotParams6541
         RobotParams.xOdometryWheelOffset = RobotParams.robotLength/2.0 + (3.875 + 9.5); // behind centroid
         RobotParams.yLeftOdometryWheelOffset = -15.25/2.0;
         RobotParams.yRightOdometryWheelOffset = 15.25/2.0;
-        RobotParams.robotDriveMode = RobotDrive.DriveMode.ARCADE_MODE;
+        RobotParams.robotDriveMode = FtcGamepad.DriveMode.ARCADE_MODE;
 
         RobotParams.xPosPidCoeff = new TrcPidController.PidCoefficients(0.02, 0.0, 0.0, 0.0);
         RobotParams.xPosTolerance = 2.0;
@@ -127,6 +127,9 @@ public class RobotParams6541
         RobotParams.yPosInchesPerCount = RobotParams.xPosInchesPerCount;
         RobotParams.turnPidCoeff = new TrcPidController.PidCoefficients(0.013, 0.0, 0.0, 0.0);
         RobotParams.turnTolerance = 1.0;
+        RobotParams.turnSettling = TrcPidController.DEF_SETTLING_TIME;
+        RobotParams.turnSteadyStateErr = 2.0;
+        RobotParams.turnStallErrRateThreshold = 1.0;
         RobotParams.xOdometryWheelInchesPerCount = 7.6150160901199168116026724971383e-4;
         RobotParams.yOdometryWheelInchesPerCount = 7.6301149255006038191364659148717e-4;
         //

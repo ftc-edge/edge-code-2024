@@ -48,6 +48,12 @@ public class FtcAuto extends FtcOpMode
         BLUE_ALLIANCE
     }   //enum Alliance
 
+    public enum StartPos
+    {
+        LEFT,
+        RIGHT
+    }   //enum StartPos
+
     public enum AutoStrategy
     {
         PID_DRIVE,
@@ -62,6 +68,7 @@ public class FtcAuto extends FtcOpMode
     {
         public double startDelay = 0.0;
         public Alliance alliance = Alliance.RED_ALLIANCE;
+        public StartPos startPos = StartPos.LEFT;
         public AutoStrategy strategy = AutoStrategy.DO_NOTHING;
         public double xTarget = 0.0;
         public double yTarget = 0.0;
@@ -76,21 +83,21 @@ public class FtcAuto extends FtcOpMode
                 Locale.US,
                 "startDelay=%.0f " +
                 "alliance=\"%s\" " +
+                "startPos=\"%s\" " +
                 "strategy=\"%s\" " +
                 "xTarget=%.1f " +
                 "yTarget=%.1f " +
                 "turnTarget=%.0f " +
                 "driveTime=%.0f " +
                 "drivePower=%.1f",
-                startDelay, alliance, strategy, xTarget, yTarget, turnTarget, driveTime, drivePower);
+                startDelay, alliance, startPos, strategy, xTarget, yTarget, turnTarget, driveTime, drivePower);
         }   //toString
 
     }   //class AutoChoices
 
     private static final String moduleName = "FtcAuto";
+    public static final AutoChoices autoChoices = new AutoChoices();
     private Robot robot;
-    private FtcMatchInfo matchInfo;
-    private final AutoChoices autoChoices = new AutoChoices();
     private TrcRobot.RobotCommand autoCommand;
 
     //
@@ -114,8 +121,9 @@ public class FtcAuto extends FtcOpMode
         //
         if (RobotParams.Preferences.useTraceLog)
         {
-            matchInfo = FtcMatchInfo.getMatchInfo();
-            String filePrefix = String.format(Locale.US, "%s%02d", matchInfo.matchType, matchInfo.matchNumber);
+            Robot.matchInfo = FtcMatchInfo.getMatchInfo();
+            String filePrefix = String.format(
+                Locale.US, "%s%02d_Auto", Robot.matchInfo.matchType, Robot.matchInfo.matchNumber);
             robot.globalTracer.openTraceLog(RobotParams.LOG_FOLDER_PATH, filePrefix);
         }
         //
@@ -157,9 +165,9 @@ public class FtcAuto extends FtcOpMode
             // Enabling vision early so we can detect objects before match starts.
             if (robot.vision.eocvVision != null)
             {
-                robot.globalTracer.traceInfo(funcName, "Enabling EocvVision.");
+                robot.globalTracer.traceInfo(funcName, "Enabling EocvVision to detect AprilTag.");
                 robot.vision.eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
-                robot.vision.eocvVision.setEnabled(true);
+
             }
             else if (robot.vision.tensorFlowVision != null)
             {
@@ -180,7 +188,11 @@ public class FtcAuto extends FtcOpMode
     @Override
     public void initPeriodic()
     {
-        // Add code to detect object before match starts.
+        // Use vision to detect AprilTag before the match starts.
+        if (robot.vision != null && robot.vision.eocvVision != null)
+        {
+            robot.vision.getDetectedAprilTagInfo();
+        }
     }   //initPeriodic
 
     /**
@@ -197,14 +209,14 @@ public class FtcAuto extends FtcOpMode
         final String funcName = "startMode";
 
         robot.dashboard.clearDisplay();
-        if (RobotParams.Preferences.useTraceLog)
+        if (robot.globalTracer.isTraceLogOpened())
         {
             robot.globalTracer.setTraceLogEnabled(true);
         }
         robot.globalTracer.traceInfo(moduleName, "***** Starting autonomous *****");
-        if (matchInfo != null)
+        if (Robot.matchInfo != null)
         {
-            robot.globalTracer.logInfo(moduleName, "MatchInfo", "%s", matchInfo);
+            robot.globalTracer.logInfo(moduleName, "MatchInfo", "%s", Robot.matchInfo);
         }
         robot.globalTracer.logInfo(moduleName, "AutoChoices", "%s", autoChoices);
         //
@@ -256,6 +268,7 @@ public class FtcAuto extends FtcOpMode
         }
 
         printPerformanceMetrics(robot.globalTracer);
+        robot.globalTracer.traceInfo(moduleName, "***** Stopping autonomous *****");
 
         if (robot.globalTracer.isTraceLogOpened())
         {
@@ -293,7 +306,8 @@ public class FtcAuto extends FtcOpMode
         FtcValueMenu startDelayMenu = new FtcValueMenu(
             "Start delay time:", null, 0.0, 30.0, 1.0, 0.0, " %.0f sec");
         FtcChoiceMenu<Alliance> allianceMenu = new FtcChoiceMenu<>("Alliance:", startDelayMenu);
-        FtcChoiceMenu<AutoStrategy> strategyMenu = new FtcChoiceMenu<>("Auto Strategies:", allianceMenu);
+        FtcChoiceMenu<StartPos> startPosMenu = new FtcChoiceMenu<>("Start Position:", allianceMenu);
+        FtcChoiceMenu<AutoStrategy> strategyMenu = new FtcChoiceMenu<>("Auto Strategies:", startPosMenu);
 
         FtcValueMenu xTargetMenu = new FtcValueMenu(
             "xTarget:", strategyMenu, -12.0, 12.0, 0.5, 4.0, " %.1f ft");
@@ -314,8 +328,11 @@ public class FtcAuto extends FtcOpMode
         //
         // Populate choice menus.
         //
-        allianceMenu.addChoice("Red", Alliance.RED_ALLIANCE, true, strategyMenu);
-        allianceMenu.addChoice("Blue", Alliance.BLUE_ALLIANCE, false, strategyMenu);
+        allianceMenu.addChoice("Red", Alliance.RED_ALLIANCE, true, startPosMenu);
+        allianceMenu.addChoice("Blue", Alliance.BLUE_ALLIANCE, false, startPosMenu);
+
+        startPosMenu.addChoice("Start Position Left", StartPos.LEFT, true, strategyMenu);
+        startPosMenu.addChoice("Start Position Right", StartPos.RIGHT, false, strategyMenu);
 
         strategyMenu.addChoice("PID Drive", AutoStrategy.PID_DRIVE, false, xTargetMenu);
         strategyMenu.addChoice("Timed Drive", AutoStrategy.TIMED_DRIVE, false, driveTimeMenu);
@@ -329,6 +346,7 @@ public class FtcAuto extends FtcOpMode
         //
         autoChoices.startDelay = startDelayMenu.getCurrentValue();
         autoChoices.alliance = allianceMenu.getCurrentChoiceObject();
+        autoChoices.startPos = startPosMenu.getCurrentChoiceObject();
         autoChoices.strategy = strategyMenu.getCurrentChoiceObject();
         autoChoices.xTarget = xTargetMenu.getCurrentValue();
         autoChoices.yTarget = yTargetMenu.getCurrentValue();

@@ -29,6 +29,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
+import TrcFtcLib.ftclib.FtcGamepad;
 
 /**
  * This class contains robot and subsystem constants and parameters.
@@ -66,6 +67,7 @@ public class RobotParams
     public static final String TEAM_FOLDER_PATH                 =
         Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
     public static final String LOG_FOLDER_PATH                  = TEAM_FOLDER_PATH + "/logs";
+    public static final String STEERING_CALIBRATION_DATA_FILE   = "SteerCalibration.txt";
     //
     // Hardware names.
     //
@@ -102,13 +104,13 @@ public class RobotParams
     //
     public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
     public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - ROBOT_LENGTH/2.0;
-    public static TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
         STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
         STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
-    public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     //
     // Vision subsystem.
@@ -119,6 +121,8 @@ public class RobotParams
     public static final double CAMERA_TILT_DOWN                 = 36.0; //Camera tilt down angle from horizontal in deg
     public static final double APRILTAG_SIZE                    = 0.05; // in meters
     public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
+    public static final int FRAME_QUEUE_CAPACITY                = 2;
+    public static final int WEBCAM_PERMISSION_TIMEOUT           = 5000;     // in msec
     // Camera: Logitech C310
     public static final int CAMERA_IMAGE_WIDTH                  = 640;
     public static final int CAMERA_IMAGE_HEIGHT                 = 480;
@@ -126,7 +130,6 @@ public class RobotParams
     public static final double CAMERA_FY                        = 821.993;  // in pixels
     public static final double CAMERA_CX                        = 330.489;  // in pixels
     public static final double CAMERA_CY                        = 248.997;  // in pixels
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
 
     public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;
     public static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y      = 0.0;
@@ -198,25 +201,28 @@ public class RobotParams
     public static final double X_ODOMETRY_WHEEL_OFFSET          = ROBOT_LENGTH/2.0 - (3.875 + 9.5); //behind centroid
     public static final double Y_LEFT_ODOMETRY_WHEEL_OFFSET     = -15.25/2.0;
     public static final double Y_RIGHT_ODOMETRY_WHEEL_OFFSET    = 15.25/2.0;
-    public static final RobotDrive.DriveMode ROBOT_DRIVE_MODE   = RobotDrive.DriveMode.HOLONOMIC_MODE;
+    public static final FtcGamepad.DriveMode ROBOT_DRIVE_MODE   = FtcGamepad.DriveMode.HOLONOMIC_MODE;
     //
     // Velocity controlled constants.
     //
     public static final double DRIVE_MOTOR_MAX_VELOCITY_PPS     = GOBILDA_5203_312_MAX_VELOCITY_PPS;
 
-    public static TrcPidController.PidCoefficients xPosPidCoeff =
+    public static final TrcPidController.PidCoefficients xPosPidCoeff =
         new TrcPidController.PidCoefficients(0.095, 0.0, 0.001, 0.0);
-    public static double XPOS_TOLERANCE                         = 1.0;
-    public static double XPOS_INCHES_PER_COUNT                  = 0.01924724265461924299065420560748;
+    public static final double XPOS_TOLERANCE                   = 1.0;
+    public static final double XPOS_INCHES_PER_COUNT            = 0.01924724265461924299065420560748;
 
-    public static TrcPidController.PidCoefficients yPosPidCoeff =
+    public static final TrcPidController.PidCoefficients yPosPidCoeff =
         new TrcPidController.PidCoefficients(0.06, 0.0, 0.002, 0.0);
     public static final double YPOS_TOLERANCE                   = 1.0;
     public static final double YPOS_INCHES_PER_COUNT            = 0.02166184604662450653409090909091;
 
-    public static TrcPidController.PidCoefficients turnPidCoeff =
-        new TrcPidController.PidCoefficients(0.025, 0.0, 0.001, 0.0);
-    public static final double TURN_TOLERANCE                   = 2.0;
+    public static final TrcPidController.PidCoefficients turnPidCoeff =
+        new TrcPidController.PidCoefficients(0.02, 0.08, 0.003, 0.0, 30.0);
+    public static final double TURN_TOLERANCE                   = 1.0;
+    public static final double TURN_SETTLING                    = TrcPidController.DEF_SETTLING_TIME;
+    public static final double TURN_STEADY_STATE_ERR            = 2.0;
+    public static final double TURN_STALL_ERRRATE_THRESHOLD     = 1.0;
 
     public static final double X_ODWHEEL_INCHES_PER_COUNT       = 7.6150160901199168116026724971383e-4;
     public static final double Y_ODWHEEL_INCHES_PER_COUNT       = 7.6301149255006038191364659148717e-4;
@@ -232,7 +238,7 @@ public class RobotParams
     public static final double ROBOT_MAX_VELOCITY               = 25.0;     // measured maximum from drive speed test.
     public static final double ROBOT_MAX_ACCELERATION           = 3380.0;   // measured maximum from drive speed test.
     // KF should be set to the reciprocal of max tangential velocity (time to travel unit distance), units: sec./in.
-    public static TrcPidController.PidCoefficients velPidCoeff  =
+    public static final TrcPidController.PidCoefficients velPidCoeff  =
         new TrcPidController.PidCoefficients(0.0, 0.0, 0.0, 1.0/ROBOT_MAX_VELOCITY);
     public static final double PPD_FOLLOWING_DISTANCE           = 6.0;
     public static final double PPD_POS_TOLERANCE                = 2.0;

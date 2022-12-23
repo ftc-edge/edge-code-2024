@@ -49,11 +49,11 @@ public class Robot3543 extends Robot
         //
         if (!RobotParams.Preferences.noRobot)
         {
-            //
-            // Create and initialize other subsystems.
-            //
             if (RobotParams.Preferences.initSubsystems)
             {
+                //
+                // Create and initialize other subsystems.
+                //
             }
         }
 

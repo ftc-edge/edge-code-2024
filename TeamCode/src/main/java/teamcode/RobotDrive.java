@@ -38,13 +38,6 @@ import TrcFtcLib.ftclib.FtcDcMotor;
  */
 public class RobotDrive
 {
-    public enum DriveMode
-    {
-        TANK_MODE,
-        HOLONOMIC_MODE,
-        ARCADE_MODE
-    }   //enum DriveMode
-
     //
     // Sensors.
     //
@@ -171,5 +164,78 @@ public class RobotDrive
     {
         return pathPoint(targetLocation.x, targetLocation.y, heading, true);
     }   //pathPoint
+
+    /**
+     * This method sets the robot's autonomous starting position according to the autonomous choices.
+     *
+     * @param autoChoices specifies all the auto choices.
+     */
+    public void setAutoStartPosition(FtcAuto.AutoChoices autoChoices)
+    {
+        driveBase.setFieldPosition(
+            autoChoices.alliance == FtcAuto.Alliance.RED_ALLIANCE ?
+                (autoChoices.startPos == FtcAuto.StartPos.LEFT ?
+                    RobotParams.STARTPOS_RED_LEFT : RobotParams.STARTPOS_RED_RIGHT) :
+                (autoChoices.startPos == FtcAuto.StartPos.LEFT ?
+                    RobotParams.STARTPOS_BLUE_LEFT : RobotParams.STARTPOS_BLUE_RIGHT));
+    }   //setAutoStartPosition
+
+    /**
+     * This method adjusts the target cell according to the alliance and startPos in autoChoices.
+     *
+     * @param tileX specifies X tile coordinate for RED LEFT.
+     * @param tileY specifies Y tile coordinate for RED LEFT.
+     * @param heading specifies heading for RED LEFT.
+     * @param autoChoices specifies auto choices.
+     * @return adjusted target cell as TrcPose2D.
+     */
+    public TrcPose2D getAutoTargetCell(double tileX, double tileY, double heading, FtcAuto.AutoChoices autoChoices)
+    {
+        if (autoChoices.alliance == FtcAuto.Alliance.BLUE_ALLIANCE)
+        {
+            tileY = -tileY;
+            heading = (heading + 180.0) % 360.0;
+            if (autoChoices.startPos == FtcAuto.StartPos.LEFT)
+            {
+                tileX = -tileX;
+            }
+            else
+            {
+                heading = -heading;
+            }
+        }
+        else if (autoChoices.startPos == FtcAuto.StartPos.RIGHT)
+        {
+            tileX = -tileX;
+            heading = -heading;
+        }
+
+        return new TrcPose2D(tileX, tileY, heading);
+    }   //getAutoTargetCell
+
+    /**
+     * This method adjusts the target cell according to the alliance and startPos in autoChoices.
+     *
+     * @param targetPos specifies the target position in tile units.
+     * @param autoChoices specifies auto choices.
+     * @return adjusted target cell as TrcPose2D.
+     */
+    public TrcPose2D getAutoTargetCell(TrcPose2D targetPos, FtcAuto.AutoChoices autoChoices)
+    {
+        return getAutoTargetCell(targetPos.x, targetPos.y, targetPos.angle, autoChoices);
+    }   //getAutoTargetCell
+
+    /**
+     * This method adjusts the target heading according to the alliance and startPos in autoChoices.
+     *
+     * @param heading specifies heading for RED LEFT.
+     * @param autoChoices specifies auto choices.
+     * @return adjusted target heading.
+     */
+    public double getAutoTargetHeading(double heading, FtcAuto.AutoChoices autoChoices)
+    {
+        TrcPose2D adjPose = getAutoTargetCell(0.0, 0.0, heading, autoChoices);
+        return adjPose.angle;
+    }   //getAutoTargetHeading
 
 }   //class RobotDrive

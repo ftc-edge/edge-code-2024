@@ -47,7 +47,6 @@ public class SwerveDrive extends RobotDrive
     private static final boolean logPoseEvents = false;
     private static final boolean tracePidInfo = false;
 
-    private static final String STEERING_CALIBRATION_DATA_FILE = "SteerCalibration.txt";
     public static final String[] servoNames = {
         RobotParams.HWNAME_LFSTEER_SERVO1, RobotParams.HWNAME_RFSTEER_SERVO1,
         RobotParams.HWNAME_LBSTEER_SERVO1, RobotParams.HWNAME_RBSTEER_SERVO1};
@@ -169,14 +168,12 @@ public class SwerveDrive extends RobotDrive
         // AbsoluteTargetMode eliminates cumulative errors on multi-segment runs because drive base is keeping track
         // of the absolute target position.
         pidDrive.setAbsoluteTargetModeEnabled(true);
-        pidDrive.setStallDetectionEnabled(true);
         pidDrive.setMsgTracer(robot.globalTracer, logPoseEvents, tracePidInfo);
 
         purePursuitDrive = new TrcPurePursuitDrive(
             "purePursuitDrive", driveBase,
             RobotParams.ppdFollowingDistance, RobotParams.ppdPosTolerance, RobotParams.ppdTurnTolerance,
             RobotParams.xPosPidCoeff, RobotParams.yPosPidCoeff, RobotParams.turnPidCoeff, RobotParams.velPidCoeff);
-        purePursuitDrive.setStallDetectionEnabled(true);
         purePursuitDrive.setFastModeEnabled(true);
         purePursuitDrive.setMsgTracer(robot.globalTracer, logPoseEvents, tracePidInfo);
     }   //SwerveDrive
@@ -276,7 +273,7 @@ public class SwerveDrive extends RobotDrive
         final String funcName = "saveSteeringCalibrationData";
 
         try (PrintStream out = new PrintStream(new FileOutputStream(
-            RobotParams.teamFolderPath + "/" + STEERING_CALIBRATION_DATA_FILE)))
+            RobotParams.teamFolderPath + "/" + RobotParams.STEERING_CALIBRATION_DATA_FILE)))
         {
             for (int i = 0; i < servoNames.length; i++)
             {
@@ -302,7 +299,7 @@ public class SwerveDrive extends RobotDrive
         TrcDbgTrace tracer = TrcDbgTrace.getGlobalTracer();
 
         try (Scanner in = new Scanner(new FileReader(
-            RobotParams.teamFolderPath + "/" + STEERING_CALIBRATION_DATA_FILE)))
+            RobotParams.teamFolderPath + "/" + RobotParams.STEERING_CALIBRATION_DATA_FILE)))
         {
             for (int i = 0; i < servoNames.length; i++)
             {

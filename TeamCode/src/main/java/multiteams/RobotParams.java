@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
+import TrcFtcLib.ftclib.FtcGamepad;
 
 /**
  * This class contains robot and subsystem constants and parameters.
@@ -63,6 +64,7 @@ public class RobotParams
     public static String robotName;
     public static String teamFolderPath;
     public static String logFolderPath;
+    public static final String STEERING_CALIBRATION_DATA_FILE   = "SteerCalibration.txt";
     //
     // Hardware names.
     //
@@ -99,13 +101,13 @@ public class RobotParams
     //
     public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
     public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - robotLength/2.0;
-    public static TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
         STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
         STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
-    public static TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
+    public static final TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
     //
     // Vision subsystem.
@@ -116,6 +118,8 @@ public class RobotParams
     public static double cameraTiltDown;
     public static final double APRILTAG_SIZE                    = 0.05; // in meters
     public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
+    public static final int FRAME_QUEUE_CAPACITY                = 2;
+    public static final int WEBCAM_PERMISSION_TIMEOUT           = 5000;     // in msec
     // Camera: Logitech C310
     public static final int CAMERA_IMAGE_WIDTH                  = 640;
     public static final int CAMERA_IMAGE_HEIGHT                 = 480;
@@ -123,7 +127,6 @@ public class RobotParams
     public static final double CAMERA_FY                        = 821.993;  // in pixels
     public static final double CAMERA_CX                        = 330.489;  // in pixels
     public static final double CAMERA_CY                        = 248.997;  // in pixels
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
     public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
         // topLeftX, topLeftY, topRightX, topRightY
         0.0, 0.0, CAMERA_IMAGE_WIDTH - 1, 0.0,
@@ -170,7 +173,7 @@ public class RobotParams
     public static double xOdometryWheelOffset;
     public static double yLeftOdometryWheelOffset;
     public static double yRightOdometryWheelOffset;
-    public static RobotDrive.DriveMode robotDriveMode;
+    public static FtcGamepad.DriveMode robotDriveMode;
     //
     // Velocity controlled constants.
     //
@@ -186,6 +189,9 @@ public class RobotParams
 
     public static TrcPidController.PidCoefficients turnPidCoeff;
     public static double turnTolerance;
+    public static double turnSettling;
+    public static double turnSteadyStateErr;
+    public static double turnStallErrRateThreshold;
 
     public static double xOdometryWheelInchesPerCount;
     public static double yOdometryWheelInchesPerCount;

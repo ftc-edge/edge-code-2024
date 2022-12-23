@@ -24,12 +24,14 @@ package multiteams;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.openftc.easyopencv.OpenCvCamera;
+import org.opencv.core.Rect;
+import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
+import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcOpenCvDetector;
-import TrcCommonLib.trclib.TrcRevBlinkin;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcTensorFlow;
@@ -43,39 +45,14 @@ import TrcFtcLib.ftclib.FtcVuforia;
 public class Vision
 {
     public static final String OPENCV_NATIVE_LIBRARY_NAME = "EasyOpenCV";
-    public static final String IMAGE1_NAME = "Image1";
-    public static final String IMAGE2_NAME = "Image2";
-    public static final String IMAGE3_NAME = "Image3";
-    public static final String IMAGE4_NAME = "Image4";
-    public static final String LABEL_TARGET1 = "Target1";
-    public static final String LABEL_TARGET2 = "Target2";
-    public static final String LABEL_TARGET3 = "Target3";
-    public static final String[] TARGET_LABELS = {LABEL_TARGET1, LABEL_TARGET2, LABEL_TARGET3};
-    public static final String GOT_TARGET = "GotTarget";
-    public static final String SAW_TARGET = "SawTarget";
-    public static final String DRIVE_ORIENTATION_FIELD = "FieldMode";
-    public static final String DRIVE_ORIENTATION_ROBOT = "RobotMode";
-    public static final String DRIVE_ORIENTATION_INVERTED = "InvertedMode";
-
-    private final TrcRevBlinkin.Pattern[] ledPatternPriorities = {
-        new TrcRevBlinkin.Pattern(LABEL_TARGET1, TrcRevBlinkin.RevLedPattern.SolidRed),
-        new TrcRevBlinkin.Pattern(LABEL_TARGET2, TrcRevBlinkin.RevLedPattern.SolidGreen),
-        new TrcRevBlinkin.Pattern(LABEL_TARGET3, TrcRevBlinkin.RevLedPattern.SolidBlue),
-        new TrcRevBlinkin.Pattern(SAW_TARGET, TrcRevBlinkin.RevLedPattern.SolidViolet),
-        new TrcRevBlinkin.Pattern(GOT_TARGET, TrcRevBlinkin.RevLedPattern.SolidAqua),
-        new TrcRevBlinkin.Pattern(IMAGE1_NAME, TrcRevBlinkin.RevLedPattern.FixedStrobeRed),
-        new TrcRevBlinkin.Pattern(IMAGE2_NAME, TrcRevBlinkin.RevLedPattern.FixedStrobeBlue),
-        new TrcRevBlinkin.Pattern(IMAGE3_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseRed),
-        new TrcRevBlinkin.Pattern(IMAGE4_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseBlue),
-        new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_FIELD, TrcRevBlinkin.RevLedPattern.SolidYellow),
-        new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_ROBOT, TrcRevBlinkin.RevLedPattern.SolidWhite),
-        new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_INVERTED, TrcRevBlinkin.RevLedPattern.SolidGray)
-    };
+    public static final String[] TARGET_LABELS = {
+        BlinkinLEDs.LABEL_TARGET1, BlinkinLEDs.LABEL_TARGET2, BlinkinLEDs.LABEL_TARGET3};
 
     private final Robot robot;
     public VuforiaVision vuforiaVision;
     public TensorFlowVision tensorFlowVision;
     public EocvVision eocvVision;
+    private int aprilTagId = 0;
 
     /**
      * Constructor: Create an instance of the object. Vision is required by both Vuforia and TensorFlow and must be
@@ -93,9 +70,20 @@ public class Vision
         this.robot = robot;
         if (RobotParams.Preferences.useEasyOpenCV)
         {
-            OpenCvCamera webcam =
-                OpenCvCameraFactory.getInstance().createWebcam(
+            OpenCvWebcam webcam;
+
+            if (RobotParams.Preferences.showEasyOpenCvView)
+            {
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(
                     opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM), cameraViewId);
+                webcam.showFpsMeterOnViewport(false);
+            }
+            else
+            {
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM));
+            }
+            webcam.setMillisecondsPermissionTimeout(RobotParams.WEBCAM_PERMISSION_TIMEOUT);
             eocvVision = new EocvVision(
                 "EocvVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
                 RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT, null);
@@ -126,14 +114,6 @@ public class Vision
     }   //Vision
 
     /**
-     * This method sets up the Blinkin with a priority pattern list and a pattern name map.
-     */
-    public void setupBlinkin()
-    {
-        robot.blinkin.setPatternPriorities(ledPatternPriorities);
-    }   //setupBlinkin
-
-    /**
      * This method shuts down TensorFlow.
      */
     public void tensorFlowShutdown()
@@ -146,66 +126,138 @@ public class Vision
     }   //tensorFlowShutdown
 
     /**
-     * This method returns an array of the detected targets info.
+     * This method updates the LED state to show the vision detected object.
      *
-     * @param label specifies the target label, only valid for TensorFlowVision, null for others.
-     * @return an array of detected targets info.
+     * @param label specifies the detected object.
      */
-    public TrcVisionTargetInfo<?>[] getDetectedTargetsInfo(String label)
+    private void updateVisionLEDs(String label)
     {
-        TrcVisionTargetInfo<?>[] targets = null;
+        if (label != null && robot.blinkin != null)
+        {
+            robot.blinkin.setPatternState(BlinkinLEDs.LABEL_TARGET1, false);
+            robot.blinkin.setPatternState(BlinkinLEDs.LABEL_TARGET2, false);
+            robot.blinkin.setPatternState(BlinkinLEDs.LABEL_TARGET3, false);
+            robot.blinkin.setPatternState(label, true, 1.0);
+        }
+    }   //updateVisionLEDs
+
+    /**
+     * This method calls TensorFlow vision to detect the object and to return the detected info.
+     *
+     * @return detected object info, null if none detected.
+     */
+    public TrcVisionTargetInfo<FtcTensorFlow.DetectedObject> getDetectedTensorFlowInfo()
+    {
+        TrcVisionTargetInfo<FtcTensorFlow.DetectedObject>[] targets = null;
+        String label = null;
 
         if (tensorFlowVision != null && tensorFlowVision.isEnabled())
         {
             targets = tensorFlowVision.getDetectedTargetsInfo(
-                label, null, this::compareConfidence, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
+                null, null, this::compareConfidence, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
+            label = targets[0].detectedObj.label;
         }
-        else if (eocvVision != null && eocvVision.isEnabled())
+        updateVisionLEDs(label);
+
+        return targets != null? targets[0]: null;
+    }   //getDetectedTensorFlowInfo
+
+    /**
+     * This method calls vision to detect the AprilTag and to return the detected info.
+     *
+     * @return detected AprilTag info, null if none detected.
+     */
+    public TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> getDetectedAprilTagInfo()
+    {
+        TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>>[] targets = null;
+        String label = null;
+
+        if (eocvVision != null && eocvVision.isEnabled())
         {
+            int id = 0;
+
+            eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
             targets = eocvVision.getDetectedTargetsInfo(
                 null, null, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
+            if (targets != null)
+            {
+                id = ((AprilTagDetection) targets[0].detectedObj.object).id;
+            }
+
+            switch (id)
+            {
+                case 1:
+                    label = BlinkinLEDs.LABEL_TARGET1;
+                    break;
+
+                case 2:
+                    label = BlinkinLEDs.LABEL_TARGET2;
+                    break;
+
+                case 3:
+                    label = BlinkinLEDs.LABEL_TARGET3;
+                    break;
+            }
+
+            if (id != 0)
+            {
+                aprilTagId = id;
+            }
         }
-
-        return targets;
-    }   //getDetectedTargetsInfo
-
-    /**
-     * This method returns the best detected target info.
-     *
-     * @param label specifies the target label, only valid for TensorFlowVision, null for others.
-     * @return best detected target info.
-     */
-    public TrcVisionTargetInfo<?> getBestDetectedTargetInfo(String label)
-    {
-        TrcVisionTargetInfo<?>[] targets = getDetectedTargetsInfo(label);
+        updateVisionLEDs(label);
 
         return targets != null? targets[0]: null;
-    }   //getDetectedTargetsInfo
+    }   //getDetectedAprilTagInfo
 
     /**
-     * This method returns info of the closest detected target to image center.
+     * This method returns the last detected AprilTag ID.
      *
-     * @param label specifies the target label, only valid for TensorFlowVision, null for others.
-     * @return closest detected target info.
+     * @return last detected AprilTag ID.
      */
-    public TrcVisionTargetInfo<?> getClosestTargetInfo(String label)
+    public int getAprilTagId()
+    {
+        return aprilTagId;
+    }   //getAprilTagId
+
+    /**
+     * This method calls vision to detect the color blob and returns the detected info.
+     *
+     * @return detected color blob info, null if none detected.
+     */
+    @SuppressWarnings("unchecked")
+    public TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> getDetectedColorBlobInfo(
+        EocvVision.ObjectType objectType)
     {
         TrcVisionTargetInfo<?>[] targets = null;
 
-        if (tensorFlowVision != null && tensorFlowVision.isEnabled())
+        if (eocvVision != null && eocvVision.isEnabled())
         {
-            targets = tensorFlowVision.getDetectedTargetsInfo(
-                label, null, this::compareDistanceFromCamera,
-                RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
-        }
-        else if (eocvVision != null && eocvVision.isEnabled())
-        {
-            targets = eocvVision.getDetectedTargetsInfo(
-                null, this::compareDistanceFromCamera, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
+            eocvVision.setDetectObjectType(objectType);
+            targets = eocvVision.getDetectedTargetsInfo(null, this::compareBottomY, 0.0, 0.0);
+            if (targets != null && robot.blinkin != null)
+            {
+                robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_RED_BLOB, false);
+                robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_BLUE_BLOB, false);
+                robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_YELLOW_BLOB, false);
+                switch (objectType)
+                {
+                    case RED_BLOB:
+                        robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_RED_BLOB, true, 1.0);
+                        break;
+
+                    case BLUE_BLOB:
+                        robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_BLUE_BLOB, true, 1.0);
+                        break;
+
+                    case YELLOW_BLOB:
+                        robot.blinkin.setPatternState(BlinkinLEDs.DETECTED_YELLOW_BLOB, true, 1.0);
+                        break;
+                }
+            }
         }
 
-        return targets != null? targets[0]: null;
-    }   //getClosestTargetInfo
+        return targets != null? (TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject>) targets[0]: null;
+    }   //getDetectedColorBlobInfo
 
     /**
      * This method is called by the Arrays.sort to sort the target object by decreasing confidence.
@@ -222,44 +274,21 @@ public class Vision
     }   //compareConfidence
 
     /**
-     * This method is called by the Arrays.sort to sort the target object by increasing object distance.
+     * This method is called by the Arrays.sort to sort the target object by decreasing bottom Y.
      *
      * @param a specifies the first target
      * @param b specifies the second target.
-     * @return negative value if a has smaller distance to image center than b, 0 if a and b have equal distance to
-     * image center, positive value if a has larger distance to image center than b.
+     * @return negative value if a has smaller bottom Y than b, 0 if a and b have equal bottom Y,
+     *         positive value if a has larger bottom Y than b.
      */
-    private int compareDistanceFromCamera(TrcVisionTargetInfo<?> a, TrcVisionTargetInfo<?> b)
-    {
-        return (int)((Math.abs(a.distanceFromCamera.y) - Math.abs(b.distanceFromCamera.y))*1000);
-    }   //compareDistanceFromCamera
-
-    /**
-     * This method is called by the Arrays.sort to sort the target object by increasing camera angle.
-     *
-     * @param a specifies the first target
-     * @param b specifies the second target.
-     * @return negative value if a has smaller camera angle than b, 0 if a and b have equal camera angle, positive
-     *         value if a has larger camera angle than b.
-     */
-    private int compareCameraAngle(TrcVisionTargetInfo<?> a, TrcVisionTargetInfo<?> b)
-    {
-        return (int)((Math.abs(a.horizontalAngle) - Math.abs(b.horizontalAngle))*1000);
-    }   //compareCameraAngle
-
-    /**
-     * This method is called by the Arrays.sort to sort the target object by decreasing object size.
-     *
-     * @param a specifies the first target
-     * @param b specifies the second target.
-     * @return negative value if a has smaller area than b, 0 if a and b have equal area, positive value if a has
-     *         larger area than b.
-     */
-    private int compareObjectSize(
+    private int compareBottomY(
         TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> a,
         TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> b)
     {
-        return (int)((a.detectedObj.getArea() - b.detectedObj.getArea())*1000);
-    }   //compareObjectSize
+        Rect aRect = a.detectedObj.getRect();
+        Rect bRect = b.detectedObj.getRect();
+
+        return (bRect.y + bRect.height) - (aRect.y + aRect.height);
+    }   //compareBottomY
 
 }   //class Vision

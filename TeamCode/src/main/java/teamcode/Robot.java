@@ -27,10 +27,11 @@ import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcDigitalInput;
 import TrcCommonLib.trclib.TrcMotor;
+import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcServo;
-import TrcFtcLib.ftclib.FtcAndroidTone;
 import TrcFtcLib.ftclib.FtcDashboard;
+import TrcFtcLib.ftclib.FtcMatchInfo;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcRevBlinkin;
 import TrcFtcLib.ftclib.FtcRobotBattery;
@@ -46,6 +47,8 @@ public class Robot
     public FtcOpMode opMode;
     public FtcDashboard dashboard;
     public TrcDbgTrace globalTracer;
+    public static FtcMatchInfo matchInfo = null;
+    private static TrcPose2D endOfAutoRobotPose = null;
     //
     // Vision subsystems.
     //
@@ -55,7 +58,6 @@ public class Robot
     //
     public FtcRevBlinkin blinkin;
     public FtcRobotBattery battery;
-    public FtcAndroidTone androidTone;
     //
     // Subsystems.
     //
@@ -84,10 +86,10 @@ public class Robot
         //
         // Initialize vision subsystems.
         //
-        if ((RobotParams.Preferences.useVuforia ||
+        if (runMode != TrcRobot.RunMode.TELEOP_MODE &&
+            (RobotParams.Preferences.useVuforia ||
              RobotParams.Preferences.useTensorFlow ||
-             RobotParams.Preferences.useEasyOpenCV) &&
-            (runMode == TrcRobot.RunMode.AUTO_MODE || runMode == TrcRobot.RunMode.TEST_MODE))
+             RobotParams.Preferences.useEasyOpenCV))
         {
             vision = new Vision(this);
         }
@@ -102,31 +104,22 @@ public class Robot
             //
             if (RobotParams.Preferences.useBlinkin)
             {
-                blinkin = new FtcRevBlinkin(RobotParams.HWNAME_BLINKIN);
-                //
-                // Vision uses Blinkin as an indicator, so set it up.
-                //
-                if (vision != null)
-                {
-                    vision.setupBlinkin();
-                }
+                blinkin = new BlinkinLEDs(RobotParams.HWNAME_BLINKIN);
             }
 
             if (RobotParams.Preferences.useBatteryMonitor)
             {
                 battery = new FtcRobotBattery();
             }
-
-            androidTone = new FtcAndroidTone("androidTone");
             //
             // Create and initialize RobotDrive.
             //
             robotDrive = RobotParams.Preferences.swerveRobot? new SwerveDrive(this): new MecanumDrive(this);
-            //
-            // Create and initialize other subsystems.
-            //
             if (RobotParams.Preferences.initSubsystems)
             {
+                //
+                // Create and initialize other subsystems.
+                //
             }
         }
 
@@ -152,6 +145,8 @@ public class Robot
      */
     public void startMode(TrcRobot.RunMode runMode)
     {
+        final String funcName = "startMode";
+
         if (robotDrive != null)
         {
             //
@@ -168,6 +163,26 @@ public class Robot
             {
                 robotDrive.driveBase.setOdometryEnabled(true);
             }
+
+            if (runMode != TrcRobot.RunMode.AUTO_MODE)
+            {
+                if (endOfAutoRobotPose != null)
+                {
+                    robotDrive.driveBase.setFieldPosition(endOfAutoRobotPose);
+                    globalTracer.traceInfo(funcName, "Restore saved RobotPose=%s", endOfAutoRobotPose);
+                }
+                else
+                {
+                    // There was no saved robotPose, use previous autonomous start position. In case we didn't even
+                    // have a previous autonomous run (e.g. just powering up the robot and go into TeleOp), then we
+                    // will default to RED_LEFT starting position.
+                    robotDrive.setAutoStartPosition(FtcAuto.autoChoices);
+                    globalTracer.traceInfo(
+                        funcName, "No saved RobotPose, use autoChoiceStartPos=%s",
+                        robotDrive.driveBase.getFieldPosition());
+                }
+            }
+            endOfAutoRobotPose = null;
         }
         //
         // The following are performance counters, could be disabled for competition if you want.
@@ -186,7 +201,7 @@ public class Robot
      * This method is call when the robot mode is about to end. It contains code to cleanup robot hardware before
      * exiting the robot mode.
      *
-     * @param runMode specifies the robot mode it is about to start, can be used to cleanup mode specific hardware.
+     * @param runMode specifies the robot mode it is about to stop, can be used to cleanup mode specific hardware.
      */
     public void stopMode(TrcRobot.RunMode runMode)
     {
@@ -231,6 +246,11 @@ public class Robot
 
         if (robotDrive != null)
         {
+            if (runMode == TrcRobot.RunMode.AUTO_MODE)
+            {
+                endOfAutoRobotPose = robotDrive.driveBase.getFieldPosition();
+                globalTracer.traceInfo(funcName, "Saved robot pose=%s", endOfAutoRobotPose);
+            }
             //
             // Disable odometry.
             //

@@ -41,6 +41,7 @@ import TrcFtcLib.ftclib.FtcEocvDetector;
  */
 public class EocvVision extends FtcEocvDetector
 {
+    private static final int colorConversion = Imgproc.COLOR_RGBA2RGB;
     private static final double[] colorThresholdsRedBlob = {100.0, 255.0, 0.0, 100.0, 0.0, 60.0};
     private static final double[] colorThresholdsBlueBlob = {0.0, 60.0, 0.0, 100.0, 100, 255.0};
     private static final double[] colorThresholdsYellowBlob = {128.0, 255.0, 128.0, 255.0, 0.0, 120.0};
@@ -107,19 +108,19 @@ public class EocvVision extends FtcEocvDetector
         this.tracer = tracer;
         TrcOpenCvColorBlobPipeline.FilterContourParams redBlobFilterContourParams =
             new TrcOpenCvColorBlobPipeline.FilterContourParams()
-                .setMinArea(500)
-                .setMinPerimeter(100.0)
-                .setWidthRange(50.0, 1000.0)
-                .setHeightRange(50.0, 1000.0)
+                .setMinArea(10000.0)
+                .setMinPerimeter(200.0)
+                .setWidthRange(100.0, 1000.0)
+                .setHeightRange(100.0, 1000.0)
                 .setSolidityRange(0.0, 100.0)
                 .setVerticesRange(0.0, 1000.0)
                 .setAspectRatioRange(0.0, 1000.0);
         TrcOpenCvColorBlobPipeline.FilterContourParams blueBlobFilterContourParams =
             new TrcOpenCvColorBlobPipeline.FilterContourParams()
-                .setMinArea(1000)
-                .setMinPerimeter(100.0)
-                .setWidthRange(50.0, 1000.0)
-                .setHeightRange(20.0, 1000.0)
+                .setMinArea(10000.0)
+                .setMinPerimeter(200.0)
+                .setWidthRange(100.0, 1000.0)
+                .setHeightRange(100.0, 1000.0)
                 .setSolidityRange(0.0, 100.0)
                 .setVerticesRange(0.0, 1000.0)
                 .setAspectRatioRange(0.0, 1000.0);
@@ -128,7 +129,7 @@ public class EocvVision extends FtcEocvDetector
                 .setMinArea(5000.0)
                 .setMinPerimeter(500.0)
                 .setWidthRange(100.0, 1000.0)
-                .setHeightRange(250.0, 1000.0)
+                .setHeightRange(250.0, 10000.0)
                 .setSolidityRange(0.0, 100.0)
                 .setVerticesRange(0.0, 1000.0)
                 .setAspectRatioRange(0.0, 1000.0);
@@ -137,11 +138,11 @@ public class EocvVision extends FtcEocvDetector
             AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.APRILTAG_SIZE,
             RobotParams.CAMERA_FX, RobotParams.CAMERA_FY, RobotParams.CAMERA_CX, RobotParams.CAMERA_CY, tracer);
         redBlobPipeline = new FtcEocvColorBlobPipeline(
-            "redBlobPipeline", Imgproc.COLOR_RGBA2RGB, colorThresholdsRedBlob, redBlobFilterContourParams, tracer);
+            "redBlobPipeline", colorConversion, colorThresholdsRedBlob, redBlobFilterContourParams, tracer);
         blueBlobPipeline = new FtcEocvColorBlobPipeline(
-            "blueBlobPipeline", Imgproc.COLOR_RGBA2RGB, colorThresholdsBlueBlob, blueBlobFilterContourParams, tracer);
+            "blueBlobPipeline", colorConversion, colorThresholdsBlueBlob, blueBlobFilterContourParams, tracer);
         yellowBlobPipeline = new FtcEocvColorBlobPipeline(
-            "yellowBlobPipeliine", Imgproc.COLOR_RGBA2RGB, colorThresholdsYellowBlob, yellowBlobFilterContourParams, tracer);
+            "yellowBlobPipeliine", colorConversion, colorThresholdsYellowBlob, yellowBlobFilterContourParams, tracer);
         // Set default pipeline and enable it.
         setDetectObjectType(ObjectType.APRIL_TAG);
     }   //EocvVision
@@ -196,9 +197,9 @@ public class EocvVision extends FtcEocvDetector
     }   //setNextObjectType
 
     /**
-     * This method returns the detect object type.
+     * This method returns the selected detect object type.
      *
-     * @return detect object type.
+     * @return selected detect object type.
      */
     public ObjectType getDetectObjectType()
     {

@@ -31,6 +31,7 @@ import TrcCommonLib.command.CmdTimedDrive;
 
 import TrcCommonLib.trclib.TrcElapsedTimer;
 import TrcCommonLib.trclib.TrcGameController;
+import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
@@ -41,6 +42,7 @@ import TrcFtcLib.ftclib.FtcDcMotor;
 import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcMenu;
 import TrcFtcLib.ftclib.FtcPidCoeffCache;
+import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcValueMenu;
 
 /**
@@ -891,36 +893,72 @@ public class FtcTest
     {
         if (robot.vision != null)
         {
-            if (robot.vision.tensorFlowVision != null || robot.vision.eocvVision != null)
+            TrcVisionTargetInfo<?> aprilTagInfo = robot.vision.getDetectedAprilTagInfo();
+            if (aprilTagInfo != null)
             {
-                final int maxNumLines = 3;
-                int lineIndex = 10;
-                int endLine = lineIndex + maxNumLines;
-                int numTargets;
-                TrcVisionTargetInfo<?>[] targetsInfo = robot.vision.getDetectedTargetsInfo(null);
+                robot.dashboard.displayPrintf(10, "AprilTag: %s", aprilTagInfo);
+            }
+            else
+            {
+                robot.dashboard.displayPrintf(10, "AprilTag: Not found.");
+            }
 
-                if (targetsInfo != null)
-                {
-                    numTargets = Math.min(targetsInfo.length, maxNumLines);
-                    for (int i = 0; i < numTargets; i++)
-                    {
-                        robot.dashboard.displayPrintf(lineIndex, "[%d] %s", i, targetsInfo[i]);
-                        lineIndex++;
-                    }
-                }
+            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> redBlobInfo =
+                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.RED_BLOB);
+            if (redBlobInfo != null)
+            {
+                robot.dashboard.displayPrintf(11, "Red Blob: %s", redBlobInfo);
+            }
+            else
+            {
+                robot.dashboard.displayPrintf(11, "Red Blob: Not found.");
+            }
 
-                while (lineIndex < endLine)
-                {
-                    robot.dashboard.displayPrintf(lineIndex, "");
-                    lineIndex++;
-                }
+            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> blueBlobInfo =
+                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.BLUE_BLOB);
+            if (blueBlobInfo != null)
+            {
+                robot.dashboard.displayPrintf(12, "Blue Blob: %s", blueBlobInfo);
+            }
+            else
+            {
+                robot.dashboard.displayPrintf(12, "Blue Blob: Not found.");
+            }
+
+            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> yellowBlobInfo =
+                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.YELLOW_BLOB);
+            if (yellowBlobInfo != null)
+            {
+                robot.dashboard.displayPrintf(13, "Yellow Blob: %s", yellowBlobInfo);
+            }
+            else
+            {
+                robot.dashboard.displayPrintf(13, "Yellow Blob: Not found.");
+            }
+
+            TrcVisionTargetInfo<FtcTensorFlow.DetectedObject> tensorFlowInfo =
+                robot.vision.getDetectedTensorFlowInfo();
+            if (tensorFlowInfo != null)
+            {
+                robot.dashboard.displayPrintf(14, "TensorFlow: %s", tensorFlowInfo);
+            }
+            else
+            {
+                robot.dashboard.displayPrintf(14, "TensorFlow: Not found.");
             }
 
             if (robot.vision.vuforiaVision != null)
             {
                 TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
-                robot.dashboard.displayPrintf(13, "RobotLoc %s: %s",
-                                              robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
+                if (robotPose != null)
+                {
+                    robot.dashboard.displayPrintf(
+                        15, "RobotLoc %s: %s", robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
+                }
+                else
+                {
+                    robot.dashboard.displayPrintf(15, "RobotLoc: Unknown");
+                }
             }
         }
     }   //doVisionTest

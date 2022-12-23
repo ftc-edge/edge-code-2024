@@ -85,7 +85,8 @@ public class MecanumDrive extends RobotDrive
         yPosPidCtrl = new TrcPidController(
             "yPosPidCtrl", RobotParams.yPosPidCoeff, RobotParams.YPOS_TOLERANCE, driveBase::getYPosition);
         turnPidCtrl = new TrcPidController(
-            "turnPidCtrl", RobotParams.turnPidCoeff, RobotParams.TURN_TOLERANCE, driveBase::getHeading);
+            "turnPidCtrl", RobotParams.turnPidCoeff, RobotParams.TURN_TOLERANCE, RobotParams.TURN_SETTLING,
+            RobotParams.TURN_STEADY_STATE_ERR, RobotParams.TURN_STALL_ERRRATE_THRESHOLD, driveBase::getHeading);
         turnPidCtrl.setAbsoluteSetPoint(true);
         // FTC robots generally have USB performance issues where the sampling rate of the gyro is not high enough.
         // If the robot turns too fast, PID will cause oscillation. By limiting turn power, the robot turns slower.
@@ -95,16 +96,14 @@ public class MecanumDrive extends RobotDrive
         // AbsoluteTargetMode eliminates cumulative errors on multi-segment runs because drive base is keeping track
         // of the absolute target position.
         pidDrive.setAbsoluteTargetModeEnabled(true);
-        pidDrive.setStallDetectionEnabled(true);
         pidDrive.setMsgTracer(robot.globalTracer, logPoseEvents, tracePidInfo);
 
         purePursuitDrive = new TrcPurePursuitDrive(
             "purePursuitDrive", driveBase,
             RobotParams.PPD_FOLLOWING_DISTANCE, RobotParams.PPD_POS_TOLERANCE, RobotParams.PPD_TURN_TOLERANCE,
             RobotParams.xPosPidCoeff, RobotParams.yPosPidCoeff, RobotParams.turnPidCoeff, RobotParams.velPidCoeff);
-        purePursuitDrive.setStallDetectionEnabled(true);
         purePursuitDrive.setFastModeEnabled(true);
-        purePursuitDrive.setMsgTracer(robot.globalTracer, true, true);
+        purePursuitDrive.setMsgTracer(robot.globalTracer, logPoseEvents, tracePidInfo);
     }   //MecanumDrive
 
 }   //class MecanumDrive
