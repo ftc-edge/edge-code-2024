@@ -32,16 +32,16 @@ import TrcFtcLib.ftclib.FtcRevBlinkin;
 class BlinkinLEDs extends FtcRevBlinkin
 {
     // LED pattern names.
-    public static final String IMAGE1_NAME = "Image1";
-    public static final String IMAGE2_NAME = "Image2";
-    public static final String IMAGE3_NAME = "Image3";
-    public static final String IMAGE4_NAME = "Image4";
     public static final String LABEL_TARGET1 = "Target1";
     public static final String LABEL_TARGET2 = "Target2";
     public static final String LABEL_TARGET3 = "Target3";
     public static final String DETECTED_RED_BLOB = "RedBlob";
     public static final String DETECTED_BLUE_BLOB = "BlueBlob";
     public static final String DETECTED_YELLOW_BLOB = "YellowBlob";
+    public static final String IMAGE1_NAME = "Image1";
+    public static final String IMAGE2_NAME = "Image2";
+    public static final String IMAGE3_NAME = "Image3";
+    public static final String IMAGE4_NAME = "Image4";
     public static final String DRIVE_ORIENTATION_FIELD = "FieldMode";
     public static final String DRIVE_ORIENTATION_ROBOT = "RobotMode";
     public static final String DRIVE_ORIENTATION_INVERTED = "InvertedMode";
@@ -54,21 +54,21 @@ class BlinkinLEDs extends FtcRevBlinkin
     public BlinkinLEDs(String instanceName)
     {
         super(instanceName);
-        // LED pattern priority list in increasing priority order.
+        // LED pattern priority list in decreasing priority order.
         final TrcRevBlinkin.Pattern[] ledPatternPriorities = {
-            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_INVERTED, TrcRevBlinkin.RevLedPattern.SolidGray),
-            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_ROBOT, TrcRevBlinkin.RevLedPattern.SolidWhite),
-            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_FIELD, TrcRevBlinkin.RevLedPattern.SolidViolet),
-            new TrcRevBlinkin.Pattern(IMAGE4_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseBlue),
-            new TrcRevBlinkin.Pattern(IMAGE3_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseRed),
-            new TrcRevBlinkin.Pattern(IMAGE2_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathBlue),
-            new TrcRevBlinkin.Pattern(IMAGE1_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathRed),
-            new TrcRevBlinkin.Pattern(DETECTED_YELLOW_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeGold),
-            new TrcRevBlinkin.Pattern(DETECTED_BLUE_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeBlue),
-            new TrcRevBlinkin.Pattern(DETECTED_RED_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeRed),
-            new TrcRevBlinkin.Pattern(LABEL_TARGET3, TrcRevBlinkin.RevLedPattern.SolidBlue),
+            new TrcRevBlinkin.Pattern(LABEL_TARGET1, TrcRevBlinkin.RevLedPattern.SolidRed),
             new TrcRevBlinkin.Pattern(LABEL_TARGET2, TrcRevBlinkin.RevLedPattern.SolidGreen),
-            new TrcRevBlinkin.Pattern(LABEL_TARGET1, TrcRevBlinkin.RevLedPattern.SolidRed)
+            new TrcRevBlinkin.Pattern(LABEL_TARGET3, TrcRevBlinkin.RevLedPattern.SolidBlue),
+            new TrcRevBlinkin.Pattern(DETECTED_RED_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeRed),
+            new TrcRevBlinkin.Pattern(DETECTED_BLUE_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeBlue),
+            new TrcRevBlinkin.Pattern(DETECTED_YELLOW_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeGold),
+            new TrcRevBlinkin.Pattern(IMAGE1_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathRed),
+            new TrcRevBlinkin.Pattern(IMAGE2_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathBlue),
+            new TrcRevBlinkin.Pattern(IMAGE3_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseRed),
+            new TrcRevBlinkin.Pattern(IMAGE4_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseBlue),
+            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_FIELD, TrcRevBlinkin.RevLedPattern.SolidViolet),
+            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_ROBOT, TrcRevBlinkin.RevLedPattern.SolidWhite),
+            new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_INVERTED, TrcRevBlinkin.RevLedPattern.SolidGray)
         };
         setPatternPriorities(ledPatternPriorities);
     }   //BlinkinLEDs
