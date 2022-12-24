@@ -48,7 +48,9 @@ import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcValueMenu;
 
 /**
- * This class contains the Test Mode program.
+ * This class contains the Test Mode program. It extends FtcTeleOp so that we can teleop control the robot for
+ * testing purposes. It provides numerous tests for diagnosing problems with the robot. It also provides tools
+ * for tuning and calibration.
  */
 @TeleOp(name="FtcTest", group="Ftc3543")
 public class FtcTest extends FtcTeleOp
@@ -110,7 +112,7 @@ public class FtcTest extends FtcTeleOp
 
     }   //class TestChoices
 
-    private final FtcPidCoeffCache pidCoeffCache = new FtcPidCoeffCache("PIDTuning", RobotParams.TEAM_FOLDER_PATH);
+    private final FtcPidCoeffCache pidCoeffCache = new FtcPidCoeffCache(RobotParams.TEAM_FOLDER_PATH);
     private final TestChoices testChoices = new TestChoices();
     private TrcElapsedTimer elapsedTimer = null;
     private FtcChoiceMenu<Test> testMenu = null;
@@ -186,6 +188,7 @@ public class FtcTest extends FtcTeleOp
             case PID_DRIVE:
                 if (!RobotParams.Preferences.noRobot)
                 {
+                    // Distance targets are in feet, so convert them into inches.
                     testCommand = new CmdPidDrive(
                         robot.robotDrive.driveBase, robot.robotDrive.pidDrive, 0.0, testChoices.drivePower, null,
                         new TrcPose2D(testChoices.xTarget*12.0, testChoices.yTarget*12.0, testChoices.turnTarget));
@@ -195,6 +198,7 @@ public class FtcTest extends FtcTeleOp
             case TUNE_X_PID:
                 if (!RobotParams.Preferences.noRobot)
                 {
+                    // Distance target is in feet, so convert it into inches.
                     testCommand = new CmdPidDrive(
                         robot.robotDrive.driveBase, robot.robotDrive.pidDrive, 0.0, testChoices.tuneDrivePower,
                         testChoices.tunePidCoeff, new TrcPose2D(testChoices.tuneDistance*12.0, 0.0, 0.0));
@@ -204,6 +208,7 @@ public class FtcTest extends FtcTeleOp
             case TUNE_Y_PID:
                 if (!RobotParams.Preferences.noRobot)
                 {
+                    // Distance target is in feet, so convert it into inches.
                     testCommand = new CmdPidDrive(
                         robot.robotDrive.driveBase, robot.robotDrive.pidDrive, 0.0, testChoices.tuneDrivePower,
                         testChoices.tunePidCoeff, new TrcPose2D(0.0, testChoices.tuneDistance*12.0, 0.0));
@@ -401,12 +406,9 @@ public class FtcTest extends FtcTeleOp
                 if (!RobotParams.Preferences.noRobot)
                 {
                     robot.dashboard.displayPrintf(8, "Timed Drive: %.0f sec", testChoices.driveTime);
+                    robot.dashboard.displayPrintf(9, "RobotPose=%s", robot.robotDrive.driveBase.getFieldPosition());
                     robot.dashboard.displayPrintf(
-                        9, "xPos=%.1f,yPos=%.1f,heading=%.1f",
-                        robot.robotDrive.driveBase.getXPosition(), robot.robotDrive.driveBase.getYPosition(),
-                        robot.robotDrive.driveBase.getHeading());
-                    robot.dashboard.displayPrintf(
-                        10, "raw=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
+                        10, "rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
                         robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
                         robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
                 }
@@ -426,9 +428,8 @@ public class FtcTest extends FtcTeleOp
                 if (!RobotParams.Preferences.noRobot)
                 {
                     robot.dashboard.displayPrintf(
-                        8, "xPos=%.1f,yPos=%.1f,heading=%.1f,raw=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
-                        robot.robotDrive.driveBase.getXPosition(), robot.robotDrive.driveBase.getYPosition(),
-                        robot.robotDrive.driveBase.getHeading(),
+                        8, "RobotPose=%s,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
+                        robot.robotDrive.driveBase.getFieldPosition(),
                         robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
                         robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
                     if (robot.robotDrive.xPosPidCtrl != null)
@@ -450,9 +451,8 @@ public class FtcTest extends FtcTeleOp
                 if (!RobotParams.Preferences.noRobot)
                 {
                     robot.dashboard.displayPrintf(
-                        8, "xPos=%.1f,yPos=%.1f,heading=%.1f,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
-                        robot.robotDrive.driveBase.getXPosition(), robot.robotDrive.driveBase.getYPosition(),
-                        robot.robotDrive.driveBase.getHeading(),
+                        8, "RobotPose=%s,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
+                        robot.robotDrive.driveBase.getFieldPosition(),
                         robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
                         robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
                 }

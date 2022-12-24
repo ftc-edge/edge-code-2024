@@ -167,7 +167,6 @@ public class FtcAuto extends FtcOpMode
             {
                 robot.globalTracer.traceInfo(funcName, "Enabling EocvVision to detect AprilTag.");
                 robot.vision.eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
-
             }
             else if (robot.vision.tensorFlowVision != null)
             {
@@ -208,7 +207,6 @@ public class FtcAuto extends FtcOpMode
     {
         final String funcName = "startMode";
 
-        robot.dashboard.clearDisplay();
         if (robot.globalTracer.isTraceLogOpened())
         {
             robot.globalTracer.setTraceLogEnabled(true);
@@ -219,6 +217,7 @@ public class FtcAuto extends FtcOpMode
             robot.globalTracer.logInfo(moduleName, "MatchInfo", "%s", Robot.matchInfo);
         }
         robot.globalTracer.logInfo(moduleName, "AutoChoices", "%s", autoChoices);
+        robot.dashboard.clearDisplay();
         //
         // Tell robot object opmode is about to start so it can do the necessary start initialization for the mode.
         //

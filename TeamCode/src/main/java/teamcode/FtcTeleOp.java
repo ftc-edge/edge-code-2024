@@ -158,7 +158,9 @@ public class FtcTeleOp extends FtcOpMode
                 robot.robotDrive.driveBase.arcadeDrive(inputs[1], inputs[2]);
             }
 
-            robot.dashboard.displayPrintf(2, "Pose:%s", robot.robotDrive.driveBase.getFieldPosition());
+            robot.dashboard.displayPrintf(
+                2, "Pose:%s,x=%.2f,y=%.2f,rot=%.2f",
+                robot.robotDrive.driveBase.getFieldPosition(), inputs[0], inputs[1], inputs[2]);
         }
         //
         // Other subsystems.
@@ -206,7 +208,7 @@ public class FtcTeleOp extends FtcOpMode
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
         robot.dashboard.displayPrintf(7, "%s: %04x->%s", gamepad, button, pressed? "Pressed": "Released");
-        robot.dashboard.displayPrintf(8, "Drive Mode:%s", driveOrientation.toString());
+        robot.dashboard.displayPrintf(8, "Drive Mode:%s", driveOrientation);
 
         switch (button)
         {
@@ -225,6 +227,7 @@ public class FtcTeleOp extends FtcOpMode
             case FtcGamepad.GAMEPAD_LBUMPER:
                 if (pressed)
                 {
+                    // Cycle through different Drive Modes.
                     driveOrientation = TrcDriveBase.DriveOrientation.nextDriveOrientation(driveOrientation);
                     updateDriveModeLEDs();
                 }

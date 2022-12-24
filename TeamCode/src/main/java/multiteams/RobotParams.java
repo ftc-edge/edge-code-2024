@@ -68,9 +68,11 @@ public class RobotParams
     //
     // Hardware names.
     //
+    // Miscellaneous.
     public static final String HWNAME_IMU                       = "imu";
     public static final String HWNAME_WEBCAM                    = "Webcam 1";
     public static final String HWNAME_BLINKIN                   = "blinkin";
+    // Drive Base.
     public static final String HWNAME_LFDRIVE_MOTOR             = "lfDriveMotor";
     public static final String HWNAME_RFDRIVE_MOTOR             = "rfDriveMotor";
     public static final String HWNAME_LBDRIVE_MOTOR             = "lbDriveMotor";
@@ -83,6 +85,8 @@ public class RobotParams
     public static final String HWNAME_LBSTEER_SERVO2            = "lbSteerServo2";
     public static final String HWNAME_RBSTEER_SERVO1            = "rbSteerServo1";
     public static final String HWNAME_RBSTEER_SERVO2            = "rbSteerServo2";
+    // Subsystems.
+
     //
     // Field dimensions.
     //
@@ -101,6 +105,7 @@ public class RobotParams
     //
     public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
     public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - robotLength/2.0;
+    // Robot start positions in inches.
     public static final TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
         -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
     public static final TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
@@ -112,32 +117,33 @@ public class RobotParams
     //
     // Vision subsystem.
     //
+    public static final int WEBCAM_PERMISSION_TIMEOUT           = 5000;     // in msec
+    public static final int FRAME_QUEUE_CAPACITY                = 2;
+    public static final double APRILTAG_SIZE                    = 0.05; // in meters
+    public static final double APRILTAG_HEIGHT_OFFSET           = 1.5;  // in inches
+    // Camera location on robot.
     public static double cameraFrontOffset;
     public static double cameraLeftOffset;
     public static double cameraHeightOffset;
     public static double cameraTiltDown;
-    public static final double APRILTAG_SIZE                    = 0.05; // in meters
-    public static final double TAG_HEIGHT_OFFSET                = 1.5;  // in inches
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
-    public static final int WEBCAM_PERMISSION_TIMEOUT           = 5000;     // in msec
     // Camera: Logitech C310
-    public static final int CAMERA_IMAGE_WIDTH                  = 640;
-    public static final int CAMERA_IMAGE_HEIGHT                 = 480;
-    public static final double CAMERA_FX                        = 821.993;  // in pixels
-    public static final double CAMERA_FY                        = 821.993;  // in pixels
-    public static final double CAMERA_CX                        = 330.489;  // in pixels
-    public static final double CAMERA_CY                        = 248.997;  // in pixels
+    public static final int WEBCAM_IMAGE_WIDTH                  = 640;
+    public static final int WEBCAM_IMAGE_HEIGHT                 = 480;
+    public static final double WEBCAM_FX                        = 821.993;  // in pixels
+    public static final double WEBCAM_FY                        = 821.993;  // in pixels
+    public static final double WEBCAM_CX                        = 330.489;  // in pixels
+    public static final double WEBCAM_CY                        = 248.997;  // in pixels
     public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
         // topLeftX, topLeftY, topRightX, topRightY
-        0.0, 0.0, CAMERA_IMAGE_WIDTH - 1, 0.0,
+        0.0, 0.0, WEBCAM_IMAGE_WIDTH - 1, 0.0,
         // bottomLeftX, bottomLeftY, bottomRightX, bottomRightY
-        0.0, CAMERA_IMAGE_HEIGHT - 1, CAMERA_IMAGE_WIDTH - 1, CAMERA_IMAGE_HEIGHT - 1);
+        0.0, WEBCAM_IMAGE_HEIGHT - 1, WEBCAM_IMAGE_WIDTH - 1, WEBCAM_IMAGE_HEIGHT - 1);
     public static TrcHomographyMapper.Rectangle worldRect;
     //
     // Motor Odometries.
     //
     // https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-19-2-1-ratio-24mm-length-8mm-rex-shaft-312-rpm-3-3-5v-encoder/
-    public static final double GOBILDA_5203_312_ENCODER_PPR     = ((((1.0 + (46.0/17.0)))*(1.0 + (46.0/11.0)))*28.0);
+    public static final double GOBILDA_5203_312_ENCODER_PPR     = (((1.0 + 46.0/17.0)*(1.0 + 46.0/11.0))*28.0);
     public static final double GOBILDA_5203_312_RPM             = 312.0;
     public static final double GOBILDA_5203_312_MAX_VELOCITY_PPS=
         GOBILDA_5203_312_ENCODER_PPR*GOBILDA_5203_312_RPM/60.0; // 2795.987 pps

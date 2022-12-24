@@ -136,7 +136,7 @@ public class EocvVision extends FtcEocvDetector
 
         aprilTagPipeline = new FtcEocvAprilTagPipeline(
             AprilTagDetectorJNI.TagFamily.TAG_36h11, RobotParams.APRILTAG_SIZE,
-            RobotParams.CAMERA_FX, RobotParams.CAMERA_FY, RobotParams.CAMERA_CX, RobotParams.CAMERA_CY, tracer);
+            RobotParams.WEBCAM_FX, RobotParams.WEBCAM_FY, RobotParams.WEBCAM_CX, RobotParams.WEBCAM_CY, tracer);
         redBlobPipeline = new FtcEocvColorBlobPipeline(
             "redBlobPipeline", colorConversion, colorThresholdsRedBlob, redBlobFilterContourParams, tracer);
         blueBlobPipeline = new FtcEocvColorBlobPipeline(

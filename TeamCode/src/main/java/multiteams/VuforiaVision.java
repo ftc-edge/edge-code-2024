@@ -67,7 +67,7 @@ public class VuforiaVision
         this.vuforia = vuforia;
         this.blinkin = blinkin;
         vuforia.configVideoSource(
-            RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT, RobotParams.FRAME_QUEUE_CAPACITY);
+            RobotParams.WEBCAM_IMAGE_WIDTH, RobotParams.WEBCAM_IMAGE_HEIGHT, RobotParams.FRAME_QUEUE_CAPACITY);
         /*
          * Create a transformation matrix describing where the camera is on the robot.
          *
@@ -198,11 +198,7 @@ public class VuforiaVision
             {
                 if (robotLocation != null)
                 {
-                    blinkin.setPatternState(targetName, true);
-                }
-                else
-                {
-                    blinkin.reset();
+                    blinkin.setPatternState(targetName, true, 1.0);
                 }
             }
         }

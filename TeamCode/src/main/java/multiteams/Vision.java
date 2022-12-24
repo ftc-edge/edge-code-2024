@@ -25,7 +25,6 @@ package multiteams;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.opencv.core.Rect;
-import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
@@ -33,6 +32,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcOpenCvDetector;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
+import TrcFtcLib.ftclib.FtcEocvAprilTagPipeline;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcVuforia;
@@ -65,7 +65,7 @@ public class Vision
     {
         FtcOpMode opMode = FtcOpMode.getInstance();
         int cameraViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
-                "cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
+            "cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
 
         this.robot = robot;
         if (RobotParams.Preferences.useEasyOpenCV)
@@ -83,9 +83,13 @@ public class Vision
                 webcam = OpenCvCameraFactory.getInstance().createWebcam(
                     opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM));
             }
+            // EOCV sometimes timed out on opening the camera. The default timeout was 2 seconds. It seems setting
+            // it to 5 seconds would do wonder here.
             webcam.setMillisecondsPermissionTimeout(RobotParams.WEBCAM_PERMISSION_TIMEOUT);
+
+            robot.globalTracer.traceInfo("Vision", "Starting EocvVision...");
             eocvVision = new EocvVision(
-                "EocvVision", RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT,
+                "eocvVision", RobotParams.WEBCAM_IMAGE_WIDTH, RobotParams.WEBCAM_IMAGE_HEIGHT,
                 RobotParams.cameraRect, RobotParams.worldRect, webcam, OpenCvCameraRotation.UPRIGHT, null);
         }
         else if (RobotParams.Preferences.useVuforia || RobotParams.Preferences.useTensorFlow)
@@ -154,8 +158,12 @@ public class Vision
         if (tensorFlowVision != null && tensorFlowVision.isEnabled())
         {
             targets = tensorFlowVision.getDetectedTargetsInfo(
-                null, null, this::compareConfidence, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
-            label = targets[0].detectedObj.label;
+                null, null, this::compareConfidence, RobotParams.APRILTAG_HEIGHT_OFFSET,
+                RobotParams.cameraHeightOffset);
+            if (targets != null)
+            {
+                label = targets[0].detectedObj.label;
+            }
         }
         updateVisionLEDs(label);
 
@@ -174,34 +182,13 @@ public class Vision
 
         if (eocvVision != null && eocvVision.isEnabled())
         {
-            int id = 0;
-
             eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
             targets = eocvVision.getDetectedTargetsInfo(
-                null, null, RobotParams.TAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
+                null, null, RobotParams.APRILTAG_HEIGHT_OFFSET, RobotParams.cameraHeightOffset);
             if (targets != null)
             {
-                id = ((AprilTagDetection) targets[0].detectedObj.object).id;
-            }
-
-            switch (id)
-            {
-                case 1:
-                    label = BlinkinLEDs.LABEL_TARGET1;
-                    break;
-
-                case 2:
-                    label = BlinkinLEDs.LABEL_TARGET2;
-                    break;
-
-                case 3:
-                    label = BlinkinLEDs.LABEL_TARGET3;
-                    break;
-            }
-
-            if (id != 0)
-            {
-                aprilTagId = id;
+                aprilTagId = ((FtcEocvAprilTagPipeline.DetectedObject) targets[0].detectedObj).object.id;
+                label = TARGET_LABELS[aprilTagId - 1];
             }
         }
         updateVisionLEDs(label);

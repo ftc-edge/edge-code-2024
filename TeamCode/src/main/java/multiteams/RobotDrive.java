@@ -44,20 +44,15 @@ public class RobotDrive
     public final FtcBNO055Imu imu;
     public final TrcGyro gyro;
     //
+    // Subclass needs to initialize the following variables.
+    //
     // Drive motors.
-    //
     public FtcDcMotor lfDriveMotor, lbDriveMotor, rfDriveMotor, rbDriveMotor;
-    //
     // Drive Base.
-    //
     public TrcDriveBase driveBase;
-    //
     // PID Coefficients and Controllers.
-    //
     public TrcPidController xPosPidCtrl, yPosPidCtrl, turnPidCtrl;
-    //
     // Drive Controllers.
-    //
     public TrcPidDrive pidDrive;
     public TrcPurePursuitDrive purePursuitDrive;
 

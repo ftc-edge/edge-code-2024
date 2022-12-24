@@ -43,7 +43,7 @@ import TrcFtcLib.ftclib.FtcVuforia;
  */
 public class VuforiaVision
 {
-    private static final String TRACKABLE_IMAGES_FILE = "PowerPlay";
+    private static final String TRACKABLE_IMAGES_FILE = "TrackableImagesFileName";
     //
     // Since ImageTarget trackables use mm to specify their dimensions, we must use mm for all the physical
     // dimension. We will define some constants and conversions here.
@@ -67,7 +67,7 @@ public class VuforiaVision
         this.vuforia = vuforia;
         this.blinkin = blinkin;
         vuforia.configVideoSource(
-            RobotParams.CAMERA_IMAGE_WIDTH, RobotParams.CAMERA_IMAGE_HEIGHT, RobotParams.FRAME_QUEUE_CAPACITY);
+            RobotParams.WEBCAM_IMAGE_WIDTH, RobotParams.WEBCAM_IMAGE_HEIGHT, RobotParams.FRAME_QUEUE_CAPACITY);
         /*
          * Create a transformation matrix describing where the camera is on the robot.
          *
@@ -88,15 +88,15 @@ public class VuforiaVision
          * Finally the camera can be translated to its actual mounting position on the robot.
          */
         final float CAMERA_FORWARD_DISPLACEMENT =
-            (float)((RobotParams.ROBOT_LENGTH/2.0 - RobotParams.CAMERA_FRONT_OFFSET)*TrcUtil.MM_PER_INCH);
+            (float)((RobotParams.ROBOT_LENGTH/2.0 - RobotParams.WEBCAM_FRONT_OFFSET)*TrcUtil.MM_PER_INCH);
         final float CAMERA_VERTICAL_DISPLACEMENT =
-            (float)(RobotParams.CAMERA_HEIGHT_OFFSET*TrcUtil.MM_PER_INCH);
+            (float)(RobotParams.WEBCAM_HEIGHT_OFFSET*TrcUtil.MM_PER_INCH);
         final float CAMERA_LEFT_DISPLACEMENT =
-            (float)(-(RobotParams.ROBOT_WIDTH/2.0 - RobotParams.CAMERA_LEFT_OFFSET)*TrcUtil.MM_PER_INCH);
+            (float)(-(RobotParams.ROBOT_WIDTH/2.0 - RobotParams.WEBCAM_LEFT_OFFSET)*TrcUtil.MM_PER_INCH);
         OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
             .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
             .multiplied(Orientation.getRotationMatrix(
-                EXTRINSIC, XZY, DEGREES, (float)(90 + RobotParams.CAMERA_TILT_DOWN), 90, 0));
+                EXTRINSIC, XZY, DEGREES, (float)(90 + RobotParams.WEBCAM_TILT_DOWN), 90, 0));
         /*
          * In order for localization to work, we need to tell the system where each target is on the field,
          * and where the camera resides on the robot.  These specifications are in the form of
@@ -198,11 +198,7 @@ public class VuforiaVision
             {
                 if (robotLocation != null)
                 {
-                    blinkin.setPatternState(targetName, true);
-                }
-                else
-                {
-                    blinkin.reset();
+                    blinkin.setPatternState(targetName, true, 1.0);
                 }
             }
         }

@@ -158,8 +158,12 @@ public class Robot
 
             if (runMode != TrcRobot.RunMode.AUTO_MODE)
             {
+                // In TeleOp or Test mode. If we are not running a competition match, autonomous may not have run
+                // prior to this. Therefore, we cannot inherit the robot position from previous autonomous mode.
+                // In this case, we will just assume previous robot start position.
                 if (endOfAutoRobotPose != null)
                 {
+                    // We had a previous autonomous run that saved the robot position at the end, use it.
                     robotDrive.driveBase.setFieldPosition(endOfAutoRobotPose);
                     globalTracer.traceInfo(funcName, "Restore saved RobotPose=%s", endOfAutoRobotPose);
                 }
@@ -167,13 +171,14 @@ public class Robot
                 {
                     // There was no saved robotPose, use previous autonomous start position. In case we didn't even
                     // have a previous autonomous run (e.g. just powering up the robot and go into TeleOp), then we
-                    // will default to RED_LEFT starting position.
+                    // will default to RED_LEFT starting position which is the AutoChoices default.
                     robotDrive.setAutoStartPosition(FtcAuto.autoChoices);
                     globalTracer.traceInfo(
                         funcName, "No saved RobotPose, use autoChoiceStartPos=%s",
                         robotDrive.driveBase.getFieldPosition());
                 }
             }
+            // Consume it so it's no longer valid for next run.
             endOfAutoRobotPose = null;
         }
         //
@@ -240,6 +245,7 @@ public class Robot
         {
             if (runMode == TrcRobot.RunMode.AUTO_MODE)
             {
+                // Save current robot location at the end of autonomous so subsequent teleop run can restore it.
                 endOfAutoRobotPose = robotDrive.driveBase.getFieldPosition();
                 globalTracer.traceInfo(funcName, "Saved robot pose=%s", endOfAutoRobotPose);
             }
