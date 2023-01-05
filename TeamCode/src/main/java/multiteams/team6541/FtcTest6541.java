@@ -92,33 +92,18 @@ public class FtcTest6541 extends FtcTeleOp6541
      * mode, you will typically put that code here.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
+     * @param slowPeriodicLoop specifies true if it is running the slow periodic loop on the main robot thread,
+     *        false otherwise.
      */
     @Override
-    public void fastPeriodic(double elapsedTime)
+    public void periodic(double elapsedTime, boolean slowPeriodicLoop)
     {
-        ftcTest.fastPeriodic(elapsedTime);
-    }   //fastPeriodic
-
-    /**
-     * This method is called periodically at a slow rate. Typically, you put code that doesn't require frequent
-     * update here. For example, TeleOp joystick code or status display code can be put here since human responses
-     * are considered slow.
-     *
-     * @param elapsedTime specifies the elapsed time since the mode started.
-     */
-    @Override
-    public void slowPeriodic(double elapsedTime)
-    {
-        if (ftcTest.allowTeleOp())
+        if (slowPeriodicLoop && ftcTest.allowTeleOp())
         {
-            //
-            // Allow TeleOp to run so we can control the robot in subsystem test or drive speed test modes.
-            //
-            super.slowPeriodic(elapsedTime);
+            super.periodic(elapsedTime, true);
         }
-
-        ftcTest.slowPeriodic(elapsedTime);
-    }   //slowPeriodic
+        ftcTest.periodic(elapsedTime, slowPeriodicLoop);
+    }   //periodic
 
     //
     // Overrides TrcGameController.ButtonHandler in TeleOp.

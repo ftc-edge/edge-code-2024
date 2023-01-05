@@ -131,41 +131,46 @@ public class FtcTeleOp extends FtcOpMode
     }   //stopMode
 
     /**
-     * This method is called periodically at a slow rate. Typically, you put code that doesn't require frequent
-     * update here. For example, TeleOp joystick code or status display code can be put here since human responses
-     * are considered slow.
+     * This method is called periodically on the main robot thread. Typically, you put TeleOp control code here that
+     * doesn't require frequent update For example, TeleOp joystick code or status display code can be put here since
+     * human responses are considered slow.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
+     * @param slowPeriodicLoop specifies true if it is running the slow periodic loop on the main robot thread,
+     *        false otherwise.
      */
     @Override
-    public void slowPeriodic(double elapsedTime)
+    public void periodic(double elapsedTime, boolean slowPeriodicLoop)
     {
-        //
-        // DriveBase subsystem.
-        //
-        if (robot.robotDrive != null)
+        if (slowPeriodicLoop)
         {
-            double[] inputs = driverGamepad.getDriveInputs(RobotParams.ROBOT_DRIVE_MODE, true, drivePowerScale);
-
-            if (robot.robotDrive.driveBase.supportsHolonomicDrive())
+            //
+            // DriveBase subsystem.
+            //
+            if (robot.robotDrive != null)
             {
-                robot.robotDrive.driveBase.holonomicDrive(
-                    null, inputs[0], inputs[1], inputs[2],
-                    robot.robotDrive.driveBase.getDriveGyroAngle(driveOrientation));
-            }
-            else
-            {
-                robot.robotDrive.driveBase.arcadeDrive(inputs[1], inputs[2]);
-            }
+                double[] inputs = driverGamepad.getDriveInputs(RobotParams.ROBOT_DRIVE_MODE, true, drivePowerScale);
 
-            robot.dashboard.displayPrintf(
-                2, "Pose:%s,x=%.2f,y=%.2f,rot=%.2f",
-                robot.robotDrive.driveBase.getFieldPosition(), inputs[0], inputs[1], inputs[2]);
+                if (robot.robotDrive.driveBase.supportsHolonomicDrive())
+                {
+                    robot.robotDrive.driveBase.holonomicDrive(
+                        null, inputs[0], inputs[1], inputs[2],
+                        robot.robotDrive.driveBase.getDriveGyroAngle(driveOrientation));
+                }
+                else
+                {
+                    robot.robotDrive.driveBase.arcadeDrive(inputs[1], inputs[2]);
+                }
+
+                robot.dashboard.displayPrintf(
+                    2, "Pose:%s,x=%.2f,y=%.2f,rot=%.2f",
+                    robot.robotDrive.driveBase.getFieldPosition(), inputs[0], inputs[1], inputs[2]);
+            }
+            //
+            // Other subsystems.
+            //
         }
-        //
-        // Other subsystems.
-        //
-    }   //slowPeriodic
+    }   //periodic
 
     /**
      * This method updates the blinkin LEDs to show the drive orientation mode.

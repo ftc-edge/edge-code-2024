@@ -61,20 +61,22 @@ public class FtcTeleOp6541 extends FtcTeleOp
     //
 
     /**
-     * This method is called periodically at a slow rate. Typically, you put code that doesn't require frequent
-     * update here. For example, TeleOp joystick code or status display code can be put here since human responses
-     * are considered slow.
+     * This method is called periodically on the main robot thread. Typically, you put TeleOp control code here that
+     * doesn't require frequent update For example, TeleOp joystick code or status display code can be put here since
+     * human responses are considered slow.
      *
      * @param elapsedTime specifies the elapsed time since the mode started.
+     * @param slowPeriodicLoop specifies true if it is running the slow periodic loop on the main robot thread,
+     *        false otherwise.
      */
     @Override
-    public void slowPeriodic(double elapsedTime)
+    public void periodic(double elapsedTime, boolean slowPeriodicLoop)
     {
-        super.slowPeriodic(elapsedTime);
+        super.periodic(elapsedTime, slowPeriodicLoop);
         //
         // Other subsystems.
         //
-    }   //slowPeriodic
+    }   //periodic
 
     //
     // Implements TrcGameController.ButtonHandler interface.
