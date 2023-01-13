@@ -180,7 +180,7 @@ public class Vision
         TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>>[] targets = null;
         String label = null;
 
-        if (eocvVision != null && eocvVision.isEnabled())
+        if (eocvVision != null && eocvVision.getPipeline() != null)
         {
             eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
             targets = eocvVision.getDetectedTargetsInfo(
@@ -217,7 +217,7 @@ public class Vision
     {
         TrcVisionTargetInfo<?>[] targets = null;
 
-        if (eocvVision != null && eocvVision.isEnabled())
+        if (eocvVision != null && eocvVision.getPipeline() != null)
         {
             eocvVision.setDetectObjectType(objectType);
             targets = eocvVision.getDetectedTargetsInfo(null, this::compareBottomY, 0.0, 0.0);
