@@ -22,8 +22,6 @@
 
 package teamcode;
 
-import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
-
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcDigitalInput;
 import TrcCommonLib.trclib.TrcMotor;
@@ -35,6 +33,11 @@ import TrcFtcLib.ftclib.FtcMatchInfo;
 import TrcFtcLib.ftclib.FtcOpMode;
 import TrcFtcLib.ftclib.FtcRevBlinkin;
 import TrcFtcLib.ftclib.FtcRobotBattery;
+import teamcode.drivebases.MecanumDrive;
+import teamcode.drivebases.RobotDrive;
+import teamcode.drivebases.SwerveDrive;
+import teamcode.subsystems.BlinkinLEDs;
+import teamcode.vision.Vision;
 
 /**
  * This class creates the robot object that consists of sensors, indicators, drive base and all the subsystems.
@@ -67,7 +70,7 @@ public class Robot
      * Constructor: Create an instance of the object.
      *
      * @param runMode specifies robot running mode (Auto, TeleOp, Test), can be used to create and initialize mode
-     *                specific sensors and subsystems if necessary.
+     *        specific sensors and subsystems if necessary.
      */
     public Robot(TrcRobot.RunMode runMode)
     {
@@ -77,9 +80,6 @@ public class Robot
         opMode = FtcOpMode.getInstance();
         opMode.hardwareMap.logDevices();
         dashboard = FtcDashboard.getInstance();
-        dashboard.setTextView(
-            ((FtcRobotControllerActivity)opMode.hardwareMap.appContext)
-                .findViewById(com.qualcomm.ftcrobotcontroller.R.id.textOpMode));
         globalTracer = TrcDbgTrace.getGlobalTracer();
 
         speak("Init starting");
@@ -87,11 +87,12 @@ public class Robot
         // Initialize vision subsystems.
         //
         if (runMode != TrcRobot.RunMode.TELEOP_MODE &&
-            (RobotParams.Preferences.useVuforia ||
-             RobotParams.Preferences.useTensorFlow ||
-             RobotParams.Preferences.useEasyOpenCV))
+            (RobotParams.Preferences.useAprilTagVision ||
+             RobotParams.Preferences.useColorBlobVision ||
+             RobotParams.Preferences.useTensorFlowVision))
         {
-            vision = new Vision(this);
+            // Don't need to enable vision for TeleOp because we are not doing auto-assist involving vision.
+            vision = new Vision(this, globalTracer);
         }
         //
         // If noRobot is true, the robot controller is disconnected from the robot for testing vision.
@@ -114,11 +115,11 @@ public class Robot
             //
             // Create and initialize RobotDrive.
             //
-            robotDrive = RobotParams.Preferences.swerveRobot? new SwerveDrive(this): new MecanumDrive(this);
+            robotDrive = RobotParams.Preferences.swerveRobot? new SwerveDrive(): new MecanumDrive();
             //
             // Create and initialize other subsystems.
             //
-            if (RobotParams.Preferences.initSubsystems)
+            if (RobotParams.Preferences.useSubsystems)
             {
             }
         }
@@ -230,22 +231,28 @@ public class Robot
         //
         if (vision != null)
         {
-            if (vision.vuforiaVision != null)
+            if (vision.aprilTagVision != null)
             {
-                globalTracer.traceInfo(funcName, "Disabling Vuforia.");
-                vision.vuforiaVision.setEnabled(false);
+                globalTracer.traceInfo(funcName, "Disabling AprilTagVision.");
+                vision.setAprilTagVisionEnabled(false);
+            }
+
+            if (vision.redBlobVision != null)
+            {
+                globalTracer.traceInfo(funcName, "Disabling RedBlobVision.");
+                vision.setRedBlobVisionEnabled(false);
+            }
+
+            if (vision.blueBlobVision != null)
+            {
+                globalTracer.traceInfo(funcName, "Disabling BlueBlobVision.");
+                vision.setBlueBlobVisionEnabled(false);
             }
 
             if (vision.tensorFlowVision != null)
             {
-                globalTracer.traceInfo(funcName, "Shutting down TensorFlow.");
-                vision.tensorFlowShutdown();
-            }
-
-            if (vision.eocvVision != null)
-            {
-                globalTracer.traceInfo(funcName, "Disabling EocvVision.");
-                vision.eocvVision.setDetectObjectType(EocvVision.ObjectType.NONE);
+                globalTracer.traceInfo(funcName, "Disabling TensorFlowVision.");
+                vision.setTensorFlowVisionEnabled(false);
             }
         }
 
@@ -270,6 +277,13 @@ public class Robot
             }
         }
     }   //stopMode
+
+    /**
+     * This method zero calibrates all subsystems.
+     */
+    public void zeroCalibrate()
+    {
+    }   //zeroCalibrate
 
     /**
      * This method sends the text string to the Driver Station to be spoken using text to speech.

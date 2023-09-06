@@ -33,27 +33,25 @@ import TrcCommonLib.command.CmdTimedDrive;
 
 import TrcCommonLib.trclib.TrcElapsedTimer;
 import TrcCommonLib.trclib.TrcGameController;
-import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcTimer;
 import TrcCommonLib.trclib.TrcUtil;
-import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcChoiceMenu;
-import TrcFtcLib.ftclib.FtcDcMotor;
 import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcMenu;
 import TrcFtcLib.ftclib.FtcPidCoeffCache;
-import TrcFtcLib.ftclib.FtcTensorFlow;
 import TrcFtcLib.ftclib.FtcValueMenu;
+import teamcode.drivebases.RobotDrive;
+import teamcode.drivebases.SwerveDrive;
 
 /**
  * This class contains the Test Mode program. It extends FtcTeleOp so that we can teleop control the robot for
  * testing purposes. It provides numerous tests for diagnosing problems with the robot. It also provides tools
  * for tuning and calibration.
  */
-@TeleOp(name="FtcTest", group="Ftc3543")
+@TeleOp(name="FtcTest", group="Ftcxxxx")
 public class FtcTest extends FtcTeleOp
 {
     private static final boolean logEvents = true;
@@ -123,14 +121,9 @@ public class FtcTest extends FtcTeleOp
     private double maxDriveAcceleration = 0.0;
     private double prevTime = 0.0;
     private double prevVelocity = 0.0;
-    //
-    // Swerve Steering calibration.
-    //
-    private static final double STEER_CALIBRATE_STEP = 0.01;
-    private static final String[] posNames = {"Zero", "Minus90", "Plus90"};
-    private static final int[] posDataIndices = {-1, 0, 1};
-    private int posIndex = 0;
-    private int wheelIndex = 0;
+
+    private boolean steerCalibrating = false;
+    private boolean teleOpControlEnabled = true;
 
     //
     // Overrides FtcOpMode abstract method.
@@ -141,12 +134,12 @@ public class FtcTest extends FtcTeleOp
      * Station is pressed.
      */
     @Override
-    public void initRobot()
+    public void robotInit()
     {
         //
         // TeleOp initialization.
         //
-        super.initRobot();
+        super.robotInit();
         if (RobotParams.Preferences.useLoopPerformanceMonitor)
         {
             elapsedTimer = new TrcElapsedTimer("TestLoopMonitor", 2.0);
@@ -163,10 +156,7 @@ public class FtcTest extends FtcTeleOp
             case DRIVE_MOTORS_TEST:
                 if (!RobotParams.Preferences.noRobot)
                 {
-                    testCommand = new CmdDriveMotorsTest(
-                        new FtcDcMotor[] {robot.robotDrive.lfDriveMotor, robot.robotDrive.rfDriveMotor,
-                                          robot.robotDrive.lbDriveMotor, robot.robotDrive.rbDriveMotor},
-                        5.0, 0.5);
+                    testCommand = new CmdDriveMotorsTest(robot.robotDrive.driveMotors, 5.0, 0.5);
                 }
                 break;
 
@@ -239,10 +229,10 @@ public class FtcTest extends FtcTeleOp
         //
         if (robot.vision != null && robot.vision.tensorFlowVision != null && testChoices.test != Test.VISION_TEST)
         {
-            robot.globalTracer.traceInfo("TestInit", "Shutting down TensorFlow.");
-            robot.vision.tensorFlowShutdown();
+            robot.globalTracer.traceInfo("TestInit", "Disabling TensorFlowVision.");
+            robot.vision.setTensorFlowVisionEnabled(false);
         }
-    }   //initRobot
+    }   //robotInit
 
     //
     // Overrides TrcRobot.RobotMode methods.
@@ -269,21 +259,28 @@ public class FtcTest extends FtcTeleOp
                     //
                     // Vision generally will impact performance, so we only enable it if it's needed.
                     //
-                    if (robot.vision.vuforiaVision != null)
+                    if (robot.vision.aprilTagVision != null)
                     {
-                        robot.globalTracer.traceInfo(funcName, "Enabling Vuforia.");
-                        robot.vision.vuforiaVision.setEnabled(true);
+                        robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
+                        robot.vision.setAprilTagVisionEnabled(true);
                     }
 
-                    if (robot.vision.eocvVision != null)
+                    if (robot.vision.redBlobVision != null)
                     {
-                        robot.globalTracer.traceInfo(funcName, "Enabling EocvVision.");
-                        robot.vision.eocvVision.setDetectObjectType(EocvVision.ObjectType.APRIL_TAG);
+                        robot.globalTracer.traceInfo(funcName, "Enabling RedBlobVision.");
+                        robot.vision.setRedBlobVisionEnabled(true);
                     }
-                    else if (robot.vision.tensorFlowVision != null)
+
+                    if (robot.vision.blueBlobVision != null)
                     {
-                        robot.globalTracer.traceInfo(funcName, "Enabling TensorFlow.");
-                        robot.vision.tensorFlowVision.setEnabled(true);
+                        robot.globalTracer.traceInfo(funcName, "Enabling BlueBlobVision.");
+                        robot.vision.setBlueBlobVisionEnabled(true);
+                    }
+
+                    if (robot.vision.tensorFlowVision != null)
+                    {
+                        robot.globalTracer.traceInfo(funcName, "Enabling TensorFlowVison.");
+                        robot.vision.setTensorFlowVisionEnabled(true);
                     }
                 }
                 break;
@@ -314,19 +311,6 @@ public class FtcTest extends FtcTeleOp
                         new TrcPose2D(24.0, 48.0, 225.0),
                         new TrcPose2D(24.0, 0.0, 315.0),
                         new TrcPose2D(0.0, 0.0, 0.0));
-                }
-                break;
-
-            case CALIBRATE_SWERVE_STEERING:
-                if (robot.robotDrive != null && (robot.robotDrive instanceof SwerveDrive))
-                {
-                    posIndex = 0;
-                    wheelIndex = 0;
-                    ((SwerveDrive) robot.robotDrive).setSteeringServoPosition(posDataIndices[posIndex]);
-                }
-                else
-                {
-                    throw new RuntimeException("Steering calibration can only be done on Swerve Drive.");
                 }
                 break;
         }
@@ -399,8 +383,8 @@ public class FtcTest extends FtcTeleOp
                     prevTime = currTime;
                     prevVelocity = velocity;
 
-                    robot.dashboard.displayPrintf(8, "Drive Vel: (%.1f/%.1f)", velocity, maxDriveVelocity);
-                    robot.dashboard.displayPrintf(9, "Drive Accel: (%.1f/%.1f)", acceleration, maxDriveAcceleration);
+                    robot.dashboard.displayPrintf(9, "Drive Vel: (%.1f/%.1f)", velocity, maxDriveVelocity);
+                    robot.dashboard.displayPrintf(10, "Drive Accel: (%.1f/%.1f)", acceleration, maxDriveAcceleration);
                 }
                 break;
 
@@ -408,12 +392,14 @@ public class FtcTest extends FtcTeleOp
             case Y_TIMED_DRIVE:
                 if (!RobotParams.Preferences.noRobot)
                 {
-                    robot.dashboard.displayPrintf(8, "Timed Drive: %.0f sec", testChoices.driveTime);
-                    robot.dashboard.displayPrintf(9, "RobotPose=%s", robot.robotDrive.driveBase.getFieldPosition());
+                    robot.dashboard.displayPrintf(9, "Timed Drive: %.0f sec", testChoices.driveTime);
+                    robot.dashboard.displayPrintf(10, "RobotPose=%s", robot.robotDrive.driveBase.getFieldPosition());
                     robot.dashboard.displayPrintf(
-                        10, "rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
-                        robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
-                        robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
+                        11, "rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_FRONT].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_FRONT].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_BACK].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_BACK].getPosition());
                 }
                 break;
 
@@ -422,42 +408,45 @@ public class FtcTest extends FtcTeleOp
             case TUNE_TURN_PID:
                 if (!RobotParams.Preferences.noRobot && testChoices.tunePidCoeff != null)
                 {
-                    robot.dashboard.displayPrintf(7, "TunePid=%s", testChoices.tunePidCoeff);
+                    robot.dashboard.displayPrintf(6, "TunePid=%s", testChoices.tunePidCoeff);
                 }
                 //
                 // Intentionally falling through.
                 //
             case PID_DRIVE:
-                if (!RobotParams.Preferences.noRobot)
-                {
-                    robot.dashboard.displayPrintf(
-                        8, "RobotPose=%s,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
-                        robot.robotDrive.driveBase.getFieldPosition(),
-                        robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
-                        robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
-                    if (robot.robotDrive.xPosPidCtrl != null)
-                    {
-                        robot.robotDrive.xPosPidCtrl.displayPidInfo(9);
-                    }
-                    if (robot.robotDrive.yPosPidCtrl != null)
-                    {
-                        robot.robotDrive.yPosPidCtrl.displayPidInfo(11);
-                    }
-                    if (robot.robotDrive.turnPidCtrl != null)
-                    {
-                        robot.robotDrive.turnPidCtrl.displayPidInfo(13);
-                    }
-                }
-                break;
-
             case PURE_PURSUIT_DRIVE:
                 if (!RobotParams.Preferences.noRobot)
                 {
+                    TrcPidController xPidCtrl, yPidCtrl, turnPidCtrl;
+                    if (testChoices.test == Test.PURE_PURSUIT_DRIVE)
+                    {
+                        xPidCtrl = robot.robotDrive.purePursuitDrive.getXPosPidCtrl();
+                        yPidCtrl = robot.robotDrive.purePursuitDrive.getYPosPidCtrl();
+                        turnPidCtrl = robot.robotDrive.purePursuitDrive.getTurnPidCtrl();
+                    }
+                    else
+                    {
+                        xPidCtrl = robot.robotDrive.pidDrive.getXPidCtrl();
+                        yPidCtrl = robot.robotDrive.pidDrive.getYPidCtrl();
+                        turnPidCtrl = robot.robotDrive.pidDrive.getTurnPidCtrl();
+                    }
+
                     robot.dashboard.displayPrintf(
-                        8, "RobotPose=%s,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
+                        6, "RobotPose=%s,rawEnc=lf:%.0f,rf:%.0f,lb:%.0f,rb:%.0f",
                         robot.robotDrive.driveBase.getFieldPosition(),
-                        robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
-                        robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_FRONT].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_FRONT].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_BACK].getPosition(),
+                        robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_BACK].getPosition());
+                    int lineNum = 9;
+                    if (xPidCtrl != null)
+                    {
+                        xPidCtrl.displayPidInfo(lineNum);
+                        lineNum += 2;
+                    }
+                    yPidCtrl.displayPidInfo(lineNum);
+                    lineNum += 2;
+                    turnPidCtrl.displayPidInfo(lineNum);
                 }
                 break;
         }
@@ -493,21 +482,30 @@ public class FtcTest extends FtcTeleOp
                     break;
 
                 case CALIBRATE_SWERVE_STEERING:
-                    if (robot.robotDrive != null && (robot.robotDrive instanceof SwerveDrive))
+                    if (robot.robotDrive != null && (robot.robotDrive instanceof SwerveDrive) && steerCalibrating)
                     {
                         SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
-
-                        swerveDrive.setSteeringServoPosition(posDataIndices[posIndex]);
-                        robot.dashboard.displayPrintf(
-                            1, "State: pos=%s, wheel=%s", posNames[posIndex], SwerveDrive.servoNames[wheelIndex]);
-                        robot.dashboard.displayPrintf(
-                            2, "Front Steer: lfPos=%.2f, rfPos=%.2f",
-                            swerveDrive.getSteeringServoPosition(0, posDataIndices[posIndex]),
-                            swerveDrive.getSteeringServoPosition(1, posDataIndices[posIndex]));
-                        robot.dashboard.displayPrintf(
-                            3, "Back Steer: lbPos=%.2f, rbPos=%.2f",
-                            swerveDrive.getSteeringServoPosition(2, posDataIndices[posIndex]),
-                            swerveDrive.getSteeringServoPosition(3, posDataIndices[posIndex]));
+                        swerveDrive.runSteeringCalibration();
+                        if (swerveDrive.calibrationCount > 0)
+                        {
+                            robot.dashboard.displayPrintf(9, "Count = %d", swerveDrive.calibrationCount);
+                            robot.dashboard.displayPrintf(
+                                10, "Encoder: lf=%.3f/%f",
+                                swerveDrive.steerEncoders[SwerveDrive.INDEX_LEFT_FRONT].getRawPosition(),
+                                swerveDrive.zeroPositions[SwerveDrive.INDEX_LEFT_FRONT]/swerveDrive.calibrationCount);
+                            robot.dashboard.displayPrintf(
+                                11, "Encoder: rf=%.3f/%f",
+                                swerveDrive.steerEncoders[SwerveDrive.INDEX_RIGHT_FRONT].getRawPosition(),
+                                swerveDrive.zeroPositions[SwerveDrive.INDEX_RIGHT_FRONT]/swerveDrive.calibrationCount);
+                            robot.dashboard.displayPrintf(
+                                12, "Encoder: lb=%.3f/%f",
+                                swerveDrive.steerEncoders[SwerveDrive.INDEX_LEFT_BACK].getRawPosition(),
+                                swerveDrive.zeroPositions[SwerveDrive.INDEX_LEFT_BACK]/swerveDrive.calibrationCount);
+                            robot.dashboard.displayPrintf(
+                                13, "Encoder: rb=%.3f/%f",
+                                swerveDrive.steerEncoders[SwerveDrive.INDEX_RIGHT_BACK].getRawPosition(),
+                                swerveDrive.zeroPositions[SwerveDrive.INDEX_RIGHT_BACK]/swerveDrive.calibrationCount);
+                        }
                     }
                     break;
             }
@@ -541,87 +539,99 @@ public class FtcTest extends FtcTeleOp
                 case FtcGamepad.GAMEPAD_A:
                     if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
                     {
-                        if (pressed)
+                        if (pressed && robot.robotDrive != null && robot.robotDrive instanceof SwerveDrive)
                         {
-                            posIndex = (posIndex + 1) % posNames.length;
+                            SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+
+                            steerCalibrating = !steerCalibrating;
+                            if (steerCalibrating)
+                            {
+                                // Start steer calibration.
+                                swerveDrive.startSteeringCalibration();
+                            }
+                            else
+                            {
+                                // Stop steer calibration.
+                                swerveDrive.stopSteeringCalibration();
+                            }
                         }
                         processed = true;
                     }
                     break;
 
                 case FtcGamepad.GAMEPAD_B:
-                    if (testChoices.test == Test.VISION_TEST)
-                    {
-                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
-                        {
-                            robot.vision.eocvVision.setNextObjectType();
-                        }
-                        processed = true;
-                    }
+//                    if (testChoices.test == Test.VISION_TEST)
+//                    {
+//                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
+//                        {
+//                            robot.vision.eocvVision.setNextObjectType();
+//                        }
+//                        processed = true;
+//                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_X:
-                    if (testChoices.test == Test.VISION_TEST)
-                    {
-                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
-                        {
-                            robot.vision.eocvVision.setNextVideoOutput();
-                        }
-                        processed = true;
-                    }
+//                    if (testChoices.test == Test.VISION_TEST)
+//                    {
+//                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
+//                        {
+//                            robot.vision.eocvVision.setNextVideoOutput();
+//                        }
+//                        processed = true;
+//                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_Y:
-                    if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
-                    {
-                        if (pressed)
-                        {
-                            ((SwerveDrive) robot.robotDrive).saveSteeringCalibrationData();
-                        }
-                        processed = true;
-                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_UP:
-                    if (pressed && testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
+                    if (testChoices.test == Test.SUBSYSTEMS_TEST)
                     {
-                        SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
-
-                        if (posDataIndices[posIndex] != -1 &&
-                            swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] + STEER_CALIBRATE_STEP
-                            <= 1.0)
+                        if (pressed && robot.robotDrive != null && robot.robotDrive instanceof SwerveDrive)
                         {
-                            swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] += STEER_CALIBRATE_STEP;
+                            SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                            swerveDrive.setSteerAngle(0.0, false, true);
                         }
+                        teleOpControlEnabled = !pressed;
                         processed = true;
                     }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_DOWN:
-                    if (pressed && testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
+                    if (testChoices.test == Test.SUBSYSTEMS_TEST)
                     {
-                        SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
-
-                        if (posDataIndices[posIndex] != -1 &&
-                            swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] - STEER_CALIBRATE_STEP
-                            >= 0.0)
+                        if (pressed && robot.robotDrive != null && robot.robotDrive instanceof SwerveDrive)
                         {
-                            swerveDrive.servoPositions[wheelIndex][posDataIndices[posIndex]] -= STEER_CALIBRATE_STEP;
+                            SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                            swerveDrive.setSteerAngle(180.0, false, true);
                         }
+                        teleOpControlEnabled = !pressed;
                         processed = true;
                     }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_LEFT:
+                    if (testChoices.test == Test.SUBSYSTEMS_TEST)
+                    {
+                        if (pressed && robot.robotDrive != null && robot.robotDrive instanceof SwerveDrive)
+                        {
+                            SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                            swerveDrive.setSteerAngle(270.0, false, true);
+                        }
+                        teleOpControlEnabled = !pressed;
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_RIGHT:
-                    if (testChoices.test == Test.CALIBRATE_SWERVE_STEERING)
+                    if (testChoices.test == Test.SUBSYSTEMS_TEST)
                     {
-                        if (pressed)
+                        if (pressed && robot.robotDrive != null && robot.robotDrive instanceof SwerveDrive)
                         {
-                            wheelIndex = (wheelIndex + 1) % SwerveDrive.servoNames.length;
+                            SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                            swerveDrive.setSteerAngle(90.0, false, true);
                         }
+                        teleOpControlEnabled = !pressed;
                         processed = true;
                     }
                     break;
@@ -804,15 +814,15 @@ public class FtcTest extends FtcTeleOp
         switch (test)
         {
             case TUNE_X_PID:
-                pidCtrl = robot.robotDrive.xPosPidCtrl;
+                pidCtrl = robot.robotDrive.pidDrive.getXPidCtrl();
                 break;
 
             case TUNE_Y_PID:
-                pidCtrl = robot.robotDrive.yPosPidCtrl;
+                pidCtrl = robot.robotDrive.pidDrive.getYPidCtrl();
                 break;
 
             case TUNE_TURN_PID:
-                pidCtrl = robot.robotDrive.turnPidCtrl;
+                pidCtrl = robot.robotDrive.pidDrive.getTurnPidCtrl();
                 break;
 
             default:
@@ -901,6 +911,7 @@ public class FtcTest extends FtcTeleOp
      */
     private void doSensorsTest()
     {
+        int lineNum = 8;
         //
         // Read all sensors and display on the dashboard.
         // Drive the robot around to sample different locations of the field.
@@ -908,16 +919,37 @@ public class FtcTest extends FtcTeleOp
         if (!RobotParams.Preferences.noRobot)
         {
             robot.dashboard.displayPrintf(
-                8, "Enc: lf=%.0f,rf=%.0f,lb=%.0f,rb=%.0f",
-                robot.robotDrive.lfDriveMotor.getPosition(), robot.robotDrive.rfDriveMotor.getPosition(),
-                robot.robotDrive.lbDriveMotor.getPosition(), robot.robotDrive.rbDriveMotor.getPosition());
+                lineNum++, "DriveEnc: lf=%.0f,rf=%.0f,lb=%.0f,rb=%.0f",
+                robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_FRONT].getPosition(),
+                robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_FRONT].getPosition(),
+                robot.robotDrive.driveMotors[RobotDrive.INDEX_LEFT_BACK].getPosition(),
+                robot.robotDrive.driveMotors[RobotDrive.INDEX_RIGHT_BACK].getPosition());
+
+            if (robot.robotDrive instanceof SwerveDrive)
+            {
+                SwerveDrive swerveDrive = (SwerveDrive) robot.robotDrive;
+                robot.dashboard.displayPrintf(
+                    lineNum++, "SteerEnc: lf=%.2f, rf=%.2f, lb=%.2f, rb=%.2f",
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_LEFT_FRONT].getPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_RIGHT_FRONT].getPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_LEFT_BACK].getPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_RIGHT_BACK].getPosition());
+                robot.dashboard.displayPrintf(
+                    lineNum++, "SteerRaw: lf=%.2f, rf=%.2f, lb=%.2f, rb=%.2f",
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_LEFT_FRONT].getRawPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_RIGHT_FRONT].getRawPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_LEFT_BACK].getRawPosition(),
+                    swerveDrive.steerEncoders[RobotDrive.INDEX_RIGHT_BACK].getRawPosition());
+            }
         }
 
         if (robot.robotDrive.gyro != null)
         {
             robot.dashboard.displayPrintf(
-                9, "Gyro: Rate=%.3f,Heading=%.1f",
-                robot.robotDrive.gyro.getZRotationRate().value, robot.robotDrive.gyro.getZHeading().value);
+                lineNum++, "Gyro(x,y,z): Heading=(%.1f,%.1f,%.1f), Rate=(%.3f,%.3f,%.3f)",
+                robot.robotDrive.gyro.getXHeading().value, robot.robotDrive.gyro.getYHeading().value,
+                robot.robotDrive.gyro.getZHeading().value, robot.robotDrive.gyro.getXRotationRate().value,
+                robot.robotDrive.gyro.getYRotationRate().value, robot.robotDrive.gyro.getZRotationRate().value);
         }
     }   //doSensorsTest
 
@@ -928,73 +960,73 @@ public class FtcTest extends FtcTeleOp
     {
         if (robot.vision != null)
         {
-            TrcVisionTargetInfo<?> aprilTagInfo = robot.vision.getDetectedAprilTagInfo();
-            if (aprilTagInfo != null)
-            {
-                robot.dashboard.displayPrintf(10, "AprilTag: %s", aprilTagInfo);
-            }
-            else
-            {
-                robot.dashboard.displayPrintf(10, "AprilTag: Not found.");
-            }
-
-            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> redBlobInfo =
-                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.RED_BLOB);
-            if (redBlobInfo != null)
-            {
-                robot.dashboard.displayPrintf(11, "Red Blob: %s", redBlobInfo);
-            }
-            else
-            {
-                robot.dashboard.displayPrintf(11, "Red Blob: Not found.");
-            }
-
-            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> blueBlobInfo =
-                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.BLUE_BLOB);
-            if (blueBlobInfo != null)
-            {
-                robot.dashboard.displayPrintf(12, "Blue Blob: %s", blueBlobInfo);
-            }
-            else
-            {
-                robot.dashboard.displayPrintf(12, "Blue Blob: Not found.");
-            }
-
-            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> yellowBlobInfo =
-                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.YELLOW_BLOB);
-            if (yellowBlobInfo != null)
-            {
-                robot.dashboard.displayPrintf(13, "Yellow Blob: %s", yellowBlobInfo);
-            }
-            else
-            {
-                robot.dashboard.displayPrintf(13, "Yellow Blob: Not found.");
-            }
-
-            TrcVisionTargetInfo<FtcTensorFlow.DetectedObject> tensorFlowInfo =
-                robot.vision.getDetectedTensorFlowInfo();
-            if (tensorFlowInfo != null)
-            {
-                robot.dashboard.displayPrintf(14, "TensorFlow: %s", tensorFlowInfo);
-            }
-            else
-            {
-                robot.dashboard.displayPrintf(14, "TensorFlow: Not found.");
-            }
-
-            if (robot.vision.vuforiaVision != null)
-            {
-                TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
-                if (robotPose != null)
-                {
-                    robot.dashboard.displayPrintf(
-                        15, "RobotLoc %s: %s", robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
-                }
-                else
-                {
-                    robot.dashboard.displayPrintf(15, "RobotLoc: Unknown");
-                }
-            }
+//            TrcVisionTargetInfo<?> aprilTagInfo = robot.vision.getDetectedAprilTagInfo();
+//            if (aprilTagInfo != null)
+//            {
+//                robot.dashboard.displayPrintf(10, "AprilTag: %s", aprilTagInfo);
+//            }
+//            else
+//            {
+//                robot.dashboard.displayPrintf(10, "AprilTag: Not found.");
+//            }
+//
+//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> redBlobInfo =
+//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.RED_BLOB);
+//            if (redBlobInfo != null)
+//            {
+//                robot.dashboard.displayPrintf(11, "Red Blob: %s", redBlobInfo);
+//            }
+//            else
+//            {
+//                robot.dashboard.displayPrintf(11, "Red Blob: Not found.");
+//            }
+//
+//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> blueBlobInfo =
+//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.BLUE_BLOB);
+//            if (blueBlobInfo != null)
+//            {
+//                robot.dashboard.displayPrintf(12, "Blue Blob: %s", blueBlobInfo);
+//            }
+//            else
+//            {
+//                robot.dashboard.displayPrintf(12, "Blue Blob: Not found.");
+//            }
+//
+//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> yellowBlobInfo =
+//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.YELLOW_BLOB);
+//            if (yellowBlobInfo != null)
+//            {
+//                robot.dashboard.displayPrintf(13, "Yellow Blob: %s", yellowBlobInfo);
+//            }
+//            else
+//            {
+//                robot.dashboard.displayPrintf(13, "Yellow Blob: Not found.");
+//            }
+//
+//            TrcVisionTargetInfo<FtcTensorFlow.DetectedObject> tensorFlowInfo =
+//                robot.vision.getDetectedTensorFlowInfo();
+//            if (tensorFlowInfo != null)
+//            {
+//                robot.dashboard.displayPrintf(14, "TensorFlow: %s", tensorFlowInfo);
+//            }
+//            else
+//            {
+//                robot.dashboard.displayPrintf(14, "TensorFlow: Not found.");
+//            }
+//
+//            if (robot.vision.vuforiaVision != null)
+//            {
+//                TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
+//                if (robotPose != null)
+//                {
+//                    robot.dashboard.displayPrintf(
+//                        15, "RobotLoc %s: %s", robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
+//                }
+//                else
+//                {
+//                    robot.dashboard.displayPrintf(15, "RobotLoc: Unknown");
+//                }
+//            }
         }
     }   //doVisionTest
 
@@ -1005,7 +1037,7 @@ public class FtcTest extends FtcTeleOp
      */
     private boolean allowTeleOp()
     {
-        return !RobotParams.Preferences.noRobot &&
+        return teleOpControlEnabled && !RobotParams.Preferences.noRobot &&
                (testChoices.test == Test.SUBSYSTEMS_TEST || testChoices.test == Test.DRIVE_SPEED_TEST);
     }   //allowTeleOp
 

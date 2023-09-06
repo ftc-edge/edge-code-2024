@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2023 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,9 @@ import android.os.Environment;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import TrcCommonLib.trclib.TrcDriveBase.DriveOrientation;
 import TrcCommonLib.trclib.TrcHomographyMapper;
 import TrcCommonLib.trclib.TrcPidController;
-import TrcCommonLib.trclib.TrcPose2D;
 import TrcFtcLib.ftclib.FtcGamepad;
 
 /**
@@ -42,30 +42,31 @@ public class RobotParams
     public static class Preferences
     {
         // Miscellaneous
-        public static boolean useTraceLog = false;
-        public static boolean useLoopPerformanceMonitor = false;
+        public static boolean useTraceLog = true;
+        public static boolean useLoopPerformanceMonitor = true;
         public static boolean useBlinkin = false;
         public static boolean useBatteryMonitor = false;
         // Vision
-        public static boolean useVuforia = false;
-        public static boolean showVuforiaView = false;
-        public static boolean useTensorFlow = false;
-        public static boolean showTensorFlowView = false;
-        public static boolean useEasyOpenCV = false;
-        public static boolean showEasyOpenCvView = false;
+        public static boolean useWebCam = true;
+        public static boolean useBuiltinCamBack = false;
+        public static boolean useAprilTagVision = false;
+        public static boolean useColorBlobVision = false;
+        public static boolean useTensorFlowVision = false;
+        public static boolean showVisionView = true;
         // Robot
         public static boolean noRobot = false;
         public static boolean swerveRobot = false;
         // Drive Base
         public static boolean useExternalOdometry = false;
         public static boolean useVelocityControl = false;
+        public static boolean doSwervePhysicalAlignment = false;
         // Subsystems
-        public static boolean initSubsystems = true;
+        public static boolean useSubsystems = false;
     }   //class Preferences
 
     public static final String ROBOT_NAME                       = "Robotxxxx";
     public static final String TEAM_FOLDER_PATH                 =
-        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftc3543";
+        Environment.getExternalStorageDirectory().getPath() + "/FIRST/ftcxxxx";
     public static final String LOG_FOLDER_PATH                  = TEAM_FOLDER_PATH + "/tracelogs";
     public static final String STEERING_CALIBRATION_DATA_FILE   = "SteerCalibration.txt";
     //
@@ -80,14 +81,16 @@ public class RobotParams
     public static final String HWNAME_RFDRIVE_MOTOR             = "rfDriveMotor";
     public static final String HWNAME_LBDRIVE_MOTOR             = "lbDriveMotor";
     public static final String HWNAME_RBDRIVE_MOTOR             = "rbDriveMotor";
-    public static final String HWNAME_LFSTEER_SERVO1            = "lfSteerServo1";
-    public static final String HWNAME_LFSTEER_SERVO2            = "lfSteerServo2";
-    public static final String HWNAME_RFSTEER_SERVO1            = "rfSteerServo1";
-    public static final String HWNAME_RFSTEER_SERVO2            = "rfSteerServo2";
-    public static final String HWNAME_LBSTEER_SERVO1            = "lbSteerServo1";
-    public static final String HWNAME_LBSTEER_SERVO2            = "lbSteerServo2";
-    public static final String HWNAME_RBSTEER_SERVO1            = "rbSteerServo1";
-    public static final String HWNAME_RBSTEER_SERVO2            = "rbSteerServo2";
+    public static final String HWNAME_LFSTEER_SERVO             = "lfSteerServo";
+    public static final String HWNAME_RFSTEER_SERVO             = "rfSteerServo";
+    public static final String HWNAME_LBSTEER_SERVO             = "lbSteerServo";
+    public static final String HWNAME_RBSTEER_SERVO             = "rbSteerServo";
+    public static final String HWNAME_LODO_SERVO                = "lOdoServo";
+    public static final String HWNAME_RODO_SERVO                = "rOdoServo";
+    public static final String HWNAME_LFSTEER_ENCODER           = "lfSteerEncoder";
+    public static final String HWNAME_RFSTEER_ENCODER           = "rfSteerEncoder";
+    public static final String HWNAME_LBSTEER_ENCODER           = "lbSteerEncoder";
+    public static final String HWNAME_RBSTEER_ENCODER           = "rbSteerEncoder";
     // Subsystems.
 
     //
@@ -106,32 +109,18 @@ public class RobotParams
     //
     // Game positions.
     //
-    public static final double STARTPOS_FROM_FIELDCENTER_X      = 1.5 * FULL_TILE_INCHES;
-    public static final double STARTPOS_FROM_FIELDCENTER_Y      = HALF_FIELD_INCHES - ROBOT_LENGTH/2.0;
-    // Robot start positions in inches.
-    public static final TrcPose2D STARTPOS_RED_LEFT = new TrcPose2D(
-        -STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static final TrcPose2D STARTPOS_RED_RIGHT = new TrcPose2D(
-        STARTPOS_FROM_FIELDCENTER_X, -STARTPOS_FROM_FIELDCENTER_Y, 0.0);
-    public static final TrcPose2D STARTPOS_BLUE_LEFT = new TrcPose2D(
-        STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
-    public static final TrcPose2D STARTPOS_BLUE_RIGHT = new TrcPose2D(
-        -STARTPOS_FROM_FIELDCENTER_X, STARTPOS_FROM_FIELDCENTER_Y, 180.0);
+
     //
     // Vision subsystem.
     //
-    public static final int WEBCAM_PERMISSION_TIMEOUT           = 5000;     // in msec
-    public static final int FRAME_QUEUE_CAPACITY                = 2;
-    public static final double APRILTAG_SIZE                    = 0.05; // in meters
-    public static final double APRILTAG_HEIGHT_OFFSET           = 1.5;  // in inches
+    public static final int CAM_IMAGE_WIDTH                     = 640;
+    public static final int CAM_IMAGE_HEIGHT                    = 480;
     // Camera location on robot.
-    public static final double WEBCAM_FRONT_OFFSET              = 7.5;  //Camera offset from front of robot in inches
-    public static final double WEBCAM_LEFT_OFFSET               = 6.0;  //Camera offset from left of robot in inches
-    public static final double WEBCAM_HEIGHT_OFFSET             = 16.0; //Camera offset from floor in inches
-    public static final double WEBCAM_TILT_DOWN                 = 36.0; //Camera tilt down angle from horizontal in deg
+    public static final double CAM_FRONT_OFFSET                 = 2.000;//Camera offset from front of robot in inches
+    public static final double CAM_LEFT_OFFSET                  = 7.125;//Camera offset from left of robot in inches
+    public static final double CAM_HEIGHT_OFFSET                = 3.750;//Camera offset from floor in inches
+    public static final double CAM_TILT_DOWN                    = 15.00;//Camera tilt down angle from horizontal in deg
     // Camera: Logitech C310
-    public static final int WEBCAM_IMAGE_WIDTH                  = 640;
-    public static final int WEBCAM_IMAGE_HEIGHT                 = 480;
     public static final double WEBCAM_FX                        = 821.993;  // in pixels
     public static final double WEBCAM_FY                        = 821.993;  // in pixels
     public static final double WEBCAM_CX                        = 330.489;  // in pixels
@@ -139,22 +128,22 @@ public class RobotParams
 
     // Measurement unit: pixels
     public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y      = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X     = WEBCAM_IMAGE_WIDTH - 1;
-    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y     = 0.0;
+    public static final double HOMOGRAPHY_CAMERA_TOPLEFT_Y      = 120.0;
+    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_X     = CAM_IMAGE_WIDTH - 1;
+    public static final double HOMOGRAPHY_CAMERA_TOPRIGHT_Y     = 120.0;
     public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_X   = 0.0;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y   = WEBCAM_IMAGE_HEIGHT - 1;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X  = WEBCAM_IMAGE_WIDTH - 1;
-    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y  = WEBCAM_IMAGE_HEIGHT - 1;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMLEFT_Y   = CAM_IMAGE_HEIGHT - 1;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_X  = CAM_IMAGE_WIDTH - 1;
+    public static final double HOMOGRAPHY_CAMERA_BOTTOMRIGHT_Y  = CAM_IMAGE_HEIGHT - 1;
     // Measurement unit: inches
-    public static final double HOMOGRAPHY_WORLD_TOPLEFT_X       = -22.25;
-    public static final double HOMOGRAPHY_WORLD_TOPLEFT_Y       = 60.0;
-    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_X      = 23.0;
-    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y      = 60.0;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_X    = -8.75;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y    = 16.0;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X   = 7.5;
-    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y   = 16.0;
+    public static final double HOMOGRAPHY_WORLD_TOPLEFT_X       = -12.5625;
+    public static final double HOMOGRAPHY_WORLD_TOPLEFT_Y       = 48.0 - ROBOT_LENGTH + CAM_FRONT_OFFSET;
+    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_X      = 11.4375;
+    public static final double HOMOGRAPHY_WORLD_TOPRIGHT_Y      = 44.75 - ROBOT_LENGTH + CAM_FRONT_OFFSET;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_X    = -2.5625;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMLEFT_Y    = 21.0 - ROBOT_LENGTH + CAM_FRONT_OFFSET;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_X   = 2.5626;
+    public static final double HOMOGRAPHY_WORLD_BOTTOMRIGHT_Y   = 21.0 - ROBOT_LENGTH + CAM_FRONT_OFFSET;
 
     public static final TrcHomographyMapper.Rectangle cameraRect = new TrcHomographyMapper.Rectangle(
         RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_X, RobotParams.HOMOGRAPHY_CAMERA_TOPLEFT_Y,
@@ -173,36 +162,49 @@ public class RobotParams
     public static final double GOBILDA_5203_312_ENCODER_PPR     = (((1.0 + 46.0/17.0)*(1.0 + 46.0/11.0))*28.0);
     public static final double GOBILDA_5203_312_RPM             = 312.0;
     public static final double GOBILDA_5203_312_MAX_VELOCITY_PPS=
-        GOBILDA_5203_312_ENCODER_PPR*GOBILDA_5203_312_RPM/60.0; // 2795.987 pps
+        GOBILDA_5203_312_ENCODER_PPR*GOBILDA_5203_312_RPM/60.0; // 2795.9872 pps
+    //https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-13-7-1-ratio-24mm-length-8mm-rex-shaft-435-rpm-3-3-5v-encoder/
+    public static final double GOBILDA_5203_435_ENCODER_PPR     = (((1.0 + 46.0/17.0)*(1.0 + 46.0/17.0))*28.0);
+    public static final double GOBILDA_5203_435_RPM             = 435.0;
+    public static final double GOBILDA_5203_435_MAX_VELOCITY_PPS=
+        GOBILDA_5203_435_ENCODER_PPR*GOBILDA_5203_435_RPM/60.0; // 2787.9135 pps
     //
     // DriveBase subsystem.
     //
-    public static final double STEER_LOW_LIMIT                  = -90.0;
-    public static final double STEER_HIGH_LIMIT                 = 90.0;
-    public static final double LFSTEER_MINUS90                  = 0.20;
-    public static final double LFSTEER_PLUS90                   = 0.85;
-    public static final double RFSTEER_MINUS90                  = 0.21;
-    public static final double RFSTEER_PLUS90                   = 0.87;
-    public static final double LBSTEER_MINUS90                  = 0.26;
-    public static final double LBSTEER_PLUS90                   = 0.94;
-    public static final double RBSTEER_MINUS90                  = 0.18;
-    public static final double RBSTEER_PLUS90                   = 0.85;
+    public static DriveOrientation DEF_DRIVE_ORIENTATION        = DriveOrientation.FIELD;
+    public static final double LFSTEER_ZERO_POS                 = 0.466807;
+    public static final double RFSTEER_ZERO_POS                 = 0.464366;
+    public static final double LBSTEER_ZERO_POS                 = 0.536509;
+    public static final double RBSTEER_ZERO_POS                 = 0.538126;
 
     public static final boolean LFDRIVE_INVERTED                = true;
     public static final boolean RFDRIVE_INVERTED                = true;
     public static final boolean LBDRIVE_INVERTED                = true;
-    public static final boolean RBDRIVE_INVERTED                = true;
-    public static final boolean LFSTEER_INVERTED                = false;
-    public static final boolean RFSTEER_INVERTED                = false;
-    public static final boolean LBSTEER_INVERTED                = false;
-    public static final boolean RBSTEER_INVERTED                = false;
+    public static final boolean RBDRIVE_INVERTED                = false;
+    public static final boolean LFSTEER_INVERTED                = true;
+    public static final boolean RFSTEER_INVERTED                = true;
+    public static final boolean LBSTEER_INVERTED                = true;
+    public static final boolean RBSTEER_INVERTED                = true;
+    public static final double STEER_SERVO_KP                   = 0.005;
+    public static final double STEER_SERVO_KI                   = 0.0;
+    public static final double STEER_SERVO_KD                   = 0.0;
+    public static final double STEER_SERVO_KF                   = 0.0;
+    public static final double STEER_SERVO_IZONE                = 0.0;
+    public static final double STEER_SERVO_TOLERANCE            = 0.5;
 
     public static final DcMotor.RunMode DRIVE_MOTOR_MODE        = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+    public static final TrcPidController.PidCoefficients DRIVE_POSPID_COEFFS =
+        new TrcPidController.PidCoefficients(0.0, 0.0, 0.0, 1.0);
+    public static final TrcPidController.PidCoefficients DRIVE_VELPID_COEFFS =
+        new TrcPidController.PidCoefficients(1.0, 0.0, 0.0, 0.0);
     public static final boolean DRIVE_WHEEL_BRAKE_MODE_ON       = true;
-    public static final boolean LEFT_WHEEL_INVERTED             = true;
+    public static final boolean LEFT_WHEEL_INVERTED             = false;
     public static final boolean RIGHT_WHEEL_INVERTED            = false;
     public static final double TURN_POWER_LIMIT                 = 0.5;
-    public static final double SLOW_DRIVE_POWER_SCALE           = 0.5;
+    public static final double DRIVE_POWER_SCALE_SLOW           = 0.5;
+    public static final double DRIVE_POWER_SCALE_NORMAL         = 1.0;
+    public static final double TURN_POWER_SCALE_SLOW            = 0.5;
+    public static final double TURN_POWER_SCALE_NORMAL          = 1.0;
     public static final double X_ODOMETRY_WHEEL_OFFSET          = ROBOT_LENGTH/2.0 - (3.875 + 9.5); //behind centroid
     public static final double Y_LEFT_ODOMETRY_WHEEL_OFFSET     = -15.25/2.0;
     public static final double Y_RIGHT_ODOMETRY_WHEEL_OFFSET    = 15.25/2.0;
@@ -216,11 +218,13 @@ public class RobotParams
         new TrcPidController.PidCoefficients(0.095, 0.0, 0.001, 0.0);
     public static final double XPOS_TOLERANCE                   = 1.0;
     public static final double XPOS_INCHES_PER_COUNT            = 0.01924724265461924299065420560748;
+    public static final Double X_RAMP_RATE                      = null;//10.0;
 
     public static final TrcPidController.PidCoefficients yPosPidCoeff =
         new TrcPidController.PidCoefficients(0.06, 0.0, 0.002, 0.0);
     public static final double YPOS_TOLERANCE                   = 1.0;
     public static final double YPOS_INCHES_PER_COUNT            = 0.02166184604662450653409090909091;
+    public static final Double Y_RAMP_RATE                      = null;//10.0;
 
     public static final TrcPidController.PidCoefficients turnPidCoeff =
         new TrcPidController.PidCoefficients(0.02, 0.08, 0.003, 0.0, 30.0);
@@ -228,6 +232,7 @@ public class RobotParams
     public static final double TURN_SETTLING                    = TrcPidController.DEF_SETTLING_TIME;
     public static final double TURN_STEADY_STATE_ERR            = 2.0;
     public static final double TURN_STALL_ERRRATE_THRESHOLD     = 1.0;
+    public static final Double TURN_RAMP_RATE                   = null;//10.0;
 
     public static final double X_ODWHEEL_INCHES_PER_COUNT       = 7.6150160901199168116026724971383e-4;
     public static final double Y_ODWHEEL_INCHES_PER_COUNT       = 7.6301149255006038191364659148717e-4;
@@ -240,8 +245,8 @@ public class RobotParams
     // max wheel speed = pi * wheel diameter * wheel gear ratio * motor RPM / 60.0
     // = 3.1415926535897932384626433832795 * 4 in. * 1.0 * 312.0 / 60.0
     // = 65.345127194667699360022982372214 in./sec.
-    public static final double ROBOT_MAX_VELOCITY               = 25.0;     // measured maximum from drive speed test.
-    public static final double ROBOT_MAX_ACCELERATION           = 3380.0;   // measured maximum from drive speed test.
+    public static final double ROBOT_MAX_VELOCITY               = 23.0;     // measured maximum from drive speed test.
+    public static final double ROBOT_MAX_ACCELERATION           = 3000.0;   // measured maximum from drive speed test.
     // KF should be set to the reciprocal of max tangential velocity (time to travel unit distance), units: sec./in.
     public static final TrcPidController.PidCoefficients velPidCoeff  =
         new TrcPidController.PidCoefficients(0.0, 0.0, 0.0, 1.0/ROBOT_MAX_VELOCITY);

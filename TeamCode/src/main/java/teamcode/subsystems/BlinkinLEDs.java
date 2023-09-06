@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2023 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package teamcode;
+package teamcode.subsystems;
 
 import TrcCommonLib.trclib.TrcRevBlinkin;
 import TrcFtcLib.ftclib.FtcRevBlinkin;
@@ -29,15 +29,9 @@ import TrcFtcLib.ftclib.FtcRevBlinkin;
  * This class encapsulates the REV Blinkin LED controller to provide a priority indicator showing the status of the
  * robot.
  */
-class BlinkinLEDs extends FtcRevBlinkin
+public class BlinkinLEDs extends FtcRevBlinkin
 {
     // LED pattern names.
-    public static final String LABEL_TARGET1 = "Target1";
-    public static final String LABEL_TARGET2 = "Target2";
-    public static final String LABEL_TARGET3 = "Target3";
-    public static final String DETECTED_RED_BLOB = "RedBlob";
-    public static final String DETECTED_BLUE_BLOB = "BlueBlob";
-    public static final String DETECTED_YELLOW_BLOB = "YellowBlob";
     public static final String IMAGE1_NAME = "Image1";
     public static final String IMAGE2_NAME = "Image2";
     public static final String IMAGE3_NAME = "Image3";
@@ -57,16 +51,10 @@ class BlinkinLEDs extends FtcRevBlinkin
         // LED Patterns are sorted in decreasing priority order.
         final TrcRevBlinkin.Pattern[] ledPatternPriorities = {
             // Highest priority.
-            new TrcRevBlinkin.Pattern(LABEL_TARGET1, TrcRevBlinkin.RevLedPattern.SolidRed),
-            new TrcRevBlinkin.Pattern(LABEL_TARGET2, TrcRevBlinkin.RevLedPattern.SolidGreen),
-            new TrcRevBlinkin.Pattern(LABEL_TARGET3, TrcRevBlinkin.RevLedPattern.SolidBlue),
-            new TrcRevBlinkin.Pattern(DETECTED_RED_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeRed),
-            new TrcRevBlinkin.Pattern(DETECTED_BLUE_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeBlue),
-            new TrcRevBlinkin.Pattern(DETECTED_YELLOW_BLOB, TrcRevBlinkin.RevLedPattern.FixedStrobeGold),
-            new TrcRevBlinkin.Pattern(IMAGE1_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathRed),
-            new TrcRevBlinkin.Pattern(IMAGE2_NAME, TrcRevBlinkin.RevLedPattern.FixedBreathBlue),
-            new TrcRevBlinkin.Pattern(IMAGE3_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseRed),
-            new TrcRevBlinkin.Pattern(IMAGE4_NAME, TrcRevBlinkin.RevLedPattern.FixedLightChaseBlue),
+            new TrcRevBlinkin.Pattern(IMAGE1_NAME, RevLedPattern.FixedLightChaseRed),
+            new TrcRevBlinkin.Pattern(IMAGE2_NAME, RevLedPattern.FixedLightChaseBlue),
+            new TrcRevBlinkin.Pattern(IMAGE3_NAME, RevLedPattern.FixedBreathRed),
+            new TrcRevBlinkin.Pattern(IMAGE4_NAME, RevLedPattern.FixedBreathBlue),
             new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_FIELD, TrcRevBlinkin.RevLedPattern.SolidViolet),
             new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_ROBOT, TrcRevBlinkin.RevLedPattern.SolidWhite),
             new TrcRevBlinkin.Pattern(DRIVE_ORIENTATION_INVERTED, TrcRevBlinkin.RevLedPattern.SolidGray)
