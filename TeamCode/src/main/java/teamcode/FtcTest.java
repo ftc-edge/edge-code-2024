@@ -33,16 +33,20 @@ import TrcCommonLib.command.CmdTimedDrive;
 
 import TrcCommonLib.trclib.TrcElapsedTimer;
 import TrcCommonLib.trclib.TrcGameController;
+import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcTimer;
 import TrcCommonLib.trclib.TrcUtil;
+import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcChoiceMenu;
 import TrcFtcLib.ftclib.FtcGamepad;
 import TrcFtcLib.ftclib.FtcMenu;
 import TrcFtcLib.ftclib.FtcPidCoeffCache;
 import TrcFtcLib.ftclib.FtcValueMenu;
+import TrcFtcLib.ftclib.FtcVisionAprilTag;
+import TrcFtcLib.ftclib.FtcVisionTensorFlow;
 import teamcode.drivebases.RobotDrive;
 import teamcode.drivebases.SwerveDrive;
 
@@ -269,12 +273,14 @@ public class FtcTest extends FtcTeleOp
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling RedBlobVision.");
                         robot.vision.setRedBlobVisionEnabled(true);
+                        robot.vision.setRedBlobAnnotateEnabled(true);
                     }
 
                     if (robot.vision.blueBlobVision != null)
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling BlueBlobVision.");
                         robot.vision.setBlueBlobVisionEnabled(true);
+                        robot.vision.setBlueBlobAnnotateEnabled(true);
                     }
 
                     if (robot.vision.tensorFlowVision != null)
@@ -560,25 +566,9 @@ public class FtcTest extends FtcTeleOp
                     break;
 
                 case FtcGamepad.GAMEPAD_B:
-//                    if (testChoices.test == Test.VISION_TEST)
-//                    {
-//                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
-//                        {
-//                            robot.vision.eocvVision.setNextObjectType();
-//                        }
-//                        processed = true;
-//                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_X:
-//                    if (testChoices.test == Test.VISION_TEST)
-//                    {
-//                        if (pressed && robot.vision != null && robot.vision.eocvVision != null)
-//                        {
-//                            robot.vision.eocvVision.setNextVideoOutput();
-//                        }
-//                        processed = true;
-//                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_Y:
@@ -960,73 +950,41 @@ public class FtcTest extends FtcTeleOp
     {
         if (robot.vision != null)
         {
-//            TrcVisionTargetInfo<?> aprilTagInfo = robot.vision.getDetectedAprilTagInfo();
-//            if (aprilTagInfo != null)
-//            {
-//                robot.dashboard.displayPrintf(10, "AprilTag: %s", aprilTagInfo);
-//            }
-//            else
-//            {
-//                robot.dashboard.displayPrintf(10, "AprilTag: Not found.");
-//            }
-//
-//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> redBlobInfo =
-//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.RED_BLOB);
-//            if (redBlobInfo != null)
-//            {
-//                robot.dashboard.displayPrintf(11, "Red Blob: %s", redBlobInfo);
-//            }
-//            else
-//            {
-//                robot.dashboard.displayPrintf(11, "Red Blob: Not found.");
-//            }
-//
-//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> blueBlobInfo =
-//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.BLUE_BLOB);
-//            if (blueBlobInfo != null)
-//            {
-//                robot.dashboard.displayPrintf(12, "Blue Blob: %s", blueBlobInfo);
-//            }
-//            else
-//            {
-//                robot.dashboard.displayPrintf(12, "Blue Blob: Not found.");
-//            }
-//
-//            TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> yellowBlobInfo =
-//                robot.vision.getDetectedColorBlobInfo(EocvVision.ObjectType.YELLOW_BLOB);
-//            if (yellowBlobInfo != null)
-//            {
-//                robot.dashboard.displayPrintf(13, "Yellow Blob: %s", yellowBlobInfo);
-//            }
-//            else
-//            {
-//                robot.dashboard.displayPrintf(13, "Yellow Blob: Not found.");
-//            }
-//
-//            TrcVisionTargetInfo<FtcTensorFlow.DetectedObject> tensorFlowInfo =
-//                robot.vision.getDetectedTensorFlowInfo();
-//            if (tensorFlowInfo != null)
-//            {
-//                robot.dashboard.displayPrintf(14, "TensorFlow: %s", tensorFlowInfo);
-//            }
-//            else
-//            {
-//                robot.dashboard.displayPrintf(14, "TensorFlow: Not found.");
-//            }
-//
-//            if (robot.vision.vuforiaVision != null)
-//            {
-//                TrcPose2D robotPose = robot.vision.vuforiaVision.getRobotPose(null, false);
-//                if (robotPose != null)
-//                {
-//                    robot.dashboard.displayPrintf(
-//                        15, "RobotLoc %s: %s", robot.vision.vuforiaVision.getLastSeenImageName(), robotPose);
-//                }
-//                else
-//                {
-//                    robot.dashboard.displayPrintf(15, "RobotLoc: Unknown");
-//                }
-//            }
+            int lineNum = 9;
+
+            if (robot.vision.aprilTagVision != null)
+            {
+                TrcVisionTargetInfo<FtcVisionAprilTag.DetectedObject> aprilTagInfo =
+                    robot.vision.aprilTagVision.getBestDetectedTargetInfo(null);
+                robot.dashboard.displayPrintf(
+                    lineNum++, "AprilTag: %s", aprilTagInfo != null? aprilTagInfo: "Not found.");
+            }
+
+            if (robot.vision.redBlobVision != null)
+            {
+                // TODO: figure out obj height and offset.
+                TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> redBlobInfo =
+                    robot.vision.redBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
+                robot.dashboard.displayPrintf(
+                    lineNum++, "RedBlob: %s", redBlobInfo != null? redBlobInfo: "Not found.");
+            }
+
+            if (robot.vision.blueBlobVision != null)
+            {
+                // TODO: figure out obj height and offset.
+                TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> blueBlobInfo =
+                    robot.vision.blueBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
+                robot.dashboard.displayPrintf(
+                    lineNum++, "BlueBlob: %s", blueBlobInfo != null? blueBlobInfo: "Not found.");
+            }
+
+            if (robot.vision.tensorFlowVision != null)
+            {
+                TrcVisionTargetInfo<FtcVisionTensorFlow.DetectedObject> tensorFlowInfo =
+                    robot.vision.tensorFlowVision.getBestDetectedTargetInfo(null, null, null, 0.0, 0.0);
+                robot.dashboard.displayPrintf(
+                    lineNum++, "TensorFlow: %s", tensorFlowInfo != null? tensorFlowInfo: "Not found.");
+            }
         }
     }   //doVisionTest
 

@@ -75,10 +75,9 @@ public class Vision
             .setSolidityRange(0.0, 100.0)
             .setVerticesRange(0.0, 1000.0)
             .setAspectRatioRange(0.0, 1000.0);
-    private static final String TFOD_MODEL_ASSET = "ModelAsset.tflite";
+    private static final String TFOD_MODEL_ASSET = "CenterStage.tflite";
     private static final float TFOD_MIN_CONFIDENCE = 0.75f;
-    public static final String[] TARGET_LABELS = {
-    };
+    public static final String[] TARGET_LABELS = {};
 
     private final Robot robot;
     public FtcVisionAprilTag aprilTagVision;
@@ -156,14 +155,15 @@ public class Vision
 
         if (RobotParams.Preferences.showVisionView)
         {
-            builder.enableCameraMonitoring(true);
+
+            builder.enableLiveView(true);
             builder.setAutoStopLiveView(true);
             //Set the stream format; MJPEG uses less bandwidth than default YUY2.
             //  builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
         }
         else
         {
-            builder.enableCameraMonitoring(false);
+            builder.enableLiveView(false);
         }
 
         if (aprilTagProcessor != null)
@@ -210,6 +210,14 @@ public class Vision
         }
     }   //setRedBlobVisionEnabled
 
+    public void setRedBlobAnnotateEnabled(boolean enabled)
+    {
+        if (redBlobProcessor != null)
+        {
+            redBlobProcessor.setAnnotateEnabled(enabled);
+        }
+    }   //setRedBlobAnnotateEnabled
+
     public void setBlueBlobVisionEnabled(boolean enabled)
     {
         if (blueBlobProcessor != null)
@@ -217,6 +225,14 @@ public class Vision
             visionPortal.setProcessorEnabled(blueBlobProcessor, enabled);
         }
     }   //setBlueBlobVisionEnabled
+
+    public void setBlueBlobAnnotateEnabled(boolean enabled)
+    {
+        if (blueBlobProcessor != null)
+        {
+            blueBlobProcessor.setAnnotateEnabled(enabled);
+        }
+    }   //setBlueBlobAnnotateEnabled
 
     public void setTensorFlowVisionEnabled(boolean enabled)
     {

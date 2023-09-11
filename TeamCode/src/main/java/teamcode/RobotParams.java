@@ -120,11 +120,16 @@ public class RobotParams
     public static final double CAM_LEFT_OFFSET                  = 7.125;//Camera offset from left of robot in inches
     public static final double CAM_HEIGHT_OFFSET                = 3.750;//Camera offset from floor in inches
     public static final double CAM_TILT_DOWN                    = 15.00;//Camera tilt down angle from horizontal in deg
-    // Camera: Logitech C310
-    public static final double WEBCAM_FX                        = 821.993;  // in pixels
-    public static final double WEBCAM_FY                        = 821.993;  // in pixels
-    public static final double WEBCAM_CX                        = 330.489;  // in pixels
-    public static final double WEBCAM_CY                        = 248.997;  // in pixels
+    // Camera: Logitech C270
+    public static final double WEBCAM_FX                        = 822.317;  // in pixels
+    public static final double WEBCAM_FY                        = 822.317;  // in pixels
+    public static final double WEBCAM_CX                        = 319.495;  // in pixels
+    public static final double WEBCAM_CY                        = 242.502;  // in pixels
+//    // Camera: Logitech C310
+//    public static final double WEBCAM_FX                        = 821.993;  // in pixels
+//    public static final double WEBCAM_FY                        = 821.993;  // in pixels
+//    public static final double WEBCAM_CX                        = 330.489;  // in pixels
+//    public static final double WEBCAM_CY                        = 248.997;  // in pixels
 
     // Measurement unit: pixels
     public static final double HOMOGRAPHY_CAMERA_TOPLEFT_X      = 0.0;

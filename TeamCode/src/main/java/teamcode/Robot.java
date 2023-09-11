@@ -92,7 +92,7 @@ public class Robot
              RobotParams.Preferences.useTensorFlowVision))
         {
             // Don't need to enable vision for TeleOp because we are not doing auto-assist involving vision.
-            vision = new Vision(this, globalTracer);
+            vision = new Vision(this, null);
         }
         //
         // If noRobot is true, the robot controller is disconnected from the robot for testing vision.
@@ -158,13 +158,9 @@ public class Robot
                 robotDrive.gyro.setEnabled(true);
             }
             //
-            // Enable odometry only for autonomous or test modes.
+            // Enable odometry for all opmodes. We may need odometry in TeleOp for auto-assist drive.
             //
-            if (runMode == TrcRobot.RunMode.AUTO_MODE || runMode == TrcRobot.RunMode.TEST_MODE)
-            {
-                robotDrive.driveBase.setOdometryEnabled(true);
-            }
-
+            robotDrive.driveBase.setOdometryEnabled(true);
             if (runMode != TrcRobot.RunMode.AUTO_MODE)
             {
                 // In TeleOp or Test mode. If we are not running a competition match, autonomous may not have run
@@ -254,7 +250,7 @@ public class Robot
                 globalTracer.traceInfo(funcName, "Disabling TensorFlowVision.");
                 vision.setTensorFlowVisionEnabled(false);
             }
-        }
+       }
 
         if (robotDrive != null)
         {

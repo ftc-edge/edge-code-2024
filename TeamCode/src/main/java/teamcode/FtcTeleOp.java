@@ -230,6 +230,11 @@ public class FtcTeleOp extends FtcOpMode
         switch (button)
         {
             case FtcGamepad.GAMEPAD_A:
+                if (pressed && robot.robotDrive != null)
+                {
+                    // Cancel all auto-assist driving.
+                    robot.robotDrive.cancel();
+                }
                 break;
 
             case FtcGamepad.GAMEPAD_B:
