@@ -49,6 +49,7 @@ import TrcFtcLib.ftclib.FtcVisionAprilTag;
 import TrcFtcLib.ftclib.FtcVisionTensorFlow;
 import teamcode.drivebases.RobotDrive;
 import teamcode.drivebases.SwerveDrive;
+import teamcode.subsystems.BlinkinLEDs;
 
 /**
  * This class contains the Test Mode program. It extends FtcTeleOp so that we can teleop control the robot for
@@ -956,6 +957,10 @@ public class FtcTest extends FtcTeleOp
                     robot.vision.aprilTagVision.getBestDetectedTargetInfo(null);
                 robot.dashboard.displayPrintf(
                     lineNum++, "AprilTag: %s", aprilTagInfo != null? aprilTagInfo: "Not found.");
+                if (robot.blinkin != null)
+                {
+                    robot.blinkin.setPatternState(BlinkinLEDs.APRIL_TAG, aprilTagInfo != null);
+                }
             }
 
             if (robot.vision.redBlobVision != null)
@@ -965,6 +970,10 @@ public class FtcTest extends FtcTeleOp
                     robot.vision.redBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
                 robot.dashboard.displayPrintf(
                     lineNum++, "RedBlob: %s", redBlobInfo != null? redBlobInfo: "Not found.");
+                if (robot.blinkin != null)
+                {
+                    robot.blinkin.setPatternState(BlinkinLEDs.RED_BLOB, redBlobInfo != null);
+                }
             }
 
             if (robot.vision.blueBlobVision != null)
@@ -974,6 +983,10 @@ public class FtcTest extends FtcTeleOp
                     robot.vision.blueBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
                 robot.dashboard.displayPrintf(
                     lineNum++, "BlueBlob: %s", blueBlobInfo != null? blueBlobInfo: "Not found.");
+                if (robot.blinkin != null)
+                {
+                    robot.blinkin.setPatternState(BlinkinLEDs.BLUE_BLOB, blueBlobInfo != null);
+                }
             }
 
             if (robot.vision.tensorFlowVision != null)
@@ -982,6 +995,10 @@ public class FtcTest extends FtcTeleOp
                     robot.vision.tensorFlowVision.getBestDetectedTargetInfo(null, null, null, 0.0, 0.0);
                 robot.dashboard.displayPrintf(
                     lineNum++, "TensorFlow: %s", tensorFlowInfo != null? tensorFlowInfo: "Not found.");
+                if (robot.blinkin != null)
+                {
+                    robot.blinkin.setPatternState(BlinkinLEDs.TENSOR_FLOW, tensorFlowInfo != null);
+                }
             }
         }
     }   //doVisionTest
