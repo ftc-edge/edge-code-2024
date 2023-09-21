@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Titan Robotics Club (http://www.titanrobotics.com)
+ * Copyright (c) 2023 Titan Robotics Club (http://www.titanrobotics.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import TrcCommonLib.command.CmdDriveMotorsTest;
@@ -34,6 +35,7 @@ import TrcCommonLib.command.CmdTimedDrive;
 import TrcCommonLib.trclib.TrcElapsedTimer;
 import TrcCommonLib.trclib.TrcGameController;
 import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
+import TrcCommonLib.trclib.TrcOpenCvDetector;
 import TrcCommonLib.trclib.TrcPidController;
 import TrcCommonLib.trclib.TrcPose2D;
 import TrcCommonLib.trclib.TrcRobot;
@@ -67,6 +69,7 @@ public class FtcTest extends FtcTeleOp
         SENSORS_TEST,
         SUBSYSTEMS_TEST,
         VISION_TEST,
+        TUNE_COLORBLOB_VISION,
         DRIVE_SPEED_TEST,
         DRIVE_MOTORS_TEST,
         X_TIMED_DRIVE,
@@ -122,12 +125,19 @@ public class FtcTest extends FtcTeleOp
     private FtcChoiceMenu<Test> testMenu = null;
 
     private TrcRobot.RobotCommand testCommand = null;
+    // Drive Speed Test.
     private double maxDriveVelocity = 0.0;
     private double maxDriveAcceleration = 0.0;
     private double prevTime = 0.0;
     private double prevVelocity = 0.0;
-
+    // Swerve Steering Calibration.
     private boolean steerCalibrating = false;
+    // Color Blob Vision Turning.
+    private static final double[] COLOR_THRESHOLD_LOW_RANGES = {0.0, 0.0, 0.0};
+    private static final double[] COLOR_THRESHOLD_HIGH_RANGES = {255.0, 255.0, 255.0};
+    private double[] colorThresholds = null;
+    private int colorThresholdIndex = 0;
+    private double colorThresholdMultiplier = 1.0;
     private boolean teleOpControlEnabled = true;
 
     //
@@ -261,9 +271,7 @@ public class FtcTest extends FtcTeleOp
             case VISION_TEST:
                 if (robot.vision != null)
                 {
-                    //
                     // Vision generally will impact performance, so we only enable it if it's needed.
-                    //
                     if (robot.vision.aprilTagVision != null)
                     {
                         robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
@@ -287,6 +295,18 @@ public class FtcTest extends FtcTeleOp
                         robot.globalTracer.traceInfo(funcName, "Enabling TensorFlowVison.");
                         robot.vision.setTensorFlowVisionEnabled(true);
                     }
+                }
+                break;
+
+            case TUNE_COLORBLOB_VISION:
+                if (robot.vision != null && robot.vision.rawColorBlobVision != null)
+                {
+                    robot.globalTracer.traceInfo(funcName, "Enabling FtcRawEocvVision.");
+                    robot.vision.setRawColorBlobVisionEnabled(true);
+                    colorThresholds = robot.vision.getRawColorBlobThresholds();
+                    colorThresholdIndex = 0;
+                    colorThresholdMultiplier = 1.0;
+                    updateColorThresholds();
                 }
                 break;
 
@@ -483,6 +503,7 @@ public class FtcTest extends FtcTeleOp
                     break;
 
                 case VISION_TEST:
+                case TUNE_COLORBLOB_VISION:
                     doVisionTest();
                     break;
 
@@ -531,7 +552,8 @@ public class FtcTest extends FtcTeleOp
     @Override
     public void driverButtonEvent(TrcGameController gamepad, int button, boolean pressed)
     {
-        if (allowButtonControl() || testChoices.test == Test.VISION_TEST)
+        if (allowButtonControl() || testChoices.test == Test.VISION_TEST ||
+            testChoices.test == Test.TUNE_COLORBLOB_VISION)
         {
             boolean processed = false;
             //
@@ -562,15 +584,63 @@ public class FtcTest extends FtcTeleOp
                         }
                         processed = true;
                     }
+                    else if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                             robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed)
+                        {
+                            // Commit color thresholds change.
+                            robot.vision.setRawColorBlobThresholds(colorThresholds);
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_B:
+                    if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                        robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed)
+                        {
+                            // Increment to next color threshold index.
+                            colorThresholdIndex++;
+                            if (colorThresholdIndex >= colorThresholds.length)
+                            {
+                                colorThresholdIndex = colorThresholds.length - 1;
+                            }
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_X:
+                    if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                        robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed)
+                        {
+                            // Decrement to previous color threshold index.
+                            colorThresholdIndex--;
+                            if (colorThresholdIndex < 0)
+                            {
+                                colorThresholdIndex = 0;
+                            }
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_Y:
+                    if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                        robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed)
+                        {
+                            // Set display to next intermediate Mat in the pipeline.
+                            robot.vision.rawColorBlobVision.getPipeline().setNextVideoOutput();
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_UP:
@@ -582,6 +652,19 @@ public class FtcTest extends FtcTeleOp
                             swerveDrive.setSteerAngle(0.0, false, true);
                         }
                         teleOpControlEnabled = !pressed;
+                        processed = true;
+                    }
+                    else if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                             robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed &&
+                            colorThresholds[colorThresholdIndex] + colorThresholdMultiplier <=
+                            COLOR_THRESHOLD_HIGH_RANGES[colorThresholdIndex/2])
+                        {
+                            // Increment color threshold value.
+                            colorThresholds[colorThresholdIndex] += colorThresholdMultiplier;
+                            updateColorThresholds();
+                        }
                         processed = true;
                     }
                     break;
@@ -597,6 +680,19 @@ public class FtcTest extends FtcTeleOp
                         teleOpControlEnabled = !pressed;
                         processed = true;
                     }
+                    else if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                             robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed &&
+                            colorThresholds[colorThresholdIndex] - colorThresholdMultiplier >=
+                            COLOR_THRESHOLD_LOW_RANGES[colorThresholdIndex/2])
+                        {
+                            // Decrement color threshold value.
+                            colorThresholds[colorThresholdIndex] -= colorThresholdMultiplier;
+                            updateColorThresholds();
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_LEFT:
@@ -610,6 +706,16 @@ public class FtcTest extends FtcTeleOp
                         teleOpControlEnabled = !pressed;
                         processed = true;
                     }
+                    else if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                             robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed && colorThresholdMultiplier * 10.0 <= 100.0)
+                        {
+                            // Increment the significant multiplier.
+                            colorThresholdMultiplier *= 10.0;
+                        }
+                        processed = true;
+                    }
                     break;
 
                 case FtcGamepad.GAMEPAD_DPAD_RIGHT:
@@ -621,6 +727,16 @@ public class FtcTest extends FtcTeleOp
                             swerveDrive.setSteerAngle(90.0, false, true);
                         }
                         teleOpControlEnabled = !pressed;
+                        processed = true;
+                    }
+                    else if (testChoices.test == Test.TUNE_COLORBLOB_VISION &&
+                             robot.vision != null && robot.vision.rawColorBlobVision != null)
+                    {
+                        if (pressed && colorThresholdMultiplier / 10.0 >= 1.0)
+                        {
+                            // Decrement the significant multiplier.
+                            colorThresholdMultiplier /= 10.0;
+                        }
                         processed = true;
                     }
                     break;
@@ -690,6 +806,14 @@ public class FtcTest extends FtcTeleOp
     }   //operatorButtonEvent
 
     /**
+     * This method displays the current color thresholds on the dashboard.
+     */
+    private void updateColorThresholds()
+    {
+        robot.dashboard.displayPrintf(10, "Thresholds: %s", Arrays.toString(colorThresholds));
+    }   //updateColorThresholds
+
+    /**
      * This method creates and displays the test menus and record the selected choices.
      */
     private void doTestMenus()
@@ -734,6 +858,7 @@ public class FtcTest extends FtcTeleOp
         testMenu.addChoice("Sensors test", Test.SENSORS_TEST, true);
         testMenu.addChoice("Subsystems test", Test.SUBSYSTEMS_TEST, false);
         testMenu.addChoice("Vision test", Test.VISION_TEST, false);
+        testMenu.addChoice("Tune ColorBlob vision", Test.TUNE_COLORBLOB_VISION, false);
         testMenu.addChoice("Drive speed test", Test.DRIVE_SPEED_TEST, false);
         testMenu.addChoice("Drive motors test", Test.DRIVE_MOTORS_TEST, false);
         testMenu.addChoice("X Timed drive", Test.X_TIMED_DRIVE, false, driveTimeMenu);
@@ -950,6 +1075,14 @@ public class FtcTest extends FtcTeleOp
         if (robot.vision != null)
         {
             int lineNum = 9;
+
+            if (robot.vision.rawColorBlobVision != null)
+            {
+                TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> colorBlobInfo =
+                    robot.vision.rawColorBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
+                robot.dashboard.displayPrintf(
+                    lineNum++, "ColorBlob: %s", colorBlobInfo != null? colorBlobInfo: "Not found.");
+            }
 
             if (robot.vision.aprilTagVision != null)
             {

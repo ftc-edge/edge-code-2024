@@ -30,6 +30,8 @@ import org.firstinspires.ftc.vision.VisionProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
 
 import java.util.ArrayList;
 
@@ -38,6 +40,8 @@ import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcEocvColorBlobProcessor;
 import TrcFtcLib.ftclib.FtcOpMode;
+import TrcFtcLib.ftclib.FtcRawEocvColorBlobPipeline;
+import TrcFtcLib.ftclib.FtcRawEocvVision;
 import TrcFtcLib.ftclib.FtcVision;
 import TrcFtcLib.ftclib.FtcVisionAprilTag;
 import TrcFtcLib.ftclib.FtcVisionEocvColorBlob;
@@ -53,6 +57,8 @@ import teamcode.RobotParams;
 public class Vision
 {
     private static final String moduleName = "Vision";
+    private static final double[] DEF_COLORBLOB_THRESHOLDS = {0.0, 255.0, 0.0, 255.0, 0.0, 255.0};
+    // RGB Color Space.
     private static final int colorConversion = Imgproc.COLOR_BGRA2BGR;
     private static final double[] redBlobColorThresholds = {100.0, 255.0, 0.0, 100.0, 0.0, 60.0};
     private static final double[] blueBlobColorThresholds = {0.0, 60.0, 0.0, 100.0, 100, 255.0};
@@ -69,6 +75,8 @@ public class Vision
     private static final float TFOD_MIN_CONFIDENCE = 0.75f;
     public static final String[] TFOD_TARGET_LABELS = {"MyObject"};
 
+    private FtcRawEocvColorBlobPipeline rawColorBlobPipeline;
+    public FtcRawEocvVision rawColorBlobVision = null;
     public FtcVisionAprilTag aprilTagVision;
     private AprilTagProcessor aprilTagProcessor;
     public FtcVisionEocvColorBlob redBlobVision;
@@ -77,7 +85,7 @@ public class Vision
     private FtcEocvColorBlobProcessor blueBlobProcessor;
     public FtcVisionTensorFlow tensorFlowVision;
     private TfodProcessor tensorFlowProcessor;
-    private final FtcVision vision;
+    private FtcVision vision = null;
 
     /**
      * Constructor: Create an instance of the object.
@@ -88,69 +96,141 @@ public class Vision
     public Vision(Robot robot, TrcDbgTrace tracer)
     {
         FtcOpMode opMode = FtcOpMode.getInstance();
-        ArrayList<VisionProcessor> visionProcessorList = new ArrayList<>();
-
-        if (RobotParams.Preferences.useAprilTagVision)
+        if (RobotParams.Preferences.tuneColorBlobVision)
         {
-            robot.globalTracer.traceInfo(moduleName, "Starting AprilTagVision...");
-            FtcVisionAprilTag.Parameters aprilTagParams = new FtcVisionAprilTag.Parameters()
-                .setDrawTagIdEnabled(true)
-                .setDrawTagOutlineEnabled(true)
-                .setDrawAxesEnabled(false)
-                .setDrawCubeProjectionEnabled(false)
-                .setLensIntrinsics(
-                    RobotParams.WEBCAM_FX, RobotParams.WEBCAM_FY, RobotParams.WEBCAM_CX, RobotParams.WEBCAM_CY)
-                .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES);
-            aprilTagVision = new FtcVisionAprilTag(aprilTagParams, AprilTagProcessor.TagFamily.TAG_36h11, tracer);
-            aprilTagProcessor = aprilTagVision.getVisionProcessor();
-            visionProcessorList.add(aprilTagProcessor);
-        }
+            OpenCvCamera webcam;
 
-        if (RobotParams.Preferences.useColorBlobVision)
+            if (RobotParams.Preferences.showVisionView)
+            {
+                int cameraViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
+                    "cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM), cameraViewId);
+                webcam.showFpsMeterOnViewport(false);
+            }
+            else
+            {
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM));
+            }
+
+            robot.globalTracer.traceInfo(moduleName, "Starting RawEocvColorBlobVision...");
+            rawColorBlobPipeline = new FtcRawEocvColorBlobPipeline(
+                "rawColorBlobPipeline", colorConversion, DEF_COLORBLOB_THRESHOLDS, colorBlobFilterContourParams,
+                tracer);
+            // Display colorThresholdOutput.
+            rawColorBlobPipeline.setVideoOutput(0);
+            rawColorBlobPipeline.setAnnotateEnabled(true);
+            rawColorBlobVision = new FtcRawEocvVision(
+                "rawColorBlobVision", RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT, null, null,
+                webcam, RobotParams.CAM_ORIENTATION, tracer);
+            setRawColorBlobVisionEnabled(false);
+        }
+        else
         {
-            robot.globalTracer.traceInfo(moduleName, "Starting ColorBlobVision...");
+            // Creating Vision Processors for VisionPortal.
+            ArrayList<VisionProcessor> visionProcessorsList = new ArrayList<>();
 
-            redBlobVision = new FtcVisionEocvColorBlob(
-                "RedBlob", colorConversion, redBlobColorThresholds, colorBlobFilterContourParams,
-                RobotParams.cameraRect, RobotParams.worldRect, true, tracer);
-            redBlobProcessor = redBlobVision.getVisionProcessor();
-            visionProcessorList.add(redBlobProcessor);
+            if (RobotParams.Preferences.useAprilTagVision)
+            {
+                robot.globalTracer.traceInfo(moduleName, "Starting AprilTagVision...");
+                FtcVisionAprilTag.Parameters aprilTagParams = new FtcVisionAprilTag.Parameters()
+                    .setDrawTagIdEnabled(true)
+                    .setDrawTagOutlineEnabled(true)
+                    .setDrawAxesEnabled(false)
+                    .setDrawCubeProjectionEnabled(false)
+                    .setLensIntrinsics(
+                        RobotParams.WEBCAM_FX, RobotParams.WEBCAM_FY, RobotParams.WEBCAM_CX, RobotParams.WEBCAM_CY)
+                    .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES);
+                aprilTagVision = new FtcVisionAprilTag(aprilTagParams, AprilTagProcessor.TagFamily.TAG_36h11, tracer);
+                aprilTagProcessor = aprilTagVision.getVisionProcessor();
+                visionProcessorsList.add(aprilTagProcessor);
+            }
 
-            blueBlobVision = new FtcVisionEocvColorBlob(
-                "BlueBlob", colorConversion, blueBlobColorThresholds, colorBlobFilterContourParams,
-                RobotParams.cameraRect, RobotParams.worldRect, true, tracer);
-            blueBlobProcessor = blueBlobVision.getVisionProcessor();
-            visionProcessorList.add(blueBlobProcessor);
+            if (RobotParams.Preferences.useColorBlobVision)
+            {
+                robot.globalTracer.traceInfo(moduleName, "Starting ColorBlobVision...");
+
+                redBlobVision = new FtcVisionEocvColorBlob(
+                    "RedBlob", colorConversion, redBlobColorThresholds, colorBlobFilterContourParams,
+                    RobotParams.cameraRect, RobotParams.worldRect, true, tracer);
+                redBlobProcessor = redBlobVision.getVisionProcessor();
+                visionProcessorsList.add(redBlobProcessor);
+
+                blueBlobVision = new FtcVisionEocvColorBlob(
+                    "BlueBlob", colorConversion, blueBlobColorThresholds, colorBlobFilterContourParams,
+                    RobotParams.cameraRect, RobotParams.worldRect, true, tracer);
+                blueBlobProcessor = blueBlobVision.getVisionProcessor();
+                visionProcessorsList.add(blueBlobProcessor);
+            }
+
+            if (RobotParams.Preferences.useTensorFlowVision)
+            {
+                robot.globalTracer.traceInfo(moduleName, "Starting TensorFlowVision...");
+                tensorFlowVision = new FtcVisionTensorFlow(
+                    null, true, TFOD_MODEL_ASSET, TFOD_TARGET_LABELS, RobotParams.cameraRect, RobotParams.worldRect,
+                    tracer);
+                tensorFlowProcessor = tensorFlowVision.getVisionProcessor();
+                tensorFlowProcessor.setMinResultConfidence(TFOD_MIN_CONFIDENCE);
+                visionProcessorsList.add(tensorFlowProcessor);
+            }
+
+            VisionProcessor[] visionProcessors = new VisionProcessor[visionProcessorsList.size()];
+            visionProcessorsList.toArray(visionProcessors);
+            vision = RobotParams.Preferences.useWebCam ?
+                new FtcVision(
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM),
+                    RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
+                    RobotParams.Preferences.showVisionView, visionProcessors) :
+                new FtcVision(
+                    RobotParams.Preferences.useBuiltinCamBack ?
+                        BuiltinCameraDirection.BACK : BuiltinCameraDirection.FRONT,
+                    RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
+                    RobotParams.Preferences.showVisionView, visionProcessors);
+            // Disable all vision processors until they are needed.
+            setAprilTagVisionEnabled(false);
+            setRedBlobVisionEnabled(false);
+            setBlueBlobVisionEnabled(false);
+            setTensorFlowVisionEnabled(false);
         }
-
-        if (RobotParams.Preferences.useTensorFlowVision)
-        {
-            robot.globalTracer.traceInfo(moduleName, "Starting TensorFlowVision...");
-            tensorFlowVision = new FtcVisionTensorFlow(
-                null, TFOD_MODEL_ASSET, TFOD_TARGET_LABELS, RobotParams.cameraRect, RobotParams.worldRect, tracer);
-            tensorFlowProcessor = tensorFlowVision.getVisionProcessor();
-            tensorFlowProcessor.setMinResultConfidence(TFOD_MIN_CONFIDENCE);
-            visionProcessorList.add(tensorFlowProcessor);
-        }
-
-        VisionProcessor[] visionProcessors = new VisionProcessor[visionProcessorList.size()];
-        visionProcessorList.toArray(visionProcessors);
-        vision = RobotParams.Preferences.useWebCam ?
-            new FtcVision(
-                opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM),
-                RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
-                RobotParams.Preferences.showVisionView, visionProcessors) :
-            new FtcVision(
-                RobotParams.Preferences.useBuiltinCamBack ?
-                    BuiltinCameraDirection.BACK : BuiltinCameraDirection.FRONT,
-                RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
-                RobotParams.Preferences.showVisionView, visionProcessors);
-        // Disable all vision processors until they are needed.
-        setAprilTagVisionEnabled(false);
-        setRedBlobVisionEnabled(false);
-        setBlueBlobVisionEnabled(false);
-        setTensorFlowVisionEnabled(false);
     }   //Vision
+
+    /**
+     * This method returns the color threshold values of rawColorBlobVision.
+     *
+     * @return array of color threshold values.
+     */
+    public double[] getRawColorBlobThresholds()
+    {
+        return rawColorBlobPipeline != null? rawColorBlobPipeline.getColorThresholds(): null;
+    }   //getRawColorBlobThresholds
+
+    /**
+     * This method sets the color threshold values of rawColorBlobVision.
+     *
+     * @param colorThresholds specifies an array of color threshold values.
+     */
+    public void setRawColorBlobThresholds(double... colorThresholds)
+    {
+        if (rawColorBlobPipeline != null)
+        {
+            rawColorBlobPipeline.setColorThresholds(colorThresholds);
+        }
+    }   //setRawColorBlobThresholds
+
+
+    /**
+     * This method enables/disables raw ColorBlob vision.
+     *
+     * @param enabled specifies true to enable, false to disable.
+     */
+    public void setRawColorBlobVisionEnabled(boolean enabled)
+    {
+        if (rawColorBlobVision != null)
+        {
+            rawColorBlobVision.setPipeline(enabled? rawColorBlobPipeline: null);
+        }
+    }   //setRawColorBlobVisionEnabled
 
     /**
      * This method enables/disables AprilTag vision.
@@ -203,6 +283,16 @@ public class Vision
             vision.setProcessorEnabled(tensorFlowProcessor, enabled);
         }
     }   //setTensorFlowVisionEnabled
+
+    /**
+     * This method checks if raw ColorBlob vision is enabled.
+     *
+     * @return true if enabled, false if disabled.
+     */
+    public boolean isRawColorBlobVisionEnabled()
+    {
+        return rawColorBlobVision != null && rawColorBlobVision.getPipeline() != null;
+    }   //isRawColorBlobVisionEnabled
 
     /**
      * This method checks if AprilTag vision is enabled.
