@@ -55,7 +55,7 @@ The Framework Library provides numerous features. We will list some of them here
 We are not very good at creating documentation and tutorials but we want to get better at this. Our Framework Library code has JavaDoc all over. Therefore, you can get information on what each class does and their methods. We have also added sample code to the template project. Several teams have been using our Framework Library and we welcome opportunities of collaboration in creating tutorial materials. Feel free to suggest what tutorial you want to see.
 
 ### Javadoc Reference Material
-The Javadoc reference documentation for the TRC Robotics Framework Library can be found [here](https://trc492.github.io/FtcJavaDoc/).
+The Javadoc reference documentation for the TRC Robotics Framework Library can be found [here](https://trc492.github.io/FtcJavaDoc/). We have also created some class material for learning our Robotics Framework [here](https://github.com/trc492/TrcAdvancedProgrammingClass/tree/main/FrcLessons).
 
 ### Online User Forum
 For technical questions regarding our Framework Library, please post questions on the FTC Forums [here](https://ftcforum.firstinspires.org/forum/ftc-technology/android-studio).
