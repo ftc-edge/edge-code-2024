@@ -58,10 +58,10 @@ public class Vision
 {
     private static final String moduleName = "Vision";
     private static final double[] DEF_COLORBLOB_THRESHOLDS = {0.0, 255.0, 0.0, 255.0, 0.0, 255.0};
-    // RGB Color Space.
-    private static final int colorConversion = Imgproc.COLOR_BGRA2BGR;
-    private static final double[] redBlobColorThresholds = {100.0, 255.0, 0.0, 100.0, 0.0, 60.0};
-    private static final double[] blueBlobColorThresholds = {0.0, 60.0, 0.0, 100.0, 100, 255.0};
+    // HSV Color Space.
+    private static final int colorConversion = Imgproc.COLOR_BGR2HSV;
+    private static final double[] redBlobColorThresholds = {160.0, 200.0, 120.0, 255.0, 150.0, 255.0};
+    private static final double[] blueBlobColorThresholds = {0.0, 80.0, 120.0, 255.0, 100.0, 255.0};
     private static final TrcOpenCvColorBlobPipeline.FilterContourParams colorBlobFilterContourParams =
         new TrcOpenCvColorBlobPipeline.FilterContourParams()
             .setMinArea(1000.0)
@@ -70,7 +70,8 @@ public class Vision
             .setHeightRange(10.0, 1000.0)
             .setSolidityRange(0.0, 100.0)
             .setVerticesRange(0.0, 1000.0)
-            .setAspectRatioRange(0.0, 10.0);
+            .setAspectRatioRange(0.5, 2.0);
+
     private static final String TFOD_MODEL_ASSET = "MyObject.tflite";
     private static final float TFOD_MIN_CONFIDENCE = 0.75f;
     public static final String[] TFOD_TARGET_LABELS = {"MyObject"};

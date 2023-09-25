@@ -162,30 +162,31 @@ public class FtcAuto extends FtcOpMode
 
         if (robot.vision != null)
         {
-            // Enabling vision early so we can detect signal position before match starts.
-            if (robot.vision.aprilTagVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
-                robot.vision.setAprilTagVisionEnabled(true);
-            }
-
-            if (robot.vision.redBlobVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Enabling RedBlobVision.");
-                robot.vision.setRedBlobVisionEnabled(true);
-            }
-
-            if (robot.vision.blueBlobVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Enabling BlueBlobVision.");
-                robot.vision.setBlueBlobVisionEnabled(true);
-            }
-
-            if (robot.vision.tensorFlowVision != null)
-            {
-                robot.globalTracer.traceInfo(funcName, "Enabling TensorFlowVision.");
-                robot.vision.setTensorFlowVisionEnabled(true);
-            }
+            // Enabling vision early so we can detect target before match starts if necessary.
+            // Only enable the necessary vision for that purpose.
+//            if (robot.vision.aprilTagVision != null)
+//            {
+//                robot.globalTracer.traceInfo(funcName, "Enabling AprilTagVision.");
+//                robot.vision.setAprilTagVisionEnabled(true);
+//            }
+//
+//            if (robot.vision.redBlobVision != null)
+//            {
+//                robot.globalTracer.traceInfo(funcName, "Enabling RedBlobVision.");
+//                robot.vision.setRedBlobVisionEnabled(true);
+//            }
+//
+//            if (robot.vision.blueBlobVision != null)
+//            {
+//                robot.globalTracer.traceInfo(funcName, "Enabling BlueBlobVision.");
+//                robot.vision.setBlueBlobVisionEnabled(true);
+//            }
+//
+//            if (robot.vision.tensorFlowVision != null)
+//            {
+//                robot.globalTracer.traceInfo(funcName, "Enabling TensorFlowVision.");
+//                robot.vision.setTensorFlowVisionEnabled(true);
+//            }
         }
 
         robot.zeroCalibrate();
@@ -196,8 +197,8 @@ public class FtcAuto extends FtcOpMode
     //
 
     /**
-     * This method is called periodically after robotInit() is called but before competition starts. For this season,
-     * we are detecting the duck's barcode position before the match starts.
+     * This method is called periodically after robotInit() is called but before competition starts. For example,
+     * we can put vision code here to detect target before autonomous starts.
      */
     @Override
     public void initPeriodic()
