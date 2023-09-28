@@ -67,6 +67,16 @@ public class BlinkinLEDs extends FtcRevBlinkin
     }   //BlinkinLEDs
 
     /**
+     * This method sets the pattern ON for a period of time and turns off automatically afterwards.
+     *
+     * @param patternName specifies the name of the LED pattern to turn on.
+     */
+    public void setDetectedPattern(String patternName)
+    {
+        setPatternState(patternName, true, 0.5);
+    }   //setDetectedPattern
+
+    /**
      * This method sets the LED to indicate the drive orientation mode of the robot.
      *
      * @param orientation specifies the drive orientation mode.

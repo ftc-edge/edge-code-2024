@@ -50,6 +50,7 @@ public class RobotParams
         public static boolean useBatteryMonitor = false;
         // Vision
         public static boolean useWebCam = true;
+        public static boolean hasWebCam2 = false;
         public static boolean useBuiltinCamBack = false;
         public static boolean tuneColorBlobVision = false;
         public static boolean useAprilTagVision = false;
@@ -78,7 +79,8 @@ public class RobotParams
     //
     // Miscellaneous.
     public static final String HWNAME_IMU                       = "imu";
-    public static final String HWNAME_WEBCAM                    = "Webcam 1";
+    public static final String HWNAME_WEBCAM1                   = "Webcam 1";
+    public static final String HWNAME_WEBCAM2                   = "Webcam 2";
     public static final String HWNAME_BLINKIN                   = "blinkin";
     // Drive Base.
     public static final String HWNAME_LFDRIVE_MOTOR             = "lfDriveMotor";

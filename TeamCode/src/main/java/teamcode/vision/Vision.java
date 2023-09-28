@@ -37,6 +37,7 @@ import java.util.ArrayList;
 
 import TrcCommonLib.trclib.TrcDbgTrace;
 import TrcCommonLib.trclib.TrcOpenCvColorBlobPipeline;
+import TrcCommonLib.trclib.TrcOpenCvDetector;
 import TrcCommonLib.trclib.TrcVisionTargetInfo;
 import TrcFtcLib.ftclib.FtcEocvColorBlobProcessor;
 import TrcFtcLib.ftclib.FtcOpMode;
@@ -48,6 +49,7 @@ import TrcFtcLib.ftclib.FtcVisionEocvColorBlob;
 import TrcFtcLib.ftclib.FtcVisionTensorFlow;
 import teamcode.Robot;
 import teamcode.RobotParams;
+import teamcode.subsystems.BlinkinLEDs;
 
 /**
  * This class implements AprilTag/TensorFlow/Eocv Vision for the game season. It creates and initializes all the
@@ -57,11 +59,13 @@ import teamcode.RobotParams;
 public class Vision
 {
     private static final String moduleName = "Vision";
-    private static final double[] DEF_COLORBLOB_THRESHOLDS = {0.0, 255.0, 0.0, 255.0, 0.0, 255.0};
-    // HSV Color Space.
-    private static final int colorConversion = Imgproc.COLOR_BGR2HSV;
-    private static final double[] redBlobColorThresholds = {160.0, 200.0, 120.0, 255.0, 150.0, 255.0};
-    private static final double[] blueBlobColorThresholds = {0.0, 80.0, 120.0, 255.0, 100.0, 255.0};
+    // Warning: EOCV converts camera stream to RGBA whereas Desktop OpenCV converts it to BGRA. Therefore, the correct
+    // color conversion must be RGBA (or RGB) to whatever color space you want to convert.
+    //
+    // YCrCb Color Space.
+    private static final int colorConversion = Imgproc.COLOR_RGB2YCrCb;
+    private static final double[] redBlobColorThresholds = {20.0, 120.0, 180.0, 220.0, 90.0, 120.0};
+    private static final double[] blueBlobColorThresholds = {40.0, 140.0, 100.0, 150.0, 150.0, 200.0};
     private static final TrcOpenCvColorBlobPipeline.FilterContourParams colorBlobFilterContourParams =
         new TrcOpenCvColorBlobPipeline.FilterContourParams()
             .setMinArea(1000.0)
@@ -74,8 +78,10 @@ public class Vision
 
     private static final String TFOD_MODEL_ASSET = "MyObject.tflite";
     private static final float TFOD_MIN_CONFIDENCE = 0.75f;
-    public static final String[] TFOD_TARGET_LABELS = {"MyObject"};
+    public static final String TFOD_OBJECT_LABEL = "MyObject";
+    public static final String[] TFOD_TARGET_LABELS = {TFOD_OBJECT_LABEL};
 
+    private final Robot robot;
     private FtcRawEocvColorBlobPipeline rawColorBlobPipeline;
     public FtcRawEocvVision rawColorBlobVision = null;
     public FtcVisionAprilTag aprilTagVision;
@@ -97,6 +103,7 @@ public class Vision
     public Vision(Robot robot, TrcDbgTrace tracer)
     {
         FtcOpMode opMode = FtcOpMode.getInstance();
+        this.robot = robot;
         if (RobotParams.Preferences.tuneColorBlobVision)
         {
             OpenCvCamera webcam;
@@ -106,18 +113,18 @@ public class Vision
                 int cameraViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
                     "cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
                 webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM), cameraViewId);
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM1), cameraViewId);
                 webcam.showFpsMeterOnViewport(false);
             }
             else
             {
                 webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM));
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM1));
             }
 
             robot.globalTracer.traceInfo(moduleName, "Starting RawEocvColorBlobVision...");
             rawColorBlobPipeline = new FtcRawEocvColorBlobPipeline(
-                "rawColorBlobPipeline", colorConversion, DEF_COLORBLOB_THRESHOLDS, colorBlobFilterContourParams,
+                "rawColorBlobPipeline", colorConversion, redBlobColorThresholds, colorBlobFilterContourParams,
                 tracer);
             // Display colorThresholdOutput.
             rawColorBlobPipeline.setVideoOutput(0);
@@ -180,7 +187,9 @@ public class Vision
             visionProcessorsList.toArray(visionProcessors);
             vision = RobotParams.Preferences.useWebCam ?
                 new FtcVision(
-                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM),
+                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM1),
+                    RobotParams.Preferences.hasWebCam2?
+                        opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM2): null,
                     RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
                     RobotParams.Preferences.showVisionView, visionProcessors) :
                 new FtcVision(
@@ -334,6 +343,126 @@ public class Vision
     {
         return tensorFlowProcessor != null && vision.isVisionProcessorEnabled(tensorFlowProcessor);
     }   //isTensorFlowVisionEnabled
+
+    /**
+     * This method calls RawColorBlob vision to detect the color blob for color threshold tuning.
+     *
+     * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
+     * @return detected raw color blob object info.
+     */
+    public TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> getDetectedRawColorBlob(int lineNum)
+    {
+        TrcVisionTargetInfo<TrcOpenCvDetector.DetectedObject<?>> colorBlobInfo =
+            rawColorBlobVision != null? rawColorBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0): null;
+
+        if (lineNum != -1)
+        {
+            robot.dashboard.displayPrintf(lineNum, "ColorBlob: %s", colorBlobInfo != null? colorBlobInfo: "Not found.");
+        }
+
+        return colorBlobInfo;
+    }   //getDetectedRawColorBlob
+
+    /**
+     * This method calls AprilTag vision to detect the AprilTag object.
+     *
+     * @param id specifies the AprilTag ID to look for, null if match to any ID.
+     * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
+     * @return detected AprilTag object info.
+     */
+    public TrcVisionTargetInfo<FtcVisionAprilTag.DetectedObject> getDetectedAprilTag(Integer id, int lineNum)
+    {
+        TrcVisionTargetInfo<FtcVisionAprilTag.DetectedObject> aprilTagInfo =
+            robot.vision.aprilTagVision.getBestDetectedTargetInfo(id, null);
+
+        if (aprilTagInfo != null && robot.blinkin != null)
+        {
+            robot.blinkin.setDetectedPattern(BlinkinLEDs.APRIL_TAG);
+        }
+
+        if (lineNum != -1)
+        {
+            robot.dashboard.displayPrintf(lineNum, "AprilTag: %s", aprilTagInfo != null? aprilTagInfo: "Not found.");
+        }
+
+        return aprilTagInfo;
+    }   //getDetectedAprilTag
+
+    /**
+     * This method calls ColorBlob vision to detect the Red Blob object.
+     *
+     * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
+     * @return detected Red Blob object info.
+     */
+    public TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> getDetectedRedBlob(int lineNum)
+    {
+        TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> colorBlobInfo =
+            robot.vision.redBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
+
+        if (colorBlobInfo != null && robot.blinkin != null)
+        {
+            robot.blinkin.setDetectedPattern(BlinkinLEDs.RED_BLOB);
+        }
+
+        if (lineNum != -1)
+        {
+            robot.dashboard.displayPrintf(
+                lineNum, "RedBlob: %s", colorBlobInfo != null? colorBlobInfo: "Not found.");
+        }
+
+        return colorBlobInfo;
+    }   //getDetectedRedBlob
+
+    /**
+     * This method calls ColorBlob vision to detect the Blue Blob object.
+     *
+     * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
+     * @return detected Blue Blob object info.
+     */
+    public TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> getDetectedBlueBlob(int lineNum)
+    {
+        TrcVisionTargetInfo<TrcOpenCvColorBlobPipeline.DetectedObject> colorBlobInfo =
+            robot.vision.blueBlobVision.getBestDetectedTargetInfo(null, null, 0.0, 0.0);
+
+        if (colorBlobInfo != null && robot.blinkin != null)
+        {
+            robot.blinkin.setDetectedPattern(BlinkinLEDs.BLUE_BLOB);
+        }
+
+        if (lineNum != -1)
+        {
+            robot.dashboard.displayPrintf(
+                lineNum, "GreenPixel: %s", colorBlobInfo != null? colorBlobInfo: "Not found.");
+        }
+
+        return colorBlobInfo;
+    }   //getDetectedBlueBlob
+
+    /**
+     * This method calls TensorFlow vision to detect the Pixel objects.
+     *
+     * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
+     * @return detected Pixel object info.
+     */
+    public TrcVisionTargetInfo<FtcVisionTensorFlow.DetectedObject> getDetectedTensorFlowPixel(int lineNum)
+    {
+        TrcVisionTargetInfo<FtcVisionTensorFlow.DetectedObject> tensorFlowInfo =
+            robot.vision.tensorFlowVision.getBestDetectedTargetInfo(
+                TFOD_OBJECT_LABEL, null, this::compareConfidence, 0.0, 0.0);
+
+        if (tensorFlowInfo != null && robot.blinkin != null)
+        {
+            robot.blinkin.setDetectedPattern(BlinkinLEDs.TENSOR_FLOW);
+        }
+
+        if (lineNum != -1)
+        {
+            robot.dashboard.displayPrintf(
+                lineNum, "TensorFlow: %s", tensorFlowInfo != null? tensorFlowInfo: "Not found.");
+        }
+
+        return tensorFlowInfo;
+    }   //getDetectedTensorFlowPixel
 
     /**
      * This method is called by the Arrays.sort to sort the target object by decreasing confidence.

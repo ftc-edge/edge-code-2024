@@ -146,6 +146,7 @@ public class FtcTeleOp extends FtcOpMode
     {
         if (slowPeriodicLoop)
         {
+            int lineNum = 1;
             //
             // DriveBase subsystem.
             //
@@ -166,7 +167,7 @@ public class FtcTeleOp extends FtcOpMode
                     robot.robotDrive.driveBase.arcadeDrive(inputs[1], inputs[2]);
                 }
                 robot.dashboard.displayPrintf(
-                    1, "Pose:%s,x=%.2f,y=%.2f,rot=%.2f",
+                    lineNum++, "Pose:%s,x=%.2f,y=%.2f,rot=%.2f",
                     robot.robotDrive.driveBase.getFieldPosition(), inputs[0], inputs[1], inputs[2]);
             }
             //
