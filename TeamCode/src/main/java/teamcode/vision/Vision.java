@@ -126,7 +126,7 @@ public class Vision
             rawColorBlobPipeline = new FtcRawEocvColorBlobPipeline(
                 "rawColorBlobPipeline", colorConversion, redBlobColorThresholds, colorBlobFilterContourParams,
                 tracer);
-            // Display colorThresholdOutput.
+            // By default, display original Mat.
             rawColorBlobPipeline.setVideoOutput(0);
             rawColorBlobPipeline.setAnnotateEnabled(true);
             rawColorBlobVision = new FtcRawEocvVision(
@@ -198,6 +198,7 @@ public class Vision
                     RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
                     RobotParams.Preferences.showVisionView, visionProcessors);
             // Disable all vision processors until they are needed.
+            setRawColorBlobVisionEnabled(false);
             setAprilTagVisionEnabled(false);
             setRedBlobVisionEnabled(false);
             setBlueBlobVisionEnabled(false);
@@ -243,58 +244,6 @@ public class Vision
     }   //setRawColorBlobVisionEnabled
 
     /**
-     * This method enables/disables AprilTag vision.
-     *
-     * @param enabled specifies true to enable, false to disable.
-     */
-    public void setAprilTagVisionEnabled(boolean enabled)
-    {
-        if (aprilTagProcessor != null)
-        {
-            vision.setProcessorEnabled(aprilTagProcessor, enabled);
-        }
-    }   //setAprilTagVisionEnabled
-
-    /**
-     * This method enables/disables RedBlob vision.
-     *
-     * @param enabled specifies true to enable, false to disable.
-     */
-    public void setRedBlobVisionEnabled(boolean enabled)
-    {
-        if (redBlobProcessor != null)
-        {
-            vision.setProcessorEnabled(redBlobProcessor, enabled);
-        }
-    }   //setRedBlobVisionEnabled
-
-    /**
-     * This method enables/disables BlueBlob vision.
-     *
-     * @param enabled specifies true to enable, false to disable.
-     */
-    public void setBlueBlobVisionEnabled(boolean enabled)
-    {
-        if (blueBlobProcessor != null)
-        {
-            vision.setProcessorEnabled(blueBlobProcessor, enabled);
-        }
-    }   //setBlueBlobVisionEnabled
-
-    /**
-     * This method enables/disables TensorFlow vision.
-     *
-     * @param enabled specifies true to enable, false to disable.
-     */
-    public void setTensorFlowVisionEnabled(boolean enabled)
-    {
-        if (tensorFlowProcessor != null)
-        {
-            vision.setProcessorEnabled(tensorFlowProcessor, enabled);
-        }
-    }   //setTensorFlowVisionEnabled
-
-    /**
      * This method checks if raw ColorBlob vision is enabled.
      *
      * @return true if enabled, false if disabled.
@@ -303,46 +252,6 @@ public class Vision
     {
         return rawColorBlobVision != null && rawColorBlobVision.getPipeline() != null;
     }   //isRawColorBlobVisionEnabled
-
-    /**
-     * This method checks if AprilTag vision is enabled.
-     *
-     * @return true if enabled, false if disabled.
-     */
-    public boolean isAprilTagVisionEnabled()
-    {
-        return aprilTagProcessor != null && vision.isVisionProcessorEnabled(aprilTagProcessor);
-    }   //isAprilTagVisionEnabled
-
-    /**
-     * This method checks if RedBlob vision is enabled.
-     *
-     * @return true if enabled, false if disabled.
-     */
-    public boolean isRedBlobVisionEnabled()
-    {
-        return redBlobProcessor != null && vision.isVisionProcessorEnabled(redBlobProcessor);
-    }   //isRedBlobVisionEnabled
-
-    /**
-     * This method checks if BlueBlob vision is enabled.
-     *
-     * @return true if enabled, false if disabled.
-     */
-    public boolean isBlueBlobVisionEnabled()
-    {
-        return blueBlobProcessor != null && vision.isVisionProcessorEnabled(blueBlobProcessor);
-    }   //isBlueBlobVisionEnabled
-
-    /**
-     * This method checks if TensorFlow vision is enabled.
-     *
-     * @return true if enabled, false if disabled.
-     */
-    public boolean isTensorFlowVisionEnabled()
-    {
-        return tensorFlowProcessor != null && vision.isVisionProcessorEnabled(tensorFlowProcessor);
-    }   //isTensorFlowVisionEnabled
 
     /**
      * This method calls RawColorBlob vision to detect the color blob for color threshold tuning.
@@ -362,6 +271,29 @@ public class Vision
 
         return colorBlobInfo;
     }   //getDetectedRawColorBlob
+
+    /**
+     * This method enables/disables AprilTag vision.
+     *
+     * @param enabled specifies true to enable, false to disable.
+     */
+    public void setAprilTagVisionEnabled(boolean enabled)
+    {
+        if (aprilTagProcessor != null)
+        {
+            vision.setProcessorEnabled(aprilTagProcessor, enabled);
+        }
+    }   //setAprilTagVisionEnabled
+
+    /**
+     * This method checks if AprilTag vision is enabled.
+     *
+     * @return true if enabled, false if disabled.
+     */
+    public boolean isAprilTagVisionEnabled()
+    {
+        return aprilTagProcessor != null && vision.isVisionProcessorEnabled(aprilTagProcessor);
+    }   //isAprilTagVisionEnabled
 
     /**
      * This method calls AprilTag vision to detect the AprilTag object.
@@ -389,6 +321,29 @@ public class Vision
     }   //getDetectedAprilTag
 
     /**
+     * This method enables/disables RedBlob vision.
+     *
+     * @param enabled specifies true to enable, false to disable.
+     */
+    public void setRedBlobVisionEnabled(boolean enabled)
+    {
+        if (redBlobProcessor != null)
+        {
+            vision.setProcessorEnabled(redBlobProcessor, enabled);
+        }
+    }   //setRedBlobVisionEnabled
+
+    /**
+     * This method checks if RedBlob vision is enabled.
+     *
+     * @return true if enabled, false if disabled.
+     */
+    public boolean isRedBlobVisionEnabled()
+    {
+        return redBlobProcessor != null && vision.isVisionProcessorEnabled(redBlobProcessor);
+    }   //isRedBlobVisionEnabled
+
+    /**
      * This method calls ColorBlob vision to detect the Red Blob object.
      *
      * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
@@ -414,6 +369,29 @@ public class Vision
     }   //getDetectedRedBlob
 
     /**
+     * This method enables/disables BlueBlob vision.
+     *
+     * @param enabled specifies true to enable, false to disable.
+     */
+    public void setBlueBlobVisionEnabled(boolean enabled)
+    {
+        if (blueBlobProcessor != null)
+        {
+            vision.setProcessorEnabled(blueBlobProcessor, enabled);
+        }
+    }   //setBlueBlobVisionEnabled
+
+    /**
+     * This method checks if BlueBlob vision is enabled.
+     *
+     * @return true if enabled, false if disabled.
+     */
+    public boolean isBlueBlobVisionEnabled()
+    {
+        return blueBlobProcessor != null && vision.isVisionProcessorEnabled(blueBlobProcessor);
+    }   //isBlueBlobVisionEnabled
+
+    /**
      * This method calls ColorBlob vision to detect the Blue Blob object.
      *
      * @param lineNum specifies the dashboard line number to display the detected object info, -1 to disable printing.
@@ -437,6 +415,29 @@ public class Vision
 
         return colorBlobInfo;
     }   //getDetectedBlueBlob
+
+    /**
+     * This method enables/disables TensorFlow vision.
+     *
+     * @param enabled specifies true to enable, false to disable.
+     */
+    public void setTensorFlowVisionEnabled(boolean enabled)
+    {
+        if (tensorFlowProcessor != null)
+        {
+            vision.setProcessorEnabled(tensorFlowProcessor, enabled);
+        }
+    }   //setTensorFlowVisionEnabled
+
+    /**
+     * This method checks if TensorFlow vision is enabled.
+     *
+     * @return true if enabled, false if disabled.
+     */
+    public boolean isTensorFlowVisionEnabled()
+    {
+        return tensorFlowProcessor != null && vision.isVisionProcessorEnabled(tensorFlowProcessor);
+    }   //isTensorFlowVisionEnabled
 
     /**
      * This method calls TensorFlow vision to detect the Pixel objects.
