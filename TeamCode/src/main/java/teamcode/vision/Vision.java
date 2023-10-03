@@ -219,7 +219,7 @@ public class Vision
     }   //Vision
 
     /**
-     * This method switch between the two webcams.
+     * This method switches between the two webcams.
      */
     public void switchActiveCamera()
     {
