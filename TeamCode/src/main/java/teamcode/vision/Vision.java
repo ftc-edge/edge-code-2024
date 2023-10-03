@@ -92,6 +92,9 @@ public class Vision
     private FtcEocvColorBlobProcessor blueBlobProcessor;
     public FtcVisionTensorFlow tensorFlowVision;
     private TfodProcessor tensorFlowProcessor;
+    private WebcamName webcamName1;
+    private WebcamName webcamName2;
+    private WebcamName activeCamera;
     private FtcVision vision;
 
     /**
@@ -103,6 +106,7 @@ public class Vision
     public Vision(Robot robot, TrcDbgTrace tracer)
     {
         FtcOpMode opMode = FtcOpMode.getInstance();
+
         this.robot = robot;
         if (RobotParams.Preferences.tuneColorBlobVision)
         {
@@ -185,18 +189,26 @@ public class Vision
 
             VisionProcessor[] visionProcessors = new VisionProcessor[visionProcessorsList.size()];
             visionProcessorsList.toArray(visionProcessors);
-            vision = RobotParams.Preferences.useWebCam ?
-                new FtcVision(
-                    opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM1),
-                    RobotParams.Preferences.hasWebCam2?
-                        opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM2): null,
-                    RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
-                    RobotParams.Preferences.showVisionView, visionProcessors) :
-                new FtcVision(
-                    RobotParams.Preferences.useBuiltinCamBack ?
-                        BuiltinCameraDirection.BACK : BuiltinCameraDirection.FRONT,
+            if (RobotParams.Preferences.useWebCam)
+            {
+                webcamName1 = opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM1);
+                webcamName2 =
+                    RobotParams.Preferences.hasWebCam2 ?
+                        opMode.hardwareMap.get(WebcamName.class, RobotParams.HWNAME_WEBCAM2) : null;
+                vision = new FtcVision(
+                    webcamName1, webcamName2, RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
+                    RobotParams.Preferences.showVisionView, visionProcessors);
+                // Initialize the active camera to webcamName1.
+                switchActiveCamera();
+            }
+            else
+            {
+                vision = new FtcVision(
+                    RobotParams.Preferences.useBuiltinCamBack?
+                        BuiltinCameraDirection.BACK: BuiltinCameraDirection.FRONT,
                     RobotParams.CAM_IMAGE_WIDTH, RobotParams.CAM_IMAGE_HEIGHT,
                     RobotParams.Preferences.showVisionView, visionProcessors);
+            }
             // Disable all vision processors until they are needed.
             setRawColorBlobVisionEnabled(false);
             setAprilTagVisionEnabled(false);
@@ -205,6 +217,19 @@ public class Vision
             setTensorFlowVisionEnabled(false);
         }
     }   //Vision
+
+    /**
+     * This method switch between the two webcams.
+     */
+    public void switchActiveCamera()
+    {
+        // Only do this if we have two webcams.
+        if (webcamName1 != null && webcamName2 != null)
+        {
+            activeCamera = activeCamera == null || activeCamera == webcamName2? webcamName1: webcamName2;
+            vision.getVisionPortal().setActiveCamera(activeCamera);
+        }
+    }   //switchActiveCamera
 
     /**
      * This method returns the color threshold values of rawColorBlobVision.
