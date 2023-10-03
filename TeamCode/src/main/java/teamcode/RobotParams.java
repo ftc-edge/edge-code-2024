@@ -24,8 +24,6 @@ package teamcode;
 
 import android.os.Environment;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import TrcCommonLib.trclib.TrcDriveBase.DriveOrientation;
@@ -56,11 +54,11 @@ public class RobotParams
         public static boolean useAprilTagVision = false;
         public static boolean useColorBlobVision = false;
         public static boolean useTensorFlowVision = false;
-        public static boolean useTfodModelAsset = false;
         public static boolean showVisionView = true;
         // Robot
         public static boolean noRobot = false;
         public static boolean swerveRobot = false;
+        public static boolean swerveDualServoSteering = true;
         // Drive Base
         public static boolean useExternalOdometry = false;
         public static boolean useVelocityControl = false;
@@ -91,8 +89,6 @@ public class RobotParams
     public static final String HWNAME_RFSTEER_SERVO             = "rfSteerServo";
     public static final String HWNAME_LBSTEER_SERVO             = "lbSteerServo";
     public static final String HWNAME_RBSTEER_SERVO             = "rbSteerServo";
-    public static final String HWNAME_LODO_SERVO                = "lOdoServo";
-    public static final String HWNAME_RODO_SERVO                = "rOdoServo";
     public static final String HWNAME_LFSTEER_ENCODER           = "lfSteerEncoder";
     public static final String HWNAME_RFSTEER_ENCODER           = "rfSteerEncoder";
     public static final String HWNAME_LBSTEER_ENCODER           = "lbSteerEncoder";
@@ -189,10 +185,10 @@ public class RobotParams
     public static final double LBSTEER_ZERO_POS                 = 0.536509;
     public static final double RBSTEER_ZERO_POS                 = 0.538126;
 
-    public static final boolean LFDRIVE_INVERTED                = true;
+    public static final boolean LFDRIVE_INVERTED                = false;
     public static final boolean RFDRIVE_INVERTED                = true;
-    public static final boolean LBDRIVE_INVERTED                = true;
-    public static final boolean RBDRIVE_INVERTED                = false;
+    public static final boolean LBDRIVE_INVERTED                = false;
+    public static final boolean RBDRIVE_INVERTED                = true;
     public static final boolean LFSTEER_INVERTED                = true;
     public static final boolean RFSTEER_INVERTED                = true;
     public static final boolean LBSTEER_INVERTED                = true;
@@ -204,14 +200,11 @@ public class RobotParams
     public static final double STEER_SERVO_IZONE                = 0.0;
     public static final double STEER_SERVO_TOLERANCE            = 0.5;
 
-    public static final DcMotor.RunMode DRIVE_MOTOR_MODE        = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
     public static final TrcPidController.PidCoefficients DRIVE_POSPID_COEFFS =
         new TrcPidController.PidCoefficients(0.0, 0.0, 0.0, 1.0);
     public static final TrcPidController.PidCoefficients DRIVE_VELPID_COEFFS =
         new TrcPidController.PidCoefficients(1.0, 0.0, 0.0, 0.0);
     public static final boolean DRIVE_WHEEL_BRAKE_MODE_ON       = true;
-    public static final boolean LEFT_WHEEL_INVERTED             = false;
-    public static final boolean RIGHT_WHEEL_INVERTED            = false;
     public static final double TURN_POWER_LIMIT                 = 0.5;
     public static final double DRIVE_POWER_SCALE_SLOW           = 0.5;
     public static final double DRIVE_POWER_SCALE_NORMAL         = 1.0;

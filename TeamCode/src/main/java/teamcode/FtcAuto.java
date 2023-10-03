@@ -66,7 +66,7 @@ public class FtcAuto extends FtcOpMode
      */
     public static class AutoChoices
     {
-        public double startDelay = 0.0;
+        public double delay = 0.0;
         public Alliance alliance = Alliance.RED_ALLIANCE;
         public StartPos startPos = StartPos.LEFT;
         public AutoStrategy strategy = AutoStrategy.DO_NOTHING;
@@ -81,7 +81,7 @@ public class FtcAuto extends FtcOpMode
         {
             return String.format(
                 Locale.US,
-                "startDelay=%.0f " +
+                "delay=%.0f " +
                 "alliance=\"%s\" " +
                 "startPos=\"%s\" " +
                 "strategy=\"%s\" " +
@@ -90,7 +90,7 @@ public class FtcAuto extends FtcOpMode
                 "turnTarget=%.0f " +
                 "driveTime=%.0f " +
                 "drivePower=%.1f",
-                startDelay, alliance, startPos, strategy, xTarget, yTarget, turnTarget, driveTime, drivePower);
+                delay, alliance, startPos, strategy, xTarget, yTarget, turnTarget, driveTime, drivePower);
         }   //toString
 
     }   //class AutoChoices
@@ -139,7 +139,7 @@ public class FtcAuto extends FtcOpMode
                 if (!RobotParams.Preferences.noRobot)
                 {
                     autoCommand = new CmdPidDrive(
-                        robot.robotDrive.driveBase, robot.robotDrive.pidDrive, autoChoices.startDelay,
+                        robot.robotDrive.driveBase, robot.robotDrive.pidDrive, autoChoices.delay,
                         autoChoices.drivePower, null,
                         new TrcPose2D(autoChoices.xTarget*12.0, autoChoices.yTarget*12.0, autoChoices.turnTarget));
                 }
@@ -149,7 +149,7 @@ public class FtcAuto extends FtcOpMode
                 if (!RobotParams.Preferences.noRobot)
                 {
                     autoCommand = new CmdTimedDrive(
-                        robot.robotDrive.driveBase, autoChoices.startDelay, autoChoices.driveTime,
+                        robot.robotDrive.driveBase, autoChoices.delay, autoChoices.driveTime,
                         0.0, autoChoices.drivePower, 0.0);
                 }
                 break;
@@ -315,9 +315,9 @@ public class FtcAuto extends FtcOpMode
         //
         // Construct menus.
         //
-        FtcValueMenu startDelayMenu = new FtcValueMenu(
+        FtcValueMenu delayMenu = new FtcValueMenu(
             "Start delay time:", null, 0.0, 30.0, 1.0, 0.0, " %.0f sec");
-        FtcChoiceMenu<Alliance> allianceMenu = new FtcChoiceMenu<>("Alliance:", startDelayMenu);
+        FtcChoiceMenu<Alliance> allianceMenu = new FtcChoiceMenu<>("Alliance:", delayMenu);
         FtcChoiceMenu<StartPos> startPosMenu = new FtcChoiceMenu<>("Start Position:", allianceMenu);
         FtcChoiceMenu<AutoStrategy> strategyMenu = new FtcChoiceMenu<>("Auto Strategies:", startPosMenu);
 
@@ -332,7 +332,7 @@ public class FtcAuto extends FtcOpMode
         FtcValueMenu drivePowerMenu = new FtcValueMenu(
             "Drive power:", strategyMenu, -1.0, 1.0, 0.1, 0.5, " %.1f");
 
-        startDelayMenu.setChildMenu(allianceMenu);
+        delayMenu.setChildMenu(allianceMenu);
         xTargetMenu.setChildMenu(yTargetMenu);
         yTargetMenu.setChildMenu(turnTargetMenu);
         turnTargetMenu.setChildMenu(drivePowerMenu);
@@ -352,11 +352,11 @@ public class FtcAuto extends FtcOpMode
         //
         // Traverse menus.
         //
-        FtcMenu.walkMenuTree(startDelayMenu);
+        FtcMenu.walkMenuTree(delayMenu);
         //
         // Fetch choices.
         //
-        autoChoices.startDelay = startDelayMenu.getCurrentValue();
+        autoChoices.delay = delayMenu.getCurrentValue();
         autoChoices.alliance = allianceMenu.getCurrentChoiceObject();
         autoChoices.startPos = startPosMenu.getCurrentChoiceObject();
         autoChoices.strategy = strategyMenu.getCurrentChoiceObject();

@@ -92,7 +92,7 @@ public class Vision
     private FtcEocvColorBlobProcessor blueBlobProcessor;
     public FtcVisionTensorFlow tensorFlowVision;
     private TfodProcessor tensorFlowProcessor;
-    private FtcVision vision = null;
+    private FtcVision vision;
 
     /**
      * Constructor: Create an instance of the object.

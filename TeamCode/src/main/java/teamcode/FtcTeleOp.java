@@ -321,7 +321,7 @@ public class FtcTeleOp extends FtcOpMode
                 if (pressed)
                 {
                     // Zero calibrate all subsystems (arm, elevator and turret).
-                    robot.zeroCalibrate();
+                    robot.zeroCalibrate(moduleName);
                 }
                 break;
         }

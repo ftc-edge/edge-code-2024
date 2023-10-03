@@ -26,6 +26,7 @@ import TrcCommonLib.trclib.TrcEvent;
 import TrcCommonLib.trclib.TrcRobot;
 import TrcCommonLib.trclib.TrcStateMachine;
 import TrcCommonLib.trclib.TrcTimer;
+import teamcode.FtcAuto;
 import teamcode.Robot;
 
 /**
@@ -42,7 +43,7 @@ public class CmdAuto implements TrcRobot.RobotCommand
     }   //enum State
 
     private final Robot robot;
-    private final double startDelay;
+    private final FtcAuto.AutoChoices autoChoices;
     private final TrcTimer timer;
     private final TrcEvent event;
     private final TrcStateMachine<State> sm;
@@ -51,12 +52,12 @@ public class CmdAuto implements TrcRobot.RobotCommand
      * Constructor: Create an instance of the object.
      *
      * @param robot specifies the robot object for providing access to various global objects.
-     * @param startDelay specifies the start delay in seconds.
+     * @param autoChoices specifies the autoChoices object.
      */
-    public CmdAuto(Robot robot, double startDelay)
+    public CmdAuto(Robot robot, FtcAuto.AutoChoices autoChoices)
     {
         this.robot = robot;
-        this.startDelay = startDelay;
+        this.autoChoices = autoChoices;
 
         timer = new TrcTimer(moduleName);
         event = new TrcEvent(moduleName);
@@ -111,9 +112,9 @@ public class CmdAuto implements TrcRobot.RobotCommand
             switch (state)
             {
                 case START:
-                    if (startDelay > 0.0)
+                    if (autoChoices.delay > 0.0)
                     {
-                        timer.set(startDelay, event);
+                        timer.set(autoChoices.delay, event);
                         sm.waitForSingleEvent(event, State.DONE);
                     }
                     else
