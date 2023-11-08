@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *
  * @author Brandon Gong
  */
-@TeleOp(name="Mecanum Drive Example", group="Iterative Opmode")
+@TeleOp(name="Mecanum Drive", group="Iterative Opmode")
 public class MecanumDrive extends OpMode {
 
     /*
@@ -20,20 +20,20 @@ public class MecanumDrive extends OpMode {
      */
 
     // declare and initialize four DcMotors.
-    private DcMotor front_left  = null;
+    private DcMotor front_left = null;
     private DcMotor front_right = null;
-    private DcMotor back_left   = null;
-    private DcMotor back_right  = null;
+    private DcMotor back_left = null;
+    private DcMotor back_right = null;
 
     @Override
     public void init() {
 
         // Name strings must match up with the config on the Robot Controller
         // app.
-        front_left   = hardwareMap.get(DcMotor.class, "front_left");
-        front_right  = hardwareMap.get(DcMotor.class, "front_right");
-        back_left    = hardwareMap.get(DcMotor.class, "back_left");
-        back_right   = hardwareMap.get(DcMotor.class, "back_right");
+        front_left = hardwareMap.get(DcMotor.class, "topleft");
+        front_right = hardwareMap.get(DcMotor.class, "topright");
+        back_left = hardwareMap.get(DcMotor.class, "bottomleft");
+        back_right = hardwareMap.get(DcMotor.class, "bottomright");
     }
 
     @Override
@@ -41,9 +41,9 @@ public class MecanumDrive extends OpMode {
 
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
-        double drive  = gamepad1.left_stick_y;
+        double drive = gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
-        double twist  = gamepad1.right_stick_x;
+        double twist = gamepad1.right_stick_x;
 
         /*
          * If we had a gyro and wanted to do field-oriented control, here
@@ -81,8 +81,8 @@ public class MecanumDrive extends OpMode {
         // Loop through all values in the speeds[] array and find the greatest
         // *magnitude*.  Not the greatest velocity.
         double max = Math.abs(speeds[0]);
-        for(int i = 0; i < speeds.length; i++) {
-            if ( max < Math.abs(speeds[i]) ) max = Math.abs(speeds[i]);
+        for (int i = 0; i < speeds.length; i++) {
+            if (max < Math.abs(speeds[i])) max = Math.abs(speeds[i]);
         }
 
         // If and only if the maximum is outside of the range we want it to be,
