@@ -34,6 +34,12 @@ public class MecanumDrive extends OpMode {
         front_right = hardwareMap.get(DcMotor.class, "topright");
         back_left = hardwareMap.get(DcMotor.class, "bottomleft");
         back_right = hardwareMap.get(DcMotor.class, "bottomright");
+
+        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     @Override
