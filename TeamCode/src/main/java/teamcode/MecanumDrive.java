@@ -70,7 +70,7 @@ public class MecanumDrive extends OpMode {
         // the motor.  This is not an issue with the calculations themselves.
         double[] speeds = {
                 (drive + strafe + twist),
-                (drive - strafe - twist),
+                (-(drive - strafe - twist)),
                 (drive - strafe + twist),
                 (drive + strafe - twist)
         };
