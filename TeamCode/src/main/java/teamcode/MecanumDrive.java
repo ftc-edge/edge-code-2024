@@ -21,11 +21,11 @@ public class MecanumDrive extends OpMode {
      */
 
     // declare and initialize four DcMotors.
-    private DcMotor front_left = null;
-    private DcMotor front_right = null;
-    private DcMotor back_left = null;
-    private DcMotor back_right = null;
-    private DcMotor Vertical_slide = null;
+    private DcMotor frontLeft = null;
+    private DcMotor frontRight = null;
+    private DcMotor backLeft = null;
+    private DcMotor backRight = null;
+    private DcMotor verticalSlide = null;
     private Servo leftClaw = null;
     private Servo rightClaw = null;
 
@@ -34,31 +34,31 @@ public class MecanumDrive extends OpMode {
 
         // Name strings must match up with the config on the Robot Controller
         // app.
-        Vertical_slide = hardwareMap.get(DcMotor.class, "VertSlide");
+        verticalSlide = hardwareMap.get(DcMotor.class, "VertSlide");
 
-        front_left = hardwareMap.get(DcMotor.class, "topleft");
-        front_right = hardwareMap.get(DcMotor.class, "topright");
-        back_left = hardwareMap.get(DcMotor.class, "bottomleft");
-        back_right = hardwareMap.get(DcMotor.class, "bottomright");
+        frontLeft = hardwareMap.get(DcMotor.class, "topleft");
+        frontRight = hardwareMap.get(DcMotor.class, "topright");
+        backLeft = hardwareMap.get(DcMotor.class, "bottomleft");
+        backRight = hardwareMap.get(DcMotor.class, "bottomright");
 
-        Vertical_slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        verticalSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        front_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        front_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        Vertical_slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        verticalSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        //Vertical_slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //verticalSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        Vertical_slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        verticalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
     }
 
@@ -77,7 +77,7 @@ public class MecanumDrive extends OpMode {
         if (slideSpeed > 1) {
             slideSpeed = 1;
         }
-        if (slideSpeed < -1) {
+        else if (slideSpeed < -1) {
             slideSpeed = -1;
         }
 
@@ -129,22 +129,19 @@ public class MecanumDrive extends OpMode {
 
         // apply the calculated values to the motors.
 
-        int position = Vertical_slide.getCurrentPosition();
+        int position = verticalSlide.getCurrentPosition();
         telemetry.addData("Encoder Position", position);
 
-        front_left.setPower(speeds[0]);
-        front_right.setPower(speeds[1]);
-        back_left.setPower(speeds[2]);
-        back_right.setPower(speeds[3]);
+        frontLeft.setPower(speeds[0]);
+        frontRight.setPower(speeds[1]);
+        backLeft.setPower(speeds[2]);
+        backRight.setPower(speeds[3]);
 
-        Vertical_slide.setPower(slideSpeed);
-
-//        if (gamepad2.a) {
-//            Vertical_slide.setTargetPosition(0.5);
-//            Vertical_slide.setPower(1);
-//        }
-//        else {
-//            Vertical_slide.setPower(slideSpeed);
-//        }
+        if (gamepad2.a) {
+            verticalSlide.setPower(0.75);
+        }
+        else {
+            verticalSlide.setPower(slideSpeed);
+        }
     }
 }
