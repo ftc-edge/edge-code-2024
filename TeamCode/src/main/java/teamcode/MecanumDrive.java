@@ -56,7 +56,7 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        //verticalSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        verticalSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         verticalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -138,10 +138,13 @@ public class MecanumDrive extends OpMode {
         backRight.setPower(speeds[3]);
 
         if (gamepad2.a) {
-            verticalSlide.setPower(0.75);
+            slideSpeed = 0.75;
         }
-        else {
-            verticalSlide.setPower(slideSpeed);
+
+        if (gamepad2.b) {
+            slideSpeed = -0.75;
         }
+
+        verticalSlide.setPower(slideSpeed);
     }
 }
