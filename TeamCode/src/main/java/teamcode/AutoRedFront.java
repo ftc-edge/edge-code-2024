@@ -13,12 +13,12 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import teamcode.drive.SampleMecanumDrive;
 
-@Autonomous(name="Auto")
-public class Auto extends LinearOpMode {
+@Autonomous(name="AutoRedFront")
+public class AutoRedFront extends LinearOpMode {
 
-BluePropPipeline bluePipeline;
+    RedPropPipeline redPipeline;
 
-OpenCvCamera camera;
+    OpenCvCamera camera;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -31,9 +31,9 @@ OpenCvCamera camera;
 
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcam1, cameraMonitorViewId);
 
-        bluePipeline = new BluePropPipeline();
+        redPipeline = new RedPropPipeline();
 
-        camera.setPipeline(bluePipeline);
+        camera.setPipeline(redPipeline);
 
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
@@ -51,7 +51,7 @@ OpenCvCamera camera;
             }
         });
 
-        int route = bluePipeline.getAnalysis();
+        int route = redPipeline.getAnalysis();
 
         Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
 
