@@ -49,9 +49,9 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         lastEncPositions = lastTrackingEncPositions;
         lastEncVels = lastTrackingEncVels;
 
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "0"));
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "2"));
-        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "1"));
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "topright"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "bottomright"));
+        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "bottomleft"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }

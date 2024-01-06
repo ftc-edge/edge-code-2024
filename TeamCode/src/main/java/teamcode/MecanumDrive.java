@@ -30,9 +30,9 @@ public class MecanumDrive extends OpMode {
     private DcMotor rightSlide = null;
     private DcMotor intake = null;
     private Servo swerver = null;
-    private CRServo leftClaw = null;
-    private CRServo rightClaw = null;
-    boolean pinch = false;
+    private Servo leftClaw = null;
+    private Servo rightClaw = null;
+    double clawPosition = 0.2;
     @Override
     public void init() {
 
@@ -44,8 +44,8 @@ public class MecanumDrive extends OpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
 
         swerver = hardwareMap.get(Servo.class, "swerver");
-        leftClaw = hardwareMap.get(CRServo.class, "leftClaw");
-        rightClaw = hardwareMap.get(CRServo.class, "rightClaw");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
 
         frontLeft = hardwareMap.get(DcMotor.class, "topleft");
         frontRight = hardwareMap.get(DcMotor.class, "topright");
@@ -96,8 +96,6 @@ public class MecanumDrive extends OpMode {
             slideSpeed = -1;
         }
 
-
-        double clawPower = 0;
 
 
 
@@ -159,16 +157,11 @@ public class MecanumDrive extends OpMode {
         backRight.setPower(speeds[3]);
 
         if (gamepad2.a) {
-            pinch = true;
+            clawPosition = 0.3;
         }
 
         if (gamepad2.b) {
-            pinch = false;
-            clawPower = -1;
-        }
-
-        if (pinch) {
-            clawPower = 1;
+            clawPosition = 0.2;
         }
 
 
@@ -186,10 +179,19 @@ public class MecanumDrive extends OpMode {
         leftSlide.setPower(slideSpeed);
         rightSlide.setPower(slideSpeed);
 
-        leftClaw.setPower(clawPower);
-        rightClaw.setPower(clawPower);
+        leftClaw.setPosition(clawPosition);
+        rightClaw.setPosition(clawPosition);
 
         intake.setPower(1);
 
     }
 }
+
+
+
+
+//right slide is expansion 0, has encoder
+//left slide is expansion 2, has encoder
+//intake is expansion 3, has encoder
+//left front is expansion 1
+//
