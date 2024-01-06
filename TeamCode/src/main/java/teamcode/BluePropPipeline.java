@@ -31,13 +31,13 @@ public class BluePropPipeline extends OpenCvPipeline {
 
         Core.inRange(workingMat, lowHSV, highHSV, workingMat);
 
-        Mat matLeft = workingMat.submat(360,720, 0,430);
-        Mat matCenter = workingMat.submat(360,720,430,850);
-        Mat matRight = workingMat.submat(360,720,850,1280);
+        Mat matLeft = workingMat.submat(0,720, 0,300);
+        Mat matCenter = workingMat.submat(0,720,300,980);
+        Mat matRight = workingMat.submat(0,720,980,1280);
 
-        Imgproc.rectangle(workingMat, new Rect(0,360,430,360), new Scalar (0,255,0));
-        Imgproc.rectangle(workingMat, new Rect(430,360,420,360), new Scalar (0,255,0));
-        Imgproc.rectangle(workingMat, new Rect(850,360,430,360), new Scalar (0,255,0));
+        Imgproc.rectangle(workingMat, new Rect(0,0,300,720), new Scalar (0,255,0));
+        Imgproc.rectangle(workingMat, new Rect(300,0,680,720), new Scalar (0,255,0));
+        Imgproc.rectangle(workingMat, new Rect(980,0,300,720), new Scalar (0,255,0));
 
         double leftValue = Core.sumElems (matLeft).val[0];
         double centerValue = Core.sumElems (matCenter).val[0];

@@ -2,6 +2,7 @@ package teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -25,32 +26,53 @@ public class MecanumDrive extends OpMode {
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
     private DcMotor backRight = null;
-    private DcMotor verticalSlide = null;
-    private Servo leftClaw = null;
-    private Servo rightClaw = null;
-
+    private DcMotor leftSlide = null;
+    private DcMotor rightSlide = null;
+    private DcMotor intake = null;
+    private Servo swerver = null;
+    private CRServo leftClaw = null;
+    private CRServo rightClaw = null;
+    boolean pinch = false;
     @Override
     public void init() {
 
         // Name strings must match up with the config on the Robot Controller
         // app.
-        verticalSlide = hardwareMap.get(DcMotor.class, "VertSlide");
+
+        leftSlide = hardwareMap.get(DcMotor.class, "leftSlide");
+        rightSlide = hardwareMap.get(DcMotor.class, "rightSlide");
+        intake = hardwareMap.get(DcMotor.class, "intake");
+
+        swerver = hardwareMap.get(Servo.class, "swerver");
+        leftClaw = hardwareMap.get(CRServo.class, "leftClaw");
+        rightClaw = hardwareMap.get(CRServo.class, "rightClaw");
 
         frontLeft = hardwareMap.get(DcMotor.class, "topleft");
         frontRight = hardwareMap.get(DcMotor.class, "topright");
         backLeft = hardwareMap.get(DcMotor.class, "bottomleft");
         backRight = hardwareMap.get(DcMotor.class, "bottomright");
 
-        verticalSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        verticalSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        rightSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        verticalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
 
     }
 
@@ -64,6 +86,7 @@ public class MecanumDrive extends OpMode {
         double strafe = -gamepad1.left_stick_x;
         double twist = gamepad1.right_stick_x;
 
+
         double slideSpeed = -gamepad2.left_stick_y;
 
         if (slideSpeed > 1) {
@@ -72,6 +95,13 @@ public class MecanumDrive extends OpMode {
         else if (slideSpeed < -1) {
             slideSpeed = -1;
         }
+
+
+        double clawPower = 0;
+
+
+
+
 
         /*
          * If we had a gyro and wanted to do field-oriented control, here
@@ -121,8 +151,7 @@ public class MecanumDrive extends OpMode {
 
         // apply the calculated values to the motors.
 
-        int position = verticalSlide.getCurrentPosition();
-        telemetry.addData("Encoder Position", position);
+
 
         frontLeft.setPower(speeds[0]);
         frontRight.setPower(speeds[1]);
@@ -130,13 +159,37 @@ public class MecanumDrive extends OpMode {
         backRight.setPower(speeds[3]);
 
         if (gamepad2.a) {
-            slideSpeed = 0.75;
+            pinch = true;
         }
 
         if (gamepad2.b) {
-            slideSpeed = -0.75;
+            pinch = false;
+            clawPower = -1;
         }
 
-        verticalSlide.setPower(slideSpeed);
+        if (pinch) {
+            clawPower = 1;
+        }
+
+
+
+        if (gamepad2.x) {
+            swerver.setPosition(0);
+        }
+
+        else if (gamepad2.y) {
+            swerver.setPosition(1);
+        }
+
+
+
+        leftSlide.setPower(slideSpeed);
+        rightSlide.setPower(slideSpeed);
+
+        leftClaw.setPower(clawPower);
+        rightClaw.setPower(clawPower);
+
+        intake.setPower(1);
+
     }
 }
