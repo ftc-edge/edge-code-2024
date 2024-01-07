@@ -32,7 +32,7 @@ public class MecanumDrive extends OpMode {
     private Servo swerver = null;
     private Servo leftClaw = null;
     private Servo rightClaw = null;
-    double clawPosition = 0.2;
+    double clawPosition = 0;
     @Override
     public void init() {
 
@@ -87,7 +87,7 @@ public class MecanumDrive extends OpMode {
         double twist = gamepad1.right_stick_x;
 
 
-        double slideSpeed = -gamepad2.left_stick_y;
+        double slideSpeed = gamepad2.left_stick_y;
 
         if (slideSpeed > 1) {
             slideSpeed = 1;
@@ -157,41 +157,38 @@ public class MecanumDrive extends OpMode {
         backRight.setPower(speeds[3]);
 
         if (gamepad2.a) {
-            clawPosition = 0.3;
+            leftClaw.setPosition(0.465);
+            rightClaw.setPosition(0.465);
         }
 
         if (gamepad2.b) {
-            clawPosition = 0.2;
+            swerver.setPosition(0.65);
+            leftClaw.setPosition(0.45);
+            rightClaw.setPosition(0.45);
         }
-
 
 
         if (gamepad2.x) {
-            swerver.setPosition(0);
+            leftClaw.setPosition(0.465);
+            rightClaw.setPosition(0.465);
+            swerver.setPosition(0.595);
         }
 
-        else if (gamepad2.y) {
-            swerver.setPosition(1);
+        if (gamepad2.y) {
+            leftClaw.setPosition(0.45);
+            rightClaw.setPosition(0.45);
         }
-
 
 
         leftSlide.setPower(slideSpeed);
         rightSlide.setPower(slideSpeed);
 
-        leftClaw.setPosition(clawPosition);
-        rightClaw.setPosition(clawPosition);
-
-        intake.setPower(1);
+        intake.setPower(-0.75);
 
     }
 }
 
+//below values are for swerver
+//0.595 for against ground
+//0.65 for dropping pixels
 
-
-
-//right slide is expansion 0, has encoder
-//left slide is expansion 2, has encoder
-//intake is expansion 3, has encoder
-//left front is expansion 1
-//
