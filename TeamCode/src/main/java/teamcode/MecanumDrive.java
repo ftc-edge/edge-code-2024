@@ -151,11 +151,6 @@ public class MecanumDrive extends OpMode {
 
 
 
-        frontLeft.setPower(speeds[0]);
-        frontRight.setPower(speeds[1]);
-        backLeft.setPower(speeds[2]);
-        backRight.setPower(speeds[3]);
-
         if (gamepad2.a) {
             leftClaw.setPosition(0.465);
             rightClaw.setPosition(0.465);
@@ -179,6 +174,10 @@ public class MecanumDrive extends OpMode {
             rightClaw.setPosition(0.45);
         }
 
+        frontLeft.setPower(speeds[0]);
+        frontRight.setPower(speeds[1]);
+        backLeft.setPower(speeds[2]);
+        backRight.setPower(speeds[3]);
 
         leftSlide.setPower(slideSpeed);
         rightSlide.setPower(slideSpeed);
