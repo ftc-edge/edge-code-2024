@@ -17,15 +17,15 @@ import teamcode.drive.SampleMecanumDrive;
 @Autonomous(name="AutoTest")
 public class AutoTest extends LinearOpMode {
 
-    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-    Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
-
     public static double x = 0;
 
     public static double y = 0;
     @Override
     public void runOpMode() throws InterruptedException {
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
 
         drive.setPoseEstimate(startPose);
 

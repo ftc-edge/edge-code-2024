@@ -72,7 +72,9 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-
+        swerver.setPosition(0.6);
+        leftClaw.setPosition(0.485);
+        rightClaw.setPosition(0.43);
 
     }
 
@@ -152,26 +154,26 @@ public class MecanumDrive extends OpMode {
 
 
         if (gamepad2.a) {
-            leftClaw.setPosition(0.465);
+            leftClaw.setPosition(0.45);
             rightClaw.setPosition(0.465);
         }
 
         if (gamepad2.b) {
             swerver.setPosition(0.65);
-            leftClaw.setPosition(0.45);
-            rightClaw.setPosition(0.45);
+            leftClaw.setPosition(0.485);
+            rightClaw.setPosition(0.43);
         }
 
 
         if (gamepad2.x) {
-            leftClaw.setPosition(0.465);
+            leftClaw.setPosition(0.45);
             rightClaw.setPosition(0.465);
-            swerver.setPosition(0.595);
+            swerver.setPosition(0.6);
         }
 
         if (gamepad2.y) {
-            leftClaw.setPosition(0.45);
-            rightClaw.setPosition(0.45);
+            leftClaw.setPosition(0.485);
+            rightClaw.setPosition(0.43);
         }
 
         frontLeft.setPower(speeds[0]);

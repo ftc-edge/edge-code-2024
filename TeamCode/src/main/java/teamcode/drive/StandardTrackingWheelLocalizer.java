@@ -30,6 +30,8 @@ import teamcode.util.Encoder;
 public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
     public static double TICKS_PER_REV = 2000;
     public static double WHEEL_RADIUS = 0.9448819; // in
+    public static double X_MULTIPLIER = 0.9984740054; // Multiplier in the X direction
+    public static double Y_MULTIPLIER = 0.9977251792; // Multiplier in the Y direction
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double LATERAL_DISTANCE = 10.5; // in; distance between the left and right wheels
@@ -54,6 +56,10 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "bottomleft"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+
+        leftEncoder.setDirection(Encoder.Direction.REVERSE);
+        rightEncoder.setDirection(Encoder.Direction.REVERSE);
+
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -73,9 +79,9 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         lastEncPositions.add(frontPos);
 
         return Arrays.asList(
-                encoderTicksToInches(leftPos),
-                encoderTicksToInches(rightPos),
-                encoderTicksToInches(frontPos)
+                encoderTicksToInches(leftPos) * X_MULTIPLIER,
+                encoderTicksToInches(rightPos) * X_MULTIPLIER,
+                encoderTicksToInches(frontPos) * Y_MULTIPLIER
         );
     }
 
@@ -92,9 +98,57 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         lastEncVels.add(frontVel);
 
         return Arrays.asList(
-                encoderTicksToInches(leftVel),
-                encoderTicksToInches(rightVel),
-                encoderTicksToInches(frontVel)
+                encoderTicksToInches(leftVel) * X_MULTIPLIER,
+                encoderTicksToInches(rightVel) * X_MULTIPLIER,
+                encoderTicksToInches(frontVel) * Y_MULTIPLIER
         );
     }
 }
+
+
+//#1 is heading (deg): 356.48503933199896
+//headingError (deg): 0.0
+//x: -110.51487018007984
+//xError: 0.0
+//y: 2.088623957475418
+//yError: 0.0
+
+//#2 is heading (deg): 359.20629920399995
+//headingError (deg): 0.0
+//x: -109.93298886422986
+//xError: 0.0
+//y: 0.6128878570800523
+//yError: 0.0
+
+//#3 is heading (deg): 0.5669291399993757
+//headingError (deg): 0.0
+//x: -110.05648880643415
+//xError: 0.0
+//y: 0.939189014383832
+//yError: 0.0
+
+
+
+//lateral #1 heading (deg): 2.9156355771446116
+//headingError (deg): 0.0
+//x: 2.1257345423445186
+//xError: 0.0
+//y: -109.33664066348047
+//yError: 0.0
+
+//lateral #2 heading (deg): 0.5345331891427556
+//headingError (deg): 0.0
+//x: -3.0095631527631292
+//xError: 0.0
+//y: -110.14493262492086
+//yError: 0.0
+
+//lateral #3 heading (deg): 356.533633258283
+//headingError (deg): 0.0
+//x: -5.943870654092646
+//xError: 0.0
+//y: -111.27082914620665
+//yError: 0.0
+
+
+//lateral distance 10.31232
