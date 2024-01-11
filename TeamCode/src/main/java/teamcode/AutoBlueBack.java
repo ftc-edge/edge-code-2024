@@ -61,15 +61,15 @@ public class AutoBlueBack extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(0,48))
+                .lineTo(new Vector2d(0,10))
                 .build();
 
         Trajectory traj2 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(48,0))
+                .lineTo(new Vector2d(10,0))
                 .build();
 
         Trajectory traj3 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(0,-48))
+                .lineTo(new Vector2d(0,-10))
                 .build();
 
         waitForStart();

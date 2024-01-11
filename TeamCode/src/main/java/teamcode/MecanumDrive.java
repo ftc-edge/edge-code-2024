@@ -32,6 +32,7 @@ public class MecanumDrive extends OpMode {
     private Servo swerver = null;
     private Servo leftClaw = null;
     private Servo rightClaw = null;
+    boolean intaking = true;
     double clawPosition = 0;
     @Override
     public void init() {
@@ -75,6 +76,7 @@ public class MecanumDrive extends OpMode {
         swerver.setPosition(0.6);
         leftClaw.setPosition(0.485);
         rightClaw.setPosition(0.43);
+
 
     }
 
@@ -181,10 +183,26 @@ public class MecanumDrive extends OpMode {
         backLeft.setPower(speeds[2]);
         backRight.setPower(speeds[3]);
 
-        leftSlide.setPower(slideSpeed);
-        rightSlide.setPower(slideSpeed);
+        leftSlide.setPower(slideSpeed/1.5);
+        rightSlide.setPower(slideSpeed/1.5);
 
-        intake.setPower(-0.75);
+
+        if (gamepad1.right_bumper) {
+            intaking = true;
+        }
+
+        if (gamepad1.left_bumper) {
+            intaking = false;
+        }
+
+        if (intaking == true) {
+            intake.setPower(-0.75);
+        }
+
+        else {
+            intake.setPower(0.75);
+        }
+
 
     }
 }
