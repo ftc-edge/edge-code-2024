@@ -10,7 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ClawTest extends LinearOpMode {
     private Servo leftClaw = null;
     private Servo rightClaw = null;
-
+    private Servo swerver = null;
+    public static double swervePos = 1;
     public static double leftPos = 1;
     public static double rightPos = 1;
 
@@ -19,12 +20,14 @@ public class ClawTest extends LinearOpMode {
     public void runOpMode() {
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+        swerver = hardwareMap.get(Servo.class, "swerver");
 
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()){
             leftClaw.setPosition(leftPos);
             rightClaw.setPosition(rightPos);
+            swerver.setPosition(swervePos);
         }
 
 

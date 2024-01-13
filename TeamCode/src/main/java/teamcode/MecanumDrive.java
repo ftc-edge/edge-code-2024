@@ -33,7 +33,7 @@ public class MecanumDrive extends OpMode {
     private Servo leftClaw = null;
     private Servo rightClaw = null;
     boolean intaking = true;
-    double clawPosition = 0;
+
     @Override
     public void init() {
 
@@ -56,11 +56,12 @@ public class MecanumDrive extends OpMode {
 
 //        leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //        rightSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//
-//        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -73,7 +74,7 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        swerver.setPosition(0.6);
+        swerver.setPosition(0.61);
         leftClaw.setPosition(0.485);
         rightClaw.setPosition(0.43);
 
@@ -83,6 +84,12 @@ public class MecanumDrive extends OpMode {
     @Override
     public void loop() {
 
+        int leftPosition = -leftSlide.getCurrentPosition();
+        int rightPosition = rightSlide.getCurrentPosition();
+
+        telemetry.addData("left slide encoder", leftPosition);
+        telemetry.addData("right slide encoder", rightPosition);
+
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
 
@@ -91,14 +98,12 @@ public class MecanumDrive extends OpMode {
         double twist = gamepad1.right_stick_x;
 
 
-        double slideSpeed = gamepad2.left_stick_y;
+        double slideSpeed = (gamepad2.left_stick_y)/(((rightPosition)/12000)+1);
 
-        if (slideSpeed > 1) {
-            slideSpeed = 1;
+        if (rightPosition > 3200) {
+            slideSpeed = 0;
         }
-        else if (slideSpeed < -1) {
-            slideSpeed = -1;
-        }
+
 
 
 
@@ -151,29 +156,30 @@ public class MecanumDrive extends OpMode {
             for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
         }
 
+        for (int i = 0; i < speeds.length; i++) {
+            speeds[i] = speeds[i]/(((rightPosition)/2000)+1);
+        }
+
+
         // apply the calculated values to the motors.
 
 
 
-        if (gamepad2.a) {
-            leftClaw.setPosition(0.45);
-            rightClaw.setPosition(0.465);
-        }
-
-        if (gamepad2.b) {
-            swerver.setPosition(0.65);
-            leftClaw.setPosition(0.485);
-            rightClaw.setPosition(0.43);
-        }
-
-
-        if (gamepad2.x) {
+        if (gamepad2.right_trigger == 1) {
             leftClaw.setPosition(0.45);
             rightClaw.setPosition(0.465);
             swerver.setPosition(0.6);
         }
 
+        if (gamepad2.b) {
+            swerver.setPosition(0.65);
+        }
+
         if (gamepad2.y) {
+            swerver.setPosition(0.5);
+        }
+
+        if (gamepad2.left_trigger == 1) {
             leftClaw.setPosition(0.485);
             rightClaw.setPosition(0.43);
         }
@@ -196,11 +202,11 @@ public class MecanumDrive extends OpMode {
         }
 
         if (intaking == true) {
-            intake.setPower(-0.75);
+            intake.setPower(-0.4);
         }
 
         else {
-            intake.setPower(0.75);
+            intake.setPower(0.4);
         }
 
 

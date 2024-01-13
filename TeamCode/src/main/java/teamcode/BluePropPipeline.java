@@ -1,70 +1,98 @@
 package teamcode;
 
+import static org.opencv.core.Core.sumElems;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-public class BluePropPipeline extends OpenCvPipeline {
+class BluePropPipeline extends OpenCvPipeline {
+    double location = 0;
+    Mat mat;
+    Telemetry telemetry;
+    final Rect LEFT_ROI = new Rect(
+            new Point(0, 0),
+            new Point(60, 240));
 
-    private Mat workingMat = new Mat();
+    final Rect MIDDLE_ROI = new Rect(
+            new Point(60, 0),
+            new Point(260, 240));
 
-    public int position;
+    final Rect RIGHT_ROI = new Rect(
+            new Point(260, 0),
+            new Point(320, 240));
 
-    public BluePropPipeline() {
+    Scalar blue = new Scalar(0, 0, 200);
+    Mat left;
+    Mat right;
+    Mat middle;
+    Scalar lowHSV = new Scalar(100, 50, 70);
+    Scalar highHSV = new Scalar(140, 255, 255);
+    double leftValue;
+    double rightValue;
+    double middleValue;
 
+    public BluePropPipeline(Telemetry telemetry1) {
+        telemetry = telemetry1;
     }
+
     @Override
-    public Mat processFrame(Mat input) {
-        input.copyTo(workingMat);
-
-        if (workingMat.empty()) {
-            return input;
-        }
-
-        Imgproc.cvtColor(workingMat,workingMat,Imgproc.COLOR_RGB2HSV);
-
-        Scalar lowHSV = new Scalar (170,60,40);
-        Scalar highHSV = new Scalar (230,100,100);
-
-        Core.inRange(workingMat, lowHSV, highHSV, workingMat);
-
-        Mat matLeft = workingMat.submat(0,720, 0,300);
-        Mat matCenter = workingMat.submat(0,720,300,980);
-        Mat matRight = workingMat.submat(0,720,980,1280);
-
-        Imgproc.rectangle(workingMat, new Rect(0,0,300,720), new Scalar (0,255,0));
-        Imgproc.rectangle(workingMat, new Rect(300,0,680,720), new Scalar (0,255,0));
-        Imgproc.rectangle(workingMat, new Rect(980,0,300,720), new Scalar (0,255,0));
-
-        double leftValue = Core.sumElems (matLeft).val[0];
-        double centerValue = Core.sumElems (matCenter).val[0];
-        double rightValue = Core.sumElems (matRight).val[0];
-
-        matLeft.release();
-        matCenter.release();
-        matRight.release();
-
-        if (leftValue > centerValue && leftValue > rightValue) {
-            position = 1;
-        }
-        else if (centerValue > leftValue && centerValue > rightValue) {
-            position = 2;
-        }
-        else if (rightValue > centerValue && rightValue > leftValue) {
-            position = 3;
-        }
-
-        //logic
-
-        return workingMat;
+    public void init(Mat firstFrame)
+    {
+        mat = firstFrame;
 
     }
 
-    int getAnalysis() {
-        return position;
+    @Override
+    public Mat processFrame(Mat input)
+    {
+        Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
+
+        Core.inRange(mat, lowHSV, highHSV, mat);
+
+        left = mat.submat(LEFT_ROI);
+        right = mat.submat(RIGHT_ROI);
+        middle = mat.submat(MIDDLE_ROI);
+
+        leftValue = Core.sumElems(left).val[0];
+        rightValue = Core.sumElems(right).val[0];
+        middleValue = Core.sumElems(middle).val[0];
+
+        telemetry.addData("Left raw value", leftValue);
+        telemetry.addData("Right raw value", rightValue);
+        telemetry.addData("Middle raw value", middleValue);
+
+        if ((leftValue > rightValue) && (leftValue > middleValue)) {
+            location = 1;
+        }
+        else if ((middleValue > leftValue) && (middleValue > rightValue)) {
+            location = 2;
+        }
+        else {
+            location = 3;
+        }
+
+
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
+
+        Imgproc.rectangle(mat, LEFT_ROI, blue);
+        Imgproc.rectangle(mat, RIGHT_ROI, blue);
+        Imgproc.rectangle(mat, MIDDLE_ROI, blue);
+
+        left.release();
+        right.release();
+        middle.release();
+
+        return mat;
     }
 
+
+    public double getLocation() {
+        return location;
+    }
 }
