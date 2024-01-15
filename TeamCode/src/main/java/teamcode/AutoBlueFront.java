@@ -14,7 +14,9 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
+import teamcode.drive.DriveConstants;
 import teamcode.drive.SampleMecanumDrive;
+import teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous(name = "AutoBlueFront")
 public class AutoBlueFront extends LinearOpMode {
@@ -55,35 +57,15 @@ public class AutoBlueFront extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(0,5))
-                .build();
-
-        Trajectory traj2 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(5,0))
-                .build();
-
-        Trajectory traj3 = drive.trajectoryBuilder(startPose)
-                .lineTo(new Vector2d(0,-5))
+        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
+                .forward(3)
+                .lineTo(new Vector2d(0,100),
+                        SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL,DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
         waitForStart();
 
-        route = propPipeline.getLocation();
-
-
-        if (route == 1) {
-            drive.followTrajectory(traj1);
-        }
-
-        else if (route == 2) {
-            drive.followTrajectory(traj2);
-        }
-
-        else if (route == 3) {
-            drive.followTrajectory(traj3);
-        }
-
-        camera.stopStreaming();
+        drive.followTrajectorySequence(traj1);
     }
 }

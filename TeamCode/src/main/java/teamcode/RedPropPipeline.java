@@ -31,8 +31,8 @@ class RedPropPipeline extends OpenCvPipeline {
     Mat left;
     Mat right;
     Mat middle;
-    Scalar lowHSV = new Scalar(160, 50, 70);
-    Scalar highHSV = new Scalar(180, 255, 255);
+    Scalar lowHSV = new Scalar(0, 70, 50);
+    Scalar highHSV = new Scalar(20, 255, 255);
     double leftValue;
     double rightValue;
     double middleValue;

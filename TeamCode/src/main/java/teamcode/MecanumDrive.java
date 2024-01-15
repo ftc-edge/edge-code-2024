@@ -33,6 +33,7 @@ public class MecanumDrive extends OpMode {
     private Servo leftClaw = null;
     private Servo rightClaw = null;
     boolean intaking = true;
+    boolean hooking = false;
 
     @Override
     public void init() {
@@ -74,7 +75,7 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        swerver.setPosition(0.61);
+        swerver.setPosition(0.6385);
         leftClaw.setPosition(0.485);
         rightClaw.setPosition(0.43);
 
@@ -156,9 +157,6 @@ public class MecanumDrive extends OpMode {
             for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
         }
 
-        for (int i = 0; i < speeds.length; i++) {
-            speeds[i] = speeds[i]/(((rightPosition)/2000)+1);
-        }
 
 
         // apply the calculated values to the motors.
@@ -166,22 +164,18 @@ public class MecanumDrive extends OpMode {
 
 
         if (gamepad2.right_trigger == 1) {
-            leftClaw.setPosition(0.45);
+            leftClaw.setPosition(0.44);
             rightClaw.setPosition(0.465);
-            swerver.setPosition(0.6);
+            swerver.setPosition(0.6385);
         }
 
         if (gamepad2.b) {
-            swerver.setPosition(0.65);
-        }
-
-        if (gamepad2.y) {
-            swerver.setPosition(0.5);
+            swerver.setPosition(0.69);
         }
 
         if (gamepad2.left_trigger == 1) {
             leftClaw.setPosition(0.485);
-            rightClaw.setPosition(0.43);
+            rightClaw.setPosition(0.42);
         }
 
         frontLeft.setPower(speeds[0]);
@@ -189,8 +183,23 @@ public class MecanumDrive extends OpMode {
         backLeft.setPower(speeds[2]);
         backRight.setPower(speeds[3]);
 
-        leftSlide.setPower(slideSpeed/1.5);
-        rightSlide.setPower(slideSpeed/1.5);
+        if (gamepad2.dpad_left) {
+            hooking = true;
+        }
+
+        if (gamepad2.dpad_right) {
+            hooking = false;
+        }
+
+        if (hooking) {
+            leftSlide.setPower(0.5);
+            rightSlide.setPower(0.5);
+        }
+        else {
+            leftSlide.setPower(slideSpeed/1.5);
+            rightSlide.setPower(slideSpeed/1.5);
+        }
+
 
 
         if (gamepad1.right_bumper) {
@@ -202,11 +211,11 @@ public class MecanumDrive extends OpMode {
         }
 
         if (intaking == true) {
-            intake.setPower(-0.4);
+            intake.setPower(-0.2);
         }
 
         else {
-            intake.setPower(0.4);
+            intake.setPower(0.2);
         }
 
 
