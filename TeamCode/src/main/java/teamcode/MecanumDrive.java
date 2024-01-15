@@ -85,12 +85,6 @@ public class MecanumDrive extends OpMode {
     @Override
     public void loop() {
 
-        int leftPosition = -leftSlide.getCurrentPosition();
-        int rightPosition = rightSlide.getCurrentPosition();
-
-        telemetry.addData("left slide encoder", leftPosition);
-        telemetry.addData("right slide encoder", rightPosition);
-
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
 
@@ -99,11 +93,12 @@ public class MecanumDrive extends OpMode {
         double twist = gamepad1.right_stick_x;
 
 
-        double slideSpeed = (gamepad2.left_stick_y)/(((rightPosition)/12000)+1);
+        int leftPos = -leftSlide.getCurrentPosition();
+        int rightPos = rightSlide.getCurrentPosition();
 
-        if (rightPosition > 3200) {
-            slideSpeed = 0;
-        }
+        telemetry.addData("left slide encoder", leftPos);
+        telemetry.addData("right slide encoder", rightPos);
+
 
 
 
@@ -191,13 +186,45 @@ public class MecanumDrive extends OpMode {
             hooking = false;
         }
 
-        if (hooking) {
+        if (gamepad2.a) {
+            leftSlide.setTargetPosition(0);
+            rightSlide.setTargetPosition(0);
+            leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftSlide.setPower(-1);
+            rightSlide.setPower(1);
+        }
+
+        else if (gamepad2.x) {
+            leftSlide.setTargetPosition(-1000);
+            rightSlide.setTargetPosition(1000);
+            leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftSlide.setPower(-1);
+            rightSlide.setPower(1);
+        }
+
+        else if (gamepad2.y) {
+            leftSlide.setTargetPosition(-2000);
+            rightSlide.setTargetPosition(2000);
+            leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftSlide.setPower(-1);
+            rightSlide.setPower(1);
+        }
+
+        else if (gamepad2.dpad_up) {
+            leftSlide.setTargetPosition(-3000);
+            rightSlide.setTargetPosition(3000);
+            leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftSlide.setPower(-1);
+            rightSlide.setPower(1);
+        }
+
+        else if (hooking) {
             leftSlide.setPower(0.5);
             rightSlide.setPower(0.5);
-        }
-        else {
-            leftSlide.setPower(slideSpeed/1.5);
-            rightSlide.setPower(slideSpeed/1.5);
         }
 
 
