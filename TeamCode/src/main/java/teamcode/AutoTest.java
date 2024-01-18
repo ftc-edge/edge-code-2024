@@ -40,18 +40,14 @@ public class AutoTest extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(16.05, -67.5, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
 
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence traj2 = drive.trajectorySequenceBuilder(new Pose2d(16.05, -67.50, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(17.31, -36.93), Math.toRadians(90.00))
+                .lineTo(new Vector2d(x, y))
                 .build();
 
-        TrajectorySequence traj2c = drive.trajectorySequenceBuilder(new Pose2d(17.31, -36.93, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(21.33, -46.59), Math.toRadians(-12.23))
-                .splineTo(new Vector2d(48.37, -36.19), Math.toRadians(1.37))
-                .build();
 
 
         waitForStart();
@@ -60,7 +56,7 @@ public class AutoTest extends LinearOpMode {
 
 
         drive.followTrajectorySequence(traj2);
-        drive.followTrajectorySequence(traj2c);
+
 
 
 

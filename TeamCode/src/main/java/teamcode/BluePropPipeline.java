@@ -31,7 +31,7 @@ class BluePropPipeline extends OpenCvPipeline {
     Mat left;
     Mat right;
     Mat middle;
-    Scalar lowHSV = new Scalar(100, 70, 50);
+    Scalar lowHSV = new Scalar(100, 120, 70);
     Scalar highHSV = new Scalar(140, 255, 255);
     double leftValue;
     double rightValue;

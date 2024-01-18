@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -53,6 +54,10 @@ public class MecanumDrive extends OpMode {
         frontRight = hardwareMap.get(DcMotor.class, "topright");
         backLeft = hardwareMap.get(DcMotor.class, "bottomleft");
         backRight = hardwareMap.get(DcMotor.class, "bottomright");
+
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
 //        leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -238,11 +243,11 @@ public class MecanumDrive extends OpMode {
         }
 
         if (intaking == true) {
-            intake.setPower(-0.2);
+            intake.setPower(-0.3);
         }
 
         else {
-            intake.setPower(0.2);
+            intake.setPower(0.3);
         }
 
 
