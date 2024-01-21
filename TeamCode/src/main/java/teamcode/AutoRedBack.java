@@ -39,7 +39,8 @@ public class AutoRedBack extends LinearOpMode {
         TRAJECTORY_3,   // right
         TRAJECTORY_3C,
         SLIDE_UP,       //bring up claw
-        CLAW_OPEN,      // open claw
+        SWERVE_BACK,
+        BOX_OPEN,      // open claw
         IDLE            // Our bot will enter the IDLE state when done
     }
 
@@ -168,12 +169,7 @@ public class AutoRedBack extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj1);
-                        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        intake.setTargetPosition(50);
-                        intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        intake.setPower(0.05);
-                        while (intake.isBusy()) {}
-                        currentState = State.TRAJECTORY_1C;
+                        currentState = AutoRedBack.State.TRAJECTORY_1C;
                     }
                     break;
 
@@ -182,12 +178,7 @@ public class AutoRedBack extends LinearOpMode {
                     // Move on to the next state, TURN_1, once finished
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj2);
-                        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        intake.setTargetPosition(50);
-                        intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        intake.setPower(0.05);
-                        while (intake.isBusy()) {}
-                        currentState = State.TRAJECTORY_2C;
+                        currentState = AutoRedBack.State.TRAJECTORY_2C;
                     }
                     break;
 
@@ -196,12 +187,7 @@ public class AutoRedBack extends LinearOpMode {
                     // If not, move onto the next state, TRAJECTORY_3, once finished
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj3);
-                        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        intake.setTargetPosition(50);
-                        intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        intake.setPower(0.05);
-                        while (intake.isBusy()) {}
-                        currentState = State.TRAJECTORY_3C;
+                        currentState = AutoRedBack.State.TRAJECTORY_3C;
                     }
                     break;
 
@@ -213,7 +199,7 @@ public class AutoRedBack extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj1c);
-                        currentState = State.IDLE;
+                        currentState = AutoRedBack.State.IDLE;
                     }
                     break;
 
@@ -225,7 +211,7 @@ public class AutoRedBack extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj2c);
-                        currentState = State.IDLE;
+                        currentState = AutoRedBack.State.IDLE;
                     }
                     break;
 
@@ -237,7 +223,7 @@ public class AutoRedBack extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(traj3c);
-                        currentState = State.IDLE;
+                        currentState = AutoRedBack.State.IDLE;
                     }
                     break;
 
@@ -245,28 +231,32 @@ public class AutoRedBack extends LinearOpMode {
                     // Check if the timer has exceeded the specified wait time
                     // If so, move on to the TURN_2 state
                     if (!drive.isBusy()) {
-                        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        leftSlide.setTargetPosition(-100);
-                        rightSlide.setTargetPosition(-100);
+                        leftSlide.setTargetPosition(-1500);
+                        rightSlide.setTargetPosition(1500);
                         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        leftSlide.setPower(-0.5);
-                        rightSlide.setPower(-0.5);
-                        while (leftSlide.isBusy() || rightSlide.isBusy()) {}
-                        swerver.setPosition(0.7);
-                        currentState = State.CLAW_OPEN;
+                        leftSlide.setPower(-1);
+                        rightSlide.setPower(1);
+                        currentState = AutoRedBack.State.SWERVE_BACK;
                     }
                     break;
 
-                case CLAW_OPEN:
+                case SWERVE_BACK:
+
+                    if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
+                        swerver.setPosition(0.7);
+                        currentState = AutoRedBack.State.BOX_OPEN;
+                    }
+                    break;
+
+                case BOX_OPEN:
                     // Check if the timer has exceeded the specified wait time
                     // If so, move on to the TURN_2 state
-
-                    leftClaw.setPosition(0.485);
-                    rightClaw.setPosition(0.43);
-                    currentState = State.IDLE;
-
+                    if (swerver.getPosition() == 0.7) {
+                        leftClaw.setPosition(0.485);
+                        rightClaw.setPosition(0.43);
+                        currentState = AutoRedBack.State.IDLE;
+                    }
                     break;
 
                 case IDLE:
