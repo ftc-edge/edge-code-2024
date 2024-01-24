@@ -242,7 +242,7 @@ public class MecanumDrive extends OpMode {
             intaking = false;
         }
 
-        if (intaking == true) {
+        if (intaking) {
             intake.setPower(-0.3);
         }
 
