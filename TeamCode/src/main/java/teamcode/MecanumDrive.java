@@ -34,7 +34,13 @@ public class MecanumDrive extends OpMode {
     private Servo leftClaw = null;
     private Servo rightClaw = null;
     boolean intaking = true;
-    boolean hooking = false;
+    double leftClawOpen = 0;
+    double leftClawClosed = 0;
+    double rightClawOpen = 0;
+    double rightClawClosed = 0;
+    double swerverUp = 0;
+    double swerverDown = 0;
+
 
     @Override
     public void init() {
@@ -80,9 +86,9 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        swerver.setPosition(0.6385);
-        leftClaw.setPosition(0.485);
-        rightClaw.setPosition(0.43);
+        swerver.setPosition(swerverDown);
+        leftClaw.setPosition(leftClawOpen);
+        rightClaw.setPosition(rightClawOpen);
 
 
     }
@@ -164,32 +170,24 @@ public class MecanumDrive extends OpMode {
 
 
         if (gamepad2.right_trigger == 1) {
-            leftClaw.setPosition(0.44);
-            rightClaw.setPosition(0.465);
-            swerver.setPosition(0.6385);
+            leftClaw.setPosition(leftClawClosed);
+            rightClaw.setPosition(rightClawClosed);
+            swerver.setPosition(swerverDown);
         }
 
         if (gamepad2.b) {
-            swerver.setPosition(0.69);
+            swerver.setPosition(swerverUp);
         }
 
         if (gamepad2.left_trigger == 1) {
-            leftClaw.setPosition(0.485);
-            rightClaw.setPosition(0.42);
+            leftClaw.setPosition(leftClawOpen);
+            rightClaw.setPosition(leftClawOpen);
         }
 
         frontLeft.setPower(speeds[0]);
         frontRight.setPower(speeds[1]);
         backLeft.setPower(speeds[2]);
         backRight.setPower(speeds[3]);
-
-        if (gamepad2.dpad_left) {
-            hooking = true;
-        }
-
-        if (gamepad2.dpad_right) {
-            hooking = false;
-        }
 
         if (gamepad2.a) {
             leftSlide.setTargetPosition(0);
@@ -227,12 +225,6 @@ public class MecanumDrive extends OpMode {
             rightSlide.setPower(1);
         }
 
-        else if (hooking) {
-            leftSlide.setPower(0.5);
-            rightSlide.setPower(0.5);
-        }
-
-
 
         if (gamepad1.right_bumper) {
             intaking = true;
@@ -243,11 +235,11 @@ public class MecanumDrive extends OpMode {
         }
 
         if (intaking) {
-            intake.setPower(-0.3);
+            intake.setPower(-0.5);
         }
 
         else {
-            intake.setPower(0.3);
+            intake.setPower(0.5);
         }
 
 
