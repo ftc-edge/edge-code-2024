@@ -27,11 +27,29 @@ public class AutoBlueBack extends LinearOpMode {
     boolean extaking = false;
     boolean intaking = false;
     Pose2d cycleStart;
+    double leftClawPos;
+    double rightClawPos;
+    double leftSwerverPos;
+    double rightSwerverPos;
+    double rightClawOpen = 0.5;
+    double rightClawClosed = 0.7;
+    double leftClawOpen = 0.47;
+    double leftClawClosed = 0.27;
+    double rightSwerverUp = 0.87;
+    double rightSwerverDropper = 0.94;
+    double rightSwerverVert = 0.88;
+    double rightSwerverPropel = 0.85;
+    double leftSwerverUp = 0.89;
+    double leftSwerverDropper = 0.96;
+    double leftSwerverVert = 0.9;
+    double leftSwerverPropel = 0.87;
+
 
     private DcMotor leftSlide = null;
     private DcMotor rightSlide = null;
     private DcMotor intake = null;
-    private Servo swerver = null;
+    private Servo leftSwerver = null;
+    private Servo rightSwerver = null;
     private Servo leftClaw = null;
     private Servo rightClaw = null;
 
@@ -56,7 +74,8 @@ public class AutoBlueBack extends LinearOpMode {
         rightSlide = hardwareMap.get(DcMotor.class, "rightSlide");
         intake = hardwareMap.get(DcMotor.class, "intake");
 
-        swerver = hardwareMap.get(Servo.class, "swerver");
+        leftSwerver = hardwareMap.get(Servo.class, "leftSwerver");
+        rightSwerver = hardwareMap.get(Servo.class, "rightSwerver");
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
 
@@ -98,12 +117,13 @@ public class AutoBlueBack extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(13, 67.5, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(13, 67.5, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(10, 35.00,Math.toRadians(180)), Math.toRadians(270.00))
+                .setReversed(true)
+                .splineToLinearHeading(new Pose2d(10, 32.00,Math.toRadians(180)), Math.toRadians(270.00))
                 .build();
 
 
@@ -117,6 +137,7 @@ public class AutoBlueBack extends LinearOpMode {
 
 
         TrajectorySequence traj2 = drive.trajectorySequenceBuilder(startPose)
+                .setReversed(true)
                 .splineToLinearHeading(new Pose2d(24.00, 24.00,Math.toRadians(180)),Math.toRadians(270))
                 .build();
 
@@ -128,7 +149,8 @@ public class AutoBlueBack extends LinearOpMode {
 
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(23.00, 45.00), Math.toRadians(270.00))
+                .setReversed(true)
+                .splineToLinearHeading(new Pose2d(23.00, 45.00, Math.toRadians(270)), Math.toRadians(0.00))
                 .build();
 
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
@@ -152,9 +174,11 @@ public class AutoBlueBack extends LinearOpMode {
 
         waitForStart();
 
-        leftClaw.setPosition(0.45);
-        rightClaw.setPosition(0.465);
-        swerver.setPosition(0.6385);
+        leftClawPos = leftClawClosed;
+        rightClawPos = rightClawClosed;
+        leftSwerverPos = leftSwerverUp;
+        rightSwerverPos = rightSwerverUp;
+
 
         State currentState = State.IDLE;
 
@@ -262,7 +286,8 @@ public class AutoBlueBack extends LinearOpMode {
                     }
 
                     if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
-                        swerver.setPosition(0.7);
+                        rightSwerverPos = rightSwerverDropper;
+                        leftSwerverPos = leftSwerverDropper;
                         currentState = State.BOX_OPEN;
                     }
                     break;
@@ -273,9 +298,9 @@ public class AutoBlueBack extends LinearOpMode {
                         extaking = false;
                     }
 
-                    if (swerver.getPosition() == 0.7) {
-                        leftClaw.setPosition(0.485);
-                        rightClaw.setPosition(0.43);
+                    if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
+                        leftClawPos = leftClawOpen;
+                        rightClawPos = rightClawOpen;
                         currentState = State.IDLE;
                     }
                     break;
@@ -308,16 +333,20 @@ public class AutoBlueBack extends LinearOpMode {
             // We update drive continuously in the background, regardless of state
             drive.update();
 
+            leftClaw.setPosition(leftClawPos);
+            rightClaw.setPosition(rightClawPos);
+            leftSwerver.setPosition(leftSwerverPos);
+            rightSwerver.setPosition(rightSwerverPos);
 
             if (intaking) {
                 intake.setTargetPosition(-5000);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(-0.3);
+                intake.setPower(-0.8);
             }
             else if (extaking) {
-                intake.setTargetPosition(5000);
+                intake.setTargetPosition(1000);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(0.3);
+                intake.setPower(0.8);
             }
             else {
                 intake.setPower(0);

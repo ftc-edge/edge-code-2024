@@ -8,20 +8,26 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 @TeleOp(name="SwerveTest", group="Iterative Opmode")
 public class SwerveTest extends LinearOpMode {
-    private Servo swerver = null;
-    public static double swervePos = 1;
+    private Servo leftSwerver = null;
+    private Servo rightSwerver = null;
+    public static double RswervePos = 1;
+    public static double LswervePos = 1;
 
 
 
     @Override
     public void runOpMode() {
-        swerver = hardwareMap.get(Servo.class, "swerver");
+        leftSwerver = hardwareMap.get(Servo.class, "leftSwerver");
+        rightSwerver = hardwareMap.get(Servo.class, "rightSwerver");
+
+
 
 
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()){
-            swerver.setPosition(swervePos);
+            rightSwerver.setPosition(RswervePos);
+            leftSwerver.setPosition(LswervePos);
         }
     }
 }
