@@ -264,8 +264,8 @@ public class MecanumDrive extends OpMode {
 
         frontLeft.setPower(speeds[0]);
         frontRight.setPower(speeds[1]);
-        backLeft.setPower(0.8*speeds[2]);
-        backRight.setPower(0.8*speeds[3]);
+        backLeft.setPower(speeds[2]);
+        backRight.setPower(speeds[3]);
 
         leftSlide.setTargetPosition(leftSlidePos);
         rightSlide.setTargetPosition(rightSlidePos);

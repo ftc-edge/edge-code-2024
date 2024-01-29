@@ -44,7 +44,7 @@ public class AutoTest extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        TrajectorySequence traj2 = drive.trajectorySequenceBuilder(new Pose2d(16.05, -67.50, Math.toRadians(90.00)))
+        TrajectorySequence traj2 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(0.00)))
                 .lineTo(new Vector2d(x, y))
                 .build();
 

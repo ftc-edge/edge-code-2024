@@ -116,7 +116,7 @@ public class AutoRedBack extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(13, -67.5, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(12, -67.5, Math.toRadians(270));
 
         drive.setPoseEstimate(startPose);
 
@@ -128,7 +128,8 @@ public class AutoRedBack extends LinearOpMode {
 
 
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
-                .lineToConstantHeading(new Vector2d(48.50, -30.00))
+                .setTangent(Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(48.50, -30.00),Math.toRadians(0))
                 .build();
 
 
@@ -140,8 +141,8 @@ public class AutoRedBack extends LinearOpMode {
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
-                .lineToConstantHeading(new Vector2d(16.00, -48.00))
-                .splineTo(new Vector2d(48.50, -36.00), Math.toRadians(0.00))
+                .setReversed(true)
+                .splineToConstantHeading(new Vector2d(48.50, -36.00), Math.toRadians(0.00))
                 .build();
 
 
@@ -152,18 +153,17 @@ public class AutoRedBack extends LinearOpMode {
                 .build();
 
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
-                .back(10)
                 .lineToLinearHeading(new Pose2d(48.50, -42.00, Math.toRadians(180.00)))
                 .build();
 
 
 
         TrajectorySequence cycle = drive.trajectorySequenceBuilder(cycleStart)
-                .setTangent(Math.toRadians(270))
+                .setTangent(Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-58, 0), Math.toRadians(180.00))
-                .splineToConstantHeading(new Vector2d(-60, 8), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(-60, -8), Math.toRadians(270.00))
                 .splineToConstantHeading(new Vector2d(0, 0), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(48.5, 35), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(48.5, -36), Math.toRadians(90.00))
                 .build();
 
 

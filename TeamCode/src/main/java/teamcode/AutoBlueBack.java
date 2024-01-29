@@ -117,7 +117,7 @@ public class AutoBlueBack extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(13, 67.5, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(12, 67.5, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
@@ -142,8 +142,8 @@ public class AutoBlueBack extends LinearOpMode {
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
-                .setTangent(Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(48.50, 35.00),Math.toRadians(90))
+                .setReversed(true)
+                .splineToConstantHeading(new Vector2d(48.50, 35.00),Math.toRadians(0))
                 .build();
 
 
