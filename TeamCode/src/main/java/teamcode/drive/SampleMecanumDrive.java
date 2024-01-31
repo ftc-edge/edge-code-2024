@@ -7,6 +7,7 @@ import static teamcode.drive.DriveConstants.MAX_VEL;
 import static teamcode.drive.DriveConstants.MOTOR_VELO_PID;
 import static teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static teamcode.drive.DriveConstants.TRACK_WIDTH;
+import static teamcode.drive.DriveConstants.WHEEL_BASE;
 import static teamcode.drive.DriveConstants.encoderTicksToInches;
 import static teamcode.drive.DriveConstants.kA;
 import static teamcode.drive.DriveConstants.kStatic;
@@ -53,8 +54,8 @@ import teamcode.util.LynxModuleUtil;
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(20, 2, 2);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 1.2, 1.7);
 
     public static double LATERAL_MULTIPLIER = 0.966076082;
 
@@ -79,7 +80,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<Integer> lastEncVels = new ArrayList<>();
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
-        super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
+        super(kV, kA, kStatic, TRACK_WIDTH, WHEEL_BASE, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);

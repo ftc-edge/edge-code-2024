@@ -30,8 +30,8 @@ import teamcode.util.Encoder;
 public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
     public static double TICKS_PER_REV = 2000;
     public static double WHEEL_RADIUS = 0.9448819; // in
-    public static double X_MULTIPLIER = 0.9984740054; // Multiplier in the X direction
-    public static double Y_MULTIPLIER = 0.9977251792; // Multiplier in the Y direction
+    public static double X_MULTIPLIER = 1; // Multiplier in the X direction
+    public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double LATERAL_DISTANCE = 10.5; // in; distance between the left and right wheels

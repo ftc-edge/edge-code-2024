@@ -1,5 +1,6 @@
 package teamcode;
 
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -35,23 +36,25 @@ public class MecanumDrive extends OpMode {
     private Servo leftClaw = null;
     private Servo rightClaw = null;
     private Servo planeLauncher = null;
-    boolean intaking = true;
+    boolean intaking = false;
     double rightClawOpen = 0.5;
     double rightClawClosed = 0.7;
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
     double rightSwerverUp = 0.87;
     double rightSwerverDropper = 0.94;
-    double rightSwerverVert = 0.88;
+    double rightSwerverVert = 0.887;
     double rightSwerverPropel = 0.85;
     double leftSwerverUp = 0.89;
     double leftSwerverDropper = 0.96;
-    double leftSwerverVert = 0.9;
+    double leftSwerverVert = 0.907;
     double leftSwerverPropel = 0.87;
     double leftSwerverPos;
     double rightSwerverPos;
     int leftSlidePos = 0;
     int rightSlidePos = 0;
+    double drive = 0;
+    double strafe = 0;
 
 
 
@@ -81,8 +84,6 @@ public class MecanumDrive extends OpMode {
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
-//        leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        rightSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -117,8 +118,15 @@ public class MecanumDrive extends OpMode {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
 
-        double drive = gamepad1.left_stick_y;
-        double strafe = -gamepad1.left_stick_x;
+        if ((Math.abs(gamepad1.left_stick_y) < 0.4) && (Math.abs(gamepad1.left_stick_x) < 0.4)) {
+            drive = gamepad1.left_stick_y;
+            strafe = -gamepad1.left_stick_x;
+        }
+        else {
+            drive = 0;
+            strafe = 0;
+        }
+
         double twist = gamepad1.right_stick_x;
 
 
@@ -236,36 +244,63 @@ public class MecanumDrive extends OpMode {
             intaking = false;
         }
 
-        if (intaking) {
-            intake.setPower(-0.8);
-        }
-
-        else {
-            intake.setPower(0.8);
-        }
-
-        if (leftPos < 10 && rightPos < 10) {
-            leftSwerverPos = leftSwerverUp;
-            rightSwerverPos = rightSwerverUp;
-        }
-
-        if (((leftPos > 10 && leftPos < 400) && (rightPos > 10 && rightPos < 400)) && ((leftSlidePos == 0) && (rightSlidePos == 0))) {
-            leftSwerverPos = leftSwerverVert;
-            rightSwerverPos = rightSwerverVert;
+        if (leftSlide.isBusy() || rightSlide.isBusy()) {
+            intaking = false;
         }
 
         if (gamepad1.dpad_down) {
             planeLauncher.setPosition(0.7);
         }
 
+//        if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
+//            leftClaw.setPosition(leftClawOpen);
+//            rightClaw.setPosition(rightClawOpen);
+//            if ((leftClaw.getPosition() == leftClawOpen) && (rightClaw.getPosition() == rightClawOpen)) {
+//                leftSwerverPos = leftSwerverPropel;
+//                rightSwerverPos = rightSwerverPropel;
+//            }
+//        }
+//
+//        if ((leftSwerver.getPosition() == leftSwerverPropel) && (rightSwerver.getPosition() == rightSwerverPropel)) {
+//            leftSlidePos = 0;
+//            rightSlidePos = 0;
+//        }
+//
+
+
+
+
+
+        if (leftPos < 10 && rightPos < 10) {
+            leftSwerverPos = leftSwerverUp;
+            rightSwerverPos = rightSwerverUp;
+        }
+
+        if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && ((leftSlidePos == 0) && (rightSlidePos == 0))) {
+            leftSwerverPos = leftSwerverVert;
+            rightSwerverPos = rightSwerverVert;
+        }
+
+        if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (!(leftSwerver.getPosition() == leftSwerverPropel))) {
+            leftSlidePos = 2000;
+            rightSlidePos = 2000;
+        }
+
+        if (intaking) {
+            intake.setPower(-0.8);
+        }
+
+        else {
+            intake.setPower(0);
+        }
 
         leftSwerver.setPosition(leftSwerverPos);
         rightSwerver.setPosition(rightSwerverPos);
 
         frontLeft.setPower(speeds[0]);
         frontRight.setPower(speeds[1]);
-        backLeft.setPower(speeds[2]);
-        backRight.setPower(speeds[3]);
+        backLeft.setPower(speeds[2] * 0.85);
+        backRight.setPower(speeds[3] * 0.85);
 
         leftSlide.setTargetPosition(leftSlidePos);
         rightSlide.setTargetPosition(rightSlidePos);
@@ -276,8 +311,4 @@ public class MecanumDrive extends OpMode {
 
     }
 }
-
-//below values are for swerver
-//0.595 for against ground
-//0.65 for dropping pixels
 
