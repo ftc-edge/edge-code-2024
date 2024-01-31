@@ -35,14 +35,12 @@ public class AutoBlueBack extends LinearOpMode {
     double rightClawClosed = 0.7;
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
-    double rightSwerverUp = 0.87;
-    double rightSwerverDropper = 0.94;
-    double rightSwerverVert = 0.88;
-    double rightSwerverPropel = 0.85;
-    double leftSwerverUp = 0.89;
-    double leftSwerverDropper = 0.96;
-    double leftSwerverVert = 0.9;
-    double leftSwerverPropel = 0.87;
+    double rightSwerverDropper = 0.55;
+    double rightSwerverVert = 0.498;
+    double rightSwerverPropel = 0.467;
+    double leftSwerverDropper = 0.55;
+    double leftSwerverVert = 0.498;
+    double leftSwerverPropel = 0.467;
 
 
     private DcMotor leftSlide = null;
@@ -176,8 +174,8 @@ public class AutoBlueBack extends LinearOpMode {
 
         leftClawPos = leftClawClosed;
         rightClawPos = rightClawClosed;
-        leftSwerverPos = leftSwerverUp;
-        rightSwerverPos = rightSwerverUp;
+        leftSwerverPos = leftSwerverVert;
+        rightSwerverPos = rightSwerverVert;
 
 
         State currentState = State.IDLE;
@@ -330,8 +328,18 @@ public class AutoBlueBack extends LinearOpMode {
 
 
 
+
+
             // We update drive continuously in the background, regardless of state
             drive.update();
+
+            int leftPos = -leftSlide.getCurrentPosition();
+            int rightPos = rightSlide.getCurrentPosition();
+
+            if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (extend)) {
+                leftSwerverPos = leftSwerverPropel;
+                rightSwerverPos = rightSwerverPropel;
+            }
 
             leftClaw.setPosition(leftClawPos);
             rightClaw.setPosition(rightClawPos);

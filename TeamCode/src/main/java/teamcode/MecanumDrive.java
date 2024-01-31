@@ -41,14 +41,12 @@ public class MecanumDrive extends OpMode {
     double rightClawClosed = 0.7;
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
-    double rightSwerverUp = 0.87;
-    double rightSwerverDropper = 0.94;
-    double rightSwerverVert = 0.887;
-    double rightSwerverPropel = 0.85;
-    double leftSwerverUp = 0.89;
-    double leftSwerverDropper = 0.96;
-    double leftSwerverVert = 0.907;
-    double leftSwerverPropel = 0.87;
+    double rightSwerverDropper = 0.55;
+    double rightSwerverVert = 0.498;
+    double rightSwerverPropel = 0.467;
+    double leftSwerverDropper = 0.55;
+    double leftSwerverVert = 0.498;
+    double leftSwerverPropel = 0.467;
     double leftSwerverPos;
     double rightSwerverPos;
     int leftSlidePos = 0;
@@ -102,12 +100,12 @@ public class MecanumDrive extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        leftSwerver.setPosition(leftSwerverUp);
-        rightSwerver.setPosition(rightSwerverUp);
+        leftSwerver.setPosition(leftSwerverVert);
+        rightSwerver.setPosition(rightSwerverVert);
         leftClaw.setPosition(leftClawOpen);
         rightClaw.setPosition(rightClawOpen);
-        leftSwerverPos = leftSwerverUp;
-        rightSwerverPos = rightSwerverUp;
+        leftSwerverPos = leftSwerverVert;
+        rightSwerverPos = rightSwerverVert;
 
 
     }
@@ -118,14 +116,16 @@ public class MecanumDrive extends OpMode {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
 
-        if ((Math.abs(gamepad1.left_stick_y) < 0.4) && (Math.abs(gamepad1.left_stick_x) < 0.4)) {
-            drive = gamepad1.left_stick_y;
-            strafe = -gamepad1.left_stick_x;
-        }
-        else {
-            drive = 0;
-            strafe = 0;
-        }
+//        if ((Math.abs(gamepad1.left_stick_y) < 0.4) && (Math.abs(gamepad1.left_stick_x) < 0.4)) {
+//            drive = gamepad1.left_stick_y;
+//            strafe = -gamepad1.left_stick_x;
+//        }
+//        else {
+//            drive = 0;
+//            strafe = 0;
+//        }
+        drive = gamepad1.left_stick_y;
+        strafe = -gamepad1.left_stick_x;
 
         double twist = gamepad1.right_stick_x;
 
@@ -271,14 +271,15 @@ public class MecanumDrive extends OpMode {
 
 
 
-        if (leftPos < 10 && rightPos < 10) {
-            leftSwerverPos = leftSwerverUp;
-            rightSwerverPos = rightSwerverUp;
-        }
 
         if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && ((leftSlidePos == 0) && (rightSlidePos == 0))) {
             leftSwerverPos = leftSwerverVert;
             rightSwerverPos = rightSwerverVert;
+        }
+
+        if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && ((!(leftSlidePos == 0)) && (!(rightSlidePos == 0)))) {
+            leftSwerverPos = leftSwerverPropel;
+            rightSwerverPos = rightSwerverPropel;
         }
 
         if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (!(leftSwerver.getPosition() == leftSwerverPropel))) {
