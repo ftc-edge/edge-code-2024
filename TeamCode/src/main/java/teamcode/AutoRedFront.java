@@ -26,7 +26,7 @@ public class AutoRedFront extends LinearOpMode {
     boolean extend = false;
     boolean extaking = false;
     boolean intaking = false;
-    Pose2d cycleStart;
+    Pose2d cycleStart = new Pose2d(48.50, -36.00, Math.toRadians(180));
     double leftClawPos;
     double rightClawPos;
     double leftSwerverPos;
@@ -35,12 +35,12 @@ public class AutoRedFront extends LinearOpMode {
     double rightClawClosed = 0.7;
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
-    double rightSwerverDropper = 0.55;
-    double rightSwerverVert = 0.498;
-    double rightSwerverPropel = 0.467;
-    double leftSwerverDropper = 0.55;
-    double leftSwerverVert = 0.498;
-    double leftSwerverPropel = 0.467;
+    double rightSwerverDropper = 0.05;
+    double rightSwerverVert = 0.56;
+    double rightSwerverPropel = 0.67;
+    double leftSwerverDropper = 0.92;
+    double leftSwerverVert = 0.41;
+    double leftSwerverPropel = 0.3;
 
     private DcMotor leftSlide = null;
     private DcMotor rightSlide = null;
@@ -126,9 +126,11 @@ public class AutoRedFront extends LinearOpMode {
 
 
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
-                .splineTo(new Vector2d(-28, -34.00), Math.toRadians(0))
-                .splineTo(new Vector2d(30, -38.00), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(48.5, -42.00, Math.toRadians(180)), Math.toRadians(0))
+                .waitSeconds(0.5)
+                .setTangent(Math.toRadians(270))
+                .splineTo(new Vector2d(-30, -58.00),Math.toRadians(0))
+                .splineTo(new Vector2d(0, -58.00),Math.toRadians(0))
+                .splineTo(new Vector2d(48.5, -42.00),Math.toRadians(90))
                 .build();
 
 
@@ -140,6 +142,7 @@ public class AutoRedFront extends LinearOpMode {
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
+                .waitSeconds(0.5)
                 .setTangent(Math.toRadians(270))
                 .splineTo(new Vector2d(-30, -58.00),Math.toRadians(0))
                 .splineTo(new Vector2d(0, -58.00),Math.toRadians(0))
@@ -150,10 +153,11 @@ public class AutoRedFront extends LinearOpMode {
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-36.00, -35.00, Math.toRadians(180)), Math.toRadians(90.00))
+                .splineToLinearHeading(new Pose2d(-36.00, -36.00, Math.toRadians(180)), Math.toRadians(90.00))
                 .build();
 
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
+                .waitSeconds(0.5)
                 .setReversed(true)
                 .splineToConstantHeading(new Vector2d(0, -35.00),Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(48.5, -30.00),Math.toRadians(0))
@@ -170,6 +174,12 @@ public class AutoRedFront extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-60, -8), Math.toRadians(270.00))
                 .splineToConstantHeading(new Vector2d(0, 0), Math.toRadians(0.00))
                 .splineToConstantHeading(new Vector2d(48.5, -36), Math.toRadians(90.00))
+                .build();
+
+
+
+        TrajectorySequence wait = drive.trajectorySequenceBuilder(startPose)
+                .waitSeconds(0.2)
                 .build();
 
 
@@ -245,7 +255,7 @@ public class AutoRedFront extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj1c);
-                        currentState = AutoBlueBack.State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
@@ -258,7 +268,7 @@ public class AutoRedFront extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj2c);
-                        currentState = AutoBlueBack.State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
@@ -271,7 +281,7 @@ public class AutoRedFront extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj3c);
-                        currentState = AutoBlueBack.State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
@@ -283,9 +293,6 @@ public class AutoRedFront extends LinearOpMode {
 
                 case SWERVE_BACK:
 
-                    if (!drive.isBusy()) {
-                        extaking = false;
-                    }
 
                     if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
                         rightSwerverPos = rightSwerverDropper;
@@ -296,9 +303,6 @@ public class AutoRedFront extends LinearOpMode {
 
                 case BOX_OPEN:
 
-                    if (!drive.isBusy()) {
-                        extaking = false;
-                    }
 
                     if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
                         leftClawPos = leftClawOpen;
@@ -343,6 +347,11 @@ public class AutoRedFront extends LinearOpMode {
                 rightSwerverPos = rightSwerverPropel;
             }
 
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend)) {
+                leftSwerverPos = leftSwerverVert;
+                rightSwerverPos = rightSwerverVert;
+            }
+
             leftClaw.setPosition(leftClawPos);
             rightClaw.setPosition(rightClawPos);
             leftSwerver.setPosition(leftSwerverPos);
@@ -354,9 +363,9 @@ public class AutoRedFront extends LinearOpMode {
                 intake.setPower(-0.8);
             }
             else if (extaking) {
-                intake.setTargetPosition(1000);
+                intake.setTargetPosition(200);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(0.8);
+                intake.setPower(0.25);
             }
             else {
                 intake.setPower(0);

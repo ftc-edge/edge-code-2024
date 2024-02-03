@@ -26,7 +26,7 @@ public class AutoBlueBack extends LinearOpMode {
     boolean extend = false;
     boolean extaking = false;
     boolean intaking = false;
-    Pose2d cycleStart;
+    Pose2d cycleStart = new Pose2d(48.50, 35.00, Math.toRadians(180));
     double leftClawPos;
     double rightClawPos;
     double leftSwerverPos;
@@ -35,12 +35,12 @@ public class AutoBlueBack extends LinearOpMode {
     double rightClawClosed = 0.7;
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
-    double rightSwerverDropper = 0.55;
-    double rightSwerverVert = 0.498;
-    double rightSwerverPropel = 0.467;
-    double leftSwerverDropper = 0.55;
-    double leftSwerverVert = 0.498;
-    double leftSwerverPropel = 0.467;
+    double rightSwerverDropper = 0.05;
+    double rightSwerverVert = 0.56;
+    double rightSwerverPropel = 0.67;
+    double leftSwerverDropper = 0.92;
+    double leftSwerverVert = 0.41;
+    double leftSwerverPropel = 0.3;
 
 
     private DcMotor leftSlide = null;
@@ -61,6 +61,9 @@ public class AutoBlueBack extends LinearOpMode {
         SLIDE_UP,       //bring up claw
         SWERVE_BACK,
         BOX_OPEN,      // open claw
+        SWERVE_FORWARD,
+        SLIDE_DOWN,
+        MOVE_IN,
         CYCLE_1,
         IDLE            // Our bot will enter the IDLE state when done
     }
@@ -115,20 +118,21 @@ public class AutoBlueBack extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(12, 67.5, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(14, 67.5, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(10, 32.00,Math.toRadians(180)), Math.toRadians(270.00))
+                .splineToLinearHeading(new Pose2d(12, 32.00,Math.toRadians(180)), Math.toRadians(180.00))
                 .build();
 
 
 
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
+                .waitSeconds(0.5)
                 .setTangent(Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(48.50, 28.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 28.00),Math.toRadians(0))
                 .build();
 
 
@@ -140,19 +144,21 @@ public class AutoBlueBack extends LinearOpMode {
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
+                .waitSeconds(0.5)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(48.50, 35.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 35.00),Math.toRadians(0))
                 .build();
 
 
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(23.00, 45.00, Math.toRadians(270)), Math.toRadians(0.00))
+                .splineToLinearHeading(new Pose2d(26.00, 40.00, Math.toRadians(270)), Math.toRadians(0.00))
                 .build();
 
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
-                .lineToLinearHeading(new Pose2d(48.50, 42.00, Math.toRadians(180.00)))
+                .waitSeconds(0.5)
+                .lineToLinearHeading(new Pose2d(52, 45.00, Math.toRadians(180.00)))
                 .build();
 
 
@@ -166,6 +172,15 @@ public class AutoBlueBack extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-60, 8), Math.toRadians(90.00))
                 .splineToConstantHeading(new Vector2d(0, 0), Math.toRadians(0.00))
                 .splineToConstantHeading(new Vector2d(48.5, 35), Math.toRadians(90.00))
+                .build();
+
+        TrajectorySequence wait = drive.trajectorySequenceBuilder(startPose)
+                .waitSeconds(0.2)
+                .build();
+
+        TrajectorySequence moveIn = drive.trajectorySequenceBuilder(traj2c.end())
+                .strafeLeft(28)
+                .back(10)
                 .build();
 
 
@@ -210,7 +225,7 @@ public class AutoBlueBack extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequenceAsync(traj1);
-                        currentState = State.TRAJECTORY_1C;
+                        currentState = AutoBlueBack.State.TRAJECTORY_1C;
                     }
                     break;
 
@@ -219,7 +234,7 @@ public class AutoBlueBack extends LinearOpMode {
                     // Move on to the next state, TURN_1, once finished
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequenceAsync(traj2);
-                        currentState = State.TRAJECTORY_2C;
+                        currentState = AutoBlueBack.State.TRAJECTORY_2C;
                     }
                     break;
 
@@ -228,7 +243,7 @@ public class AutoBlueBack extends LinearOpMode {
                     // If not, move onto the next state, TRAJECTORY_3, once finished
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequenceAsync(traj3);
-                        currentState = State.TRAJECTORY_3C;
+                        currentState = AutoBlueBack.State.TRAJECTORY_3C;
                     }
                     break;
 
@@ -241,7 +256,7 @@ public class AutoBlueBack extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj1c);
-                        currentState = State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
@@ -254,7 +269,7 @@ public class AutoBlueBack extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj2c);
-                        currentState = State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
@@ -267,42 +282,62 @@ public class AutoBlueBack extends LinearOpMode {
                     if (!drive.isBusy()) {
                         extaking = true;
                         drive.followTrajectorySequenceAsync(traj3c);
-                        currentState = State.IDLE;
+                        currentState = AutoBlueBack.State.SLIDE_UP;
                     }
                     break;
 
                 case SLIDE_UP:
 
                     extend = true;
-                    currentState = State.SWERVE_BACK;
+                    currentState = AutoBlueBack.State.SWERVE_BACK;
                     break;
 
                 case SWERVE_BACK:
 
                     if (!drive.isBusy()) {
-                        extaking = false;
-                    }
-
-                    if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
-                        rightSwerverPos = rightSwerverDropper;
-                        leftSwerverPos = leftSwerverDropper;
-                        currentState = State.BOX_OPEN;
+                        drive.followTrajectorySequence(wait);
+                        if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
+                            rightSwerverPos = rightSwerverDropper;
+                            leftSwerverPos = leftSwerverDropper;
+                            currentState = AutoBlueBack.State.BOX_OPEN;
+                        }
                     }
                     break;
 
                 case BOX_OPEN:
-
-                    if (!drive.isBusy()) {
-                        extaking = false;
-                    }
-
                     if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
+                        drive.followTrajectorySequence(wait);
                         leftClawPos = leftClawOpen;
                         rightClawPos = rightClawOpen;
-                        currentState = State.IDLE;
+                        currentState = AutoBlueBack.State.SWERVE_FORWARD;
                     }
                     break;
 
+                case SWERVE_FORWARD:
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    leftSwerverPos = leftSwerverPropel;
+                    rightSwerverPos = rightSwerverPropel;
+                    currentState = AutoBlueBack.State.SLIDE_DOWN;
+                    break;
+
+
+                case SLIDE_DOWN:
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    extend = false;
+                    currentState = AutoBlueBack.State.MOVE_IN;
+                    break;
+
+
+                case MOVE_IN:
+                    drive.followTrajectorySequenceAsync(moveIn);
+                    currentState = AutoBlueBack.State.IDLE;
+                    break;
 
 
                 case CYCLE_1:
@@ -311,7 +346,7 @@ public class AutoBlueBack extends LinearOpMode {
                         extaking = false;
                         intaking = true;
                         drive.followTrajectorySequenceAsync(cycle);
-                        currentState = State.IDLE;
+                        currentState = AutoBlueBack.State.IDLE;
                     }
 
                     break;
@@ -328,8 +363,6 @@ public class AutoBlueBack extends LinearOpMode {
 
 
 
-
-
             // We update drive continuously in the background, regardless of state
             drive.update();
 
@@ -339,6 +372,11 @@ public class AutoBlueBack extends LinearOpMode {
             if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (extend)) {
                 leftSwerverPos = leftSwerverPropel;
                 rightSwerverPos = rightSwerverPropel;
+            }
+
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend)) {
+                leftSwerverPos = leftSwerverVert;
+                rightSwerverPos = rightSwerverVert;
             }
 
             leftClaw.setPosition(leftClawPos);
@@ -352,9 +390,9 @@ public class AutoBlueBack extends LinearOpMode {
                 intake.setPower(-0.8);
             }
             else if (extaking) {
-                intake.setTargetPosition(1000);
+                intake.setTargetPosition(200);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(0.8);
+                intake.setPower(0.25);
             }
             else {
                 intake.setPower(0);
