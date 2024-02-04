@@ -59,9 +59,9 @@ class BluePropPipeline extends OpenCvPipeline {
         right = mat.submat(RIGHT_ROI);
         middle = mat.submat(MIDDLE_ROI);
 
-        leftValue = Core.sumElems(left).val[0];
-        rightValue = Core.sumElems(right).val[0];
-        middleValue = Core.sumElems(middle).val[0];
+        leftValue = Core.sumElems(left).val[0] / LEFT_ROI.area();
+        rightValue = Core.sumElems(right).val[0] / RIGHT_ROI.area();
+        middleValue = Core.sumElems(middle).val[0] / MIDDLE_ROI.area();
 
         telemetry.addData("Left raw value", leftValue);
         telemetry.addData("Right raw value", rightValue);

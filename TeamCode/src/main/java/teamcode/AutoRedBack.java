@@ -24,6 +24,7 @@ public class AutoRedBack extends LinearOpMode {
     OpenCvCamera camera;
     double route;
     boolean extend = false;
+    boolean miniExtend = false;
     boolean extaking = false;
     boolean intaking = false;
     Pose2d cycleStart = new Pose2d(48.50, -36.00, Math.toRadians(180));
@@ -59,6 +60,8 @@ public class AutoRedBack extends LinearOpMode {
         TRAJECTORY_3C,
         SLIDE_UP,       //bring up claw
         SWERVE_BACK,
+        LOWER,
+        UPPER,
         BOX_OPEN,      // open claw
         SWERVE_FORWARD,
         SLIDE_DOWN,
@@ -131,7 +134,7 @@ public class AutoRedBack extends LinearOpMode {
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(52, -30.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(54, -30.00),Math.toRadians(0))
                 .build();
 
 
@@ -145,7 +148,7 @@ public class AutoRedBack extends LinearOpMode {
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
                 .waitSeconds(0.5)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(52, -36.00), Math.toRadians(0.00))
+                .splineToConstantHeading(new Vector2d(54, -36.00), Math.toRadians(0.00))
                 .build();
 
 
@@ -157,7 +160,7 @@ public class AutoRedBack extends LinearOpMode {
 
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.5)
-                .lineToLinearHeading(new Pose2d(52, -45.00, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(54, -42.50, Math.toRadians(180.00)))
                 .build();
 
 
@@ -175,8 +178,9 @@ public class AutoRedBack extends LinearOpMode {
                 .build();
 
         TrajectorySequence moveIn = drive.trajectorySequenceBuilder(traj2c.end())
-                .strafeRight(28)
-                .back(10)
+                .forward(5)
+                .strafeLeft(28)
+                .back(5)
                 .build();
 
 
@@ -292,37 +296,59 @@ public class AutoRedBack extends LinearOpMode {
                 case SWERVE_BACK:
 
                     if (!drive.isBusy()) {
-                        drive.followTrajectorySequence(wait);
-                        if (!leftSlide.isBusy() && !rightSlide.isBusy()) {
+                        if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
                             rightSwerverPos = rightSwerverDropper;
                             leftSwerverPos = leftSwerverDropper;
-                            currentState = AutoRedBack.State.BOX_OPEN;
+                            currentState = AutoRedBack.State.LOWER;
                         }
                     }
                     break;
 
+                case LOWER:
+
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    miniExtend = true;
+                    currentState = AutoRedBack.State.BOX_OPEN;
+
+
+                    break;
+
+
                 case BOX_OPEN:
-                    if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
+                    if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
                         drive.followTrajectorySequence(wait);
-                        leftClawPos = leftClawOpen;
+                        drive.followTrajectorySequence(wait);
                         rightClawPos = rightClawOpen;
-                        currentState = AutoRedBack.State.SWERVE_FORWARD;
+                        leftClawPos = leftClawOpen;
+                        currentState = AutoRedBack.State.UPPER;
                     }
+
+                    break;
+
+                case UPPER:
+
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    miniExtend = false;
+                    currentState = State.SWERVE_FORWARD;
+
+
                     break;
 
                 case SWERVE_FORWARD:
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
-                    leftSwerverPos = leftSwerverPropel;
-                    rightSwerverPos = rightSwerverPropel;
-                    currentState = AutoRedBack.State.SLIDE_DOWN;
+                    if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
+                        drive.followTrajectorySequence(wait);
+                        drive.followTrajectorySequence(wait);
+                        leftSwerverPos = leftSwerverPropel;
+                        rightSwerverPos = rightSwerverPropel;
+                        currentState = AutoRedBack.State.SLIDE_DOWN;
+                    }
+
                     break;
 
 
                 case SLIDE_DOWN:
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
@@ -366,12 +392,12 @@ public class AutoRedBack extends LinearOpMode {
             int leftPos = -leftSlide.getCurrentPosition();
             int rightPos = rightSlide.getCurrentPosition();
 
-            if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (extend)) {
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (extend) && (!miniExtend)) {
                 leftSwerverPos = leftSwerverPropel;
                 rightSwerverPos = rightSwerverPropel;
             }
 
-            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend)) {
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend) && (!miniExtend)) {
                 leftSwerverPos = leftSwerverVert;
                 rightSwerverPos = rightSwerverVert;
             }
@@ -387,18 +413,21 @@ public class AutoRedBack extends LinearOpMode {
                 intake.setPower(-0.8);
             }
             else if (extaking) {
-                intake.setTargetPosition(200);
+                intake.setTargetPosition(300);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(0.25);
+                intake.setPower(0.22);
             }
             else {
                 intake.setPower(0);
             }
 
 
+            if (miniExtend && extend) {
+                leftSlide.setTargetPosition(-1000);
+                rightSlide.setTargetPosition(1000);
+            }
 
-
-            if (extend) {
+            else if (extend) {
                 leftSlide.setTargetPosition(-1500);
                 rightSlide.setTargetPosition(1500);
             }

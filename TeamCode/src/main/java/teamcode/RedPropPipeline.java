@@ -31,8 +31,8 @@ class RedPropPipeline extends OpenCvPipeline {
     Mat left;
     Mat right;
     Mat middle;
-    Scalar lowHSV = new Scalar(160, 70, 70);
-    Scalar highHSV = new Scalar(180, 255, 255);
+    Scalar lowHSV = new Scalar(0, 70, 70);
+    Scalar highHSV = new Scalar(20, 255, 255);
     double leftValue;
     double rightValue;
     double middleValue;
@@ -59,9 +59,9 @@ class RedPropPipeline extends OpenCvPipeline {
         right = mat.submat(RIGHT_ROI);
         middle = mat.submat(MIDDLE_ROI);
 
-        leftValue = Core.sumElems(left).val[0];
-        rightValue = Core.sumElems(right).val[0];
-        middleValue = Core.sumElems(middle).val[0];
+        leftValue = Core.sumElems(left).val[0] / LEFT_ROI.area();
+        rightValue = Core.sumElems(right).val[0] / RIGHT_ROI.area();
+        middleValue = Core.sumElems(middle).val[0] / MIDDLE_ROI.area();
 
         telemetry.addData("Left raw value", leftValue);
         telemetry.addData("Right raw value", rightValue);

@@ -44,10 +44,10 @@ public class MecanumDrive extends OpMode {
     double leftClawOpen = 0.47;
     double leftClawClosed = 0.27;
     double rightSwerverDropper = 0.05;
-    double rightSwerverVert = 0.56;
+    double rightSwerverVert = 0.57;
     double rightSwerverPropel = 0.67;
     double leftSwerverDropper = 0.92;
-    double leftSwerverVert = 0.41;
+    double leftSwerverVert = 0.40;
     double leftSwerverPropel = 0.3;
     double leftSwerverPos;
     double rightSwerverPos;
