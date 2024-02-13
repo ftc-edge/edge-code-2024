@@ -16,15 +16,15 @@ class RedPropPipeline extends OpenCvPipeline {
     Mat mat;
     Telemetry telemetry;
     final Rect LEFT_ROI = new Rect(
-            new Point(0, 0),
-            new Point(280, 720));
+            new Point(0, 200),
+            new Point(300, 720));
 
     final Rect MIDDLE_ROI = new Rect(
-            new Point(280, 0),
-            new Point(1000, 720));
+            new Point(300, 200),
+            new Point(750, 720));
 
     final Rect RIGHT_ROI = new Rect(
-            new Point(1000, 0),
+            new Point(750, 200),
             new Point(1280, 720));
 
     Scalar blue = new Scalar(0, 0, 200);

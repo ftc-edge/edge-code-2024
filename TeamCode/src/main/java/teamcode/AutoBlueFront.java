@@ -31,15 +31,15 @@ public class AutoBlueFront extends LinearOpMode {
     double rightClawPos;
     double leftSwerverPos;
     double rightSwerverPos;
-    double rightClawOpen = 0.5;
+    double rightClawOpen = 0.55;
     double rightClawClosed = 0.7;
-    double leftClawOpen = 0.47;
-    double leftClawClosed = 0.27;
-    double rightSwerverDropper = 0.05;
-    double rightSwerverVert = 0.56;
-    double rightSwerverPropel = 0.67;
+    double leftClawOpen = 0.44;
+    double leftClawClosed = 0.29;
+    double rightSwerverDropper = 0.00;
+    double rightSwerverVert = 0.54;
+    double rightSwerverPropel = 0.62;
     double leftSwerverDropper = 0.92;
-    double leftSwerverVert = 0.41;
+    double leftSwerverVert = 0.38;
     double leftSwerverPropel = 0.3;
 
     private DcMotor leftSlide = null;
@@ -117,58 +117,47 @@ public class AutoBlueFront extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(-36, 67.5, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(-36, 59, Math.toRadians(270));
 
         drive.setPoseEstimate(startPose);
 
-        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
-                .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-30, 34.00,Math.toRadians(0)), Math.toRadians(0.00))
+        TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(-33, 34.00, Math.toRadians(0)), Math.toRadians(0.00))
                 .build();
 
 
-
-        TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
+        TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(270))
-                .splineTo(new Vector2d(-30, -58.00),Math.toRadians(0))
-                .splineTo(new Vector2d(0, -52.00),Math.toRadians(0))
-                .splineTo(new Vector2d(48.5, -42.00),Math.toRadians(90))
+                .splineTo(new Vector2d(-30, 58.00), Math.toRadians(0))
+                .splineTo(new Vector2d(0, 52.00), Math.toRadians(0))
+                .splineTo(new Vector2d(50, 42.00), Math.toRadians(90))
                 .build();
-
-
 
 
         TrajectorySequence traj2 = drive.trajectorySequenceBuilder(startPose)
-                .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-45.00, 24.00,Math.toRadians(0)),Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(-45.00, 24.00, Math.toRadians(0)), Math.toRadians(270))
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(270))
-                .splineTo(new Vector2d(-30, -58.00),Math.toRadians(0))
-                .splineTo(new Vector2d(0, -52.00),Math.toRadians(0))
-                .splineTo(new Vector2d(48.5, -36.00),Math.toRadians(90))
+                .splineTo(new Vector2d(-30, 58.00), Math.toRadians(0))
+                .splineTo(new Vector2d(0, 52.00), Math.toRadians(0))
+                .splineTo(new Vector2d(50, 36.00), Math.toRadians(90))
                 .build();
 
 
-
-        TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
-                .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-38.00, 35.00, Math.toRadians(180)), Math.toRadians(270.00))
+        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(-35.00, 35.00, Math.toRadians(180)), Math.toRadians(90.00))
                 .build();
 
-        TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
+        TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.5)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(0, -35.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(48.5, -30.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(0, 35.00), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(50, 30.00), Math.toRadians(0))
                 .build();
-
-
-
-
 
 
         TrajectorySequence cycle = drive.trajectorySequenceBuilder(cycleStart)
@@ -180,17 +169,16 @@ public class AutoBlueFront extends LinearOpMode {
                 .build();
 
 
-
         TrajectorySequence wait = drive.trajectorySequenceBuilder(startPose)
                 .waitSeconds(0.2)
                 .build();
 
 
-        TrajectorySequence moveIn = drive.trajectorySequenceBuilder(traj2c.end())
-                .strafeRight(28)
-                .back(10)
+        TrajectorySequence moveIn = drive.trajectorySequenceBuilder(cycleStart)
+                .setTangent(180)
+                .splineToConstantHeading(new Vector2d(45.00, 64.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(56.00, 66.00), Math.toRadians(0.00))
                 .build();
-
 
 
         waitForStart();
@@ -362,7 +350,6 @@ public class AutoBlueFront extends LinearOpMode {
                     break;
 
 
-
                 case IDLE:
                     intaking = false;
                     // Do nothing in IDLE
@@ -370,7 +357,6 @@ public class AutoBlueFront extends LinearOpMode {
                     // This concludes the autonomous program
                     break;
             }
-
 
 
             // We update drive continuously in the background, regardless of state
@@ -398,24 +384,19 @@ public class AutoBlueFront extends LinearOpMode {
                 intake.setTargetPosition(-5000);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 intake.setPower(-0.8);
-            }
-            else if (extaking) {
+            } else if (extaking) {
                 intake.setTargetPosition(300);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 intake.setPower(0.22);
-            }
-            else {
+            } else {
                 intake.setPower(0);
             }
-
-
 
 
             if (extend) {
                 leftSlide.setTargetPosition(-1500);
                 rightSlide.setTargetPosition(1500);
-            }
-            else {
+            } else {
                 leftSlide.setTargetPosition(0);
                 rightSlide.setTargetPosition(0);
             }
