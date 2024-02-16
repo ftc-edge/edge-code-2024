@@ -40,16 +40,16 @@ public class MecanumDrive extends OpMode {
     boolean intaking = false;
     boolean pushDown = false;
     double multiplier = 1;
-    double rightClawOpen = 0.55;
-    double rightClawClosed = 0.7;
-    double leftClawOpen = 0.44;
-    double leftClawClosed = 0.29;
-    double rightSwerverDropper = 0.00;
-    double rightSwerverVert = 0.54;
-    double rightSwerverPropel = 0.62;
-    double leftSwerverDropper = 0.92;
-    double leftSwerverVert = 0.38;
-    double leftSwerverPropel = 0.3;
+    double rightClawOpen = 0.59;
+    double rightClawClosed = 0.71;
+    double leftClawOpen = 0.45;
+    double leftClawClosed = 0.34;
+    double rightSwerverDropper = 0.4;
+    double rightSwerverVert = 0.09;
+    double rightSwerverPropel = 0;
+    double leftSwerverDropper = 0.4;
+    double leftSwerverVert = 0.09;
+    double leftSwerverPropel = 0;
     double leftSwerverPos;
     double rightSwerverPos;
     int leftSlidePos = 0;
@@ -201,13 +201,13 @@ public class MecanumDrive extends OpMode {
 
         // apply the calculated values to the motors.
 
-        if (gamepad1.a) {
+        if (gamepad1.right_trigger==1) {
             multiplier = 0.5;
         }
 
 
 
-        if (gamepad2.right_trigger == 1) {
+        if (gamepad2.left_bumper) {
             leftClaw.setPosition(leftClawClosed);
             rightClaw.setPosition(rightClawClosed);
         }
@@ -224,6 +224,9 @@ public class MecanumDrive extends OpMode {
 
         if (gamepad2.left_trigger == 1) {
             leftClaw.setPosition(leftClawOpen);
+        }
+
+        if (gamepad2.right_trigger == 1) {
             rightClaw.setPosition(rightClawOpen);
         }
 
@@ -247,7 +250,7 @@ public class MecanumDrive extends OpMode {
             rightSlidePos = 2500;
         }
 
-        else if (gamepad2.dpad_down) {
+        else if (gamepad2.dpad_down && (leftSwerverPos == leftSwerverPropel) && (rightSwerverPos == rightSwerverPropel)) {
             leftSlidePos = -500;
             rightSlidePos = 500;
         }

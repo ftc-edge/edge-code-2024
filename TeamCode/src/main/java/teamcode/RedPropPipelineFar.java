@@ -11,20 +11,18 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-class RedPropPipeline extends OpenCvPipeline {
+class RedPropPipelineFar extends OpenCvPipeline {
     double location = 0;
     Mat mat;
     Telemetry telemetry;
     Rect LEFT_ROI = new Rect(
             new Point(0, 200),
-            new Point(300, 720));
-
+            new Point(530, 720));
     Rect MIDDLE_ROI = new Rect(
-            new Point(300, 200),
-            new Point(750, 720));
-
+            new Point(530, 200),
+            new Point(980, 720));
     Rect RIGHT_ROI = new Rect(
-            new Point(750, 200),
+            new Point(980, 200),
             new Point(1280, 720));
 
     Scalar blue = new Scalar(0, 0, 200);
@@ -37,7 +35,7 @@ class RedPropPipeline extends OpenCvPipeline {
     double rightValue;
     double middleValue;
 
-    public RedPropPipeline(Telemetry telemetry1) {
+    public RedPropPipelineFar(Telemetry telemetry1) {
         telemetry = telemetry1;
     }
 

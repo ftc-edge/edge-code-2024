@@ -3,6 +3,7 @@ package teamcode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.TranslationalVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -20,10 +21,11 @@ import teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous(name = "AutoBlueFront")
 public class AutoBlueFront extends LinearOpMode {
-    BluePropPipeline propPipeline;
+    BluePropPipelineFar propPipeline;
     OpenCvCamera camera;
     double route;
     boolean extend = false;
+    boolean miniExtend = false;
     boolean extaking = false;
     boolean intaking = false;
     Pose2d cycleStart = new Pose2d(48.50, -36.00, Math.toRadians(180));
@@ -31,16 +33,16 @@ public class AutoBlueFront extends LinearOpMode {
     double rightClawPos;
     double leftSwerverPos;
     double rightSwerverPos;
-    double rightClawOpen = 0.55;
-    double rightClawClosed = 0.7;
-    double leftClawOpen = 0.44;
-    double leftClawClosed = 0.29;
-    double rightSwerverDropper = 0.00;
-    double rightSwerverVert = 0.54;
-    double rightSwerverPropel = 0.62;
-    double leftSwerverDropper = 0.92;
-    double leftSwerverVert = 0.38;
-    double leftSwerverPropel = 0.3;
+    double rightClawOpen = 0.59;
+    double rightClawClosed = 0.71;
+    double leftClawOpen = 0.45;
+    double leftClawClosed = 0.34;
+    double rightSwerverDropper = 0.4;
+    double rightSwerverVert = 0.09;
+    double rightSwerverPropel = 0;
+    double leftSwerverDropper = 0.4;
+    double leftSwerverVert = 0.09;
+    double leftSwerverPropel = 0;
 
     private DcMotor leftSlide = null;
     private DcMotor rightSlide = null;
@@ -59,6 +61,8 @@ public class AutoBlueFront extends LinearOpMode {
         TRAJECTORY_3C,
         SLIDE_UP,       //bring up claw
         SWERVE_BACK,
+        LOWER,
+        UPPER,
         BOX_OPEN,      // open claw
         SWERVE_FORWARD,
         SLIDE_DOWN,
@@ -100,7 +104,7 @@ public class AutoBlueFront extends LinearOpMode {
 
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcam1, cameraMonitorViewId);
 
-        propPipeline = new BluePropPipeline(telemetry);
+        propPipeline = new BluePropPipelineFar(telemetry);
 
         camera.setPipeline(propPipeline);
 
@@ -121,43 +125,54 @@ public class AutoBlueFront extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-33, 34.00, Math.toRadians(0)), Math.toRadians(0.00))
+        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(-28, 35.00,Math.toRadians(0)), Math.toRadians(0.00))
                 .build();
 
 
-        TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
+
+        TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.5)
-                .setTangent(Math.toRadians(270))
-                .splineTo(new Vector2d(-30, 58.00), Math.toRadians(0))
-                .splineTo(new Vector2d(0, 52.00), Math.toRadians(0))
-                .splineTo(new Vector2d(50, 42.00), Math.toRadians(90))
+                .setTangent(Math.toRadians(180))
+                .splineTo(new Vector2d(-30, 12),Math.toRadians(0))
+                .splineTo(new Vector2d(-10, 12),Math.toRadians(0))
+                .setVelConstraint(new TranslationalVelocityConstraint(30))
+                .splineToSplineHeading(new Pose2d(52, 35, Math.toRadians(180.00)),Math.toRadians(30))
                 .build();
+
+
 
 
         TrajectorySequence traj2 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-45.00, 24.00, Math.toRadians(0)), Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(-40.00, 28.00,Math.toRadians(270)),Math.toRadians(270))
                 .build();
 
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
                 .waitSeconds(0.5)
-                .setTangent(Math.toRadians(270))
-                .splineTo(new Vector2d(-30, 58.00), Math.toRadians(0))
-                .splineTo(new Vector2d(0, 52.00), Math.toRadians(0))
-                .splineTo(new Vector2d(50, 36.00), Math.toRadians(90))
+                .setTangent(Math.toRadians(135))
+                .splineToSplineHeading(new Pose2d(-45, 35.00,Math.toRadians(180)),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(0, 35.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(10, 38.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 33.00),Math.toRadians(0))
                 .build();
 
 
-        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-35.00, 35.00, Math.toRadians(180)), Math.toRadians(90.00))
+
+        TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(-39.00, 36.00, Math.toRadians(180)), Math.toRadians(270.00))
                 .build();
 
-        TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
+        TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.5)
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(0, 35.00), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(50, 30.00), Math.toRadians(0))
+                .setTangent(Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-30, 12.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(0, 12.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(50, 32.00),Math.toRadians(0))
                 .build();
+
+
+
+
 
 
         TrajectorySequence cycle = drive.trajectorySequenceBuilder(cycleStart)
@@ -167,6 +182,7 @@ public class AutoBlueFront extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(0, 0), Math.toRadians(0.00))
                 .splineToConstantHeading(new Vector2d(48.5, -36), Math.toRadians(90.00))
                 .build();
+
 
 
         TrajectorySequence wait = drive.trajectorySequenceBuilder(startPose)
@@ -251,8 +267,8 @@ public class AutoBlueFront extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         extaking = true;
-//                        drive.followTrajectorySequenceAsync(traj1c);
-                        currentState = AutoBlueFront.State.IDLE;
+                        drive.followTrajectorySequenceAsync(traj1c);
+                        currentState = AutoBlueFront.State.SLIDE_UP;
                     }
                     break;
 
@@ -264,8 +280,8 @@ public class AutoBlueFront extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         extaking = true;
-//                        drive.followTrajectorySequenceAsync(traj2c);
-                        currentState = AutoBlueFront.State.IDLE;
+                        drive.followTrajectorySequenceAsync(traj2c);
+                        currentState = AutoBlueFront.State.SLIDE_UP;
                     }
                     break;
 
@@ -277,13 +293,12 @@ public class AutoBlueFront extends LinearOpMode {
                     // Make sure we use the async follow function
                     if (!drive.isBusy()) {
                         extaking = true;
-//                        drive.followTrajectorySequenceAsync(traj3c);
-                        currentState = AutoBlueFront.State.IDLE;
+                        drive.followTrajectorySequenceAsync(traj3c);
+                        currentState = AutoBlueFront.State.SLIDE_UP;
                     }
                     break;
 
                 case SLIDE_UP:
-
                     if (!drive.isBusy()) {
                         extend = true;
                         currentState = AutoBlueFront.State.SWERVE_BACK;
@@ -294,30 +309,57 @@ public class AutoBlueFront extends LinearOpMode {
 
                     if (!drive.isBusy()) {
                         drive.followTrajectorySequence(wait);
+                        drive.followTrajectorySequence(wait);
+                        drive.followTrajectorySequence(wait);
                         if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
                             rightSwerverPos = rightSwerverDropper;
                             leftSwerverPos = leftSwerverDropper;
-                            currentState = AutoBlueFront.State.BOX_OPEN;
+                            currentState = AutoBlueFront.State.LOWER;
                         }
                     }
                     break;
 
+                case LOWER:
+
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    miniExtend = true;
+                    currentState = AutoBlueFront.State.BOX_OPEN;
+
+
+                    break;
+
+
                 case BOX_OPEN:
-                    if ((leftSwerver.getPosition() == leftSwerverDropper) && (rightSwerver.getPosition() == rightSwerverDropper)) {
+                    if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
                         drive.followTrajectorySequence(wait);
-                        leftClawPos = leftClawOpen;
+                        drive.followTrajectorySequence(wait);
                         rightClawPos = rightClawOpen;
-                        currentState = AutoBlueFront.State.SWERVE_FORWARD;
+                        leftClawPos = leftClawOpen;
+                        currentState = AutoBlueFront.State.UPPER;
                     }
+
+                    break;
+
+                case UPPER:
+
+                    drive.followTrajectorySequence(wait);
+                    drive.followTrajectorySequence(wait);
+                    miniExtend = false;
+                    currentState = AutoBlueFront.State.SWERVE_FORWARD;
+
+
                     break;
 
                 case SWERVE_FORWARD:
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
-                    leftSwerverPos = leftSwerverPropel;
-                    rightSwerverPos = rightSwerverPropel;
-                    currentState = AutoBlueFront.State.SLIDE_DOWN;
+                    if (!leftSlide.isBusy() || !rightSlide.isBusy()) {
+                        drive.followTrajectorySequence(wait);
+                        drive.followTrajectorySequence(wait);
+                        leftSwerverPos = leftSwerverPropel;
+                        rightSwerverPos = rightSwerverPropel;
+                        currentState = AutoBlueFront.State.SLIDE_DOWN;
+                    }
+
                     break;
 
 
@@ -325,10 +367,8 @@ public class AutoBlueFront extends LinearOpMode {
                     drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
-                    drive.followTrajectorySequence(wait);
                     extend = false;
-                    currentState = AutoBlueFront.State.MOVE_IN;
+                    currentState = AutoBlueFront.State.IDLE;
                     break;
 
 
@@ -350,13 +390,17 @@ public class AutoBlueFront extends LinearOpMode {
                     break;
 
 
+
                 case IDLE:
-                    intaking = false;
+                    if (!drive.isBusy()) {
+                        intaking = false;
+                    }
                     // Do nothing in IDLE
                     // currentState does not change once in IDLE
                     // This concludes the autonomous program
                     break;
             }
+
 
 
             // We update drive continuously in the background, regardless of state
@@ -365,12 +409,12 @@ public class AutoBlueFront extends LinearOpMode {
             int leftPos = -leftSlide.getCurrentPosition();
             int rightPos = rightSlide.getCurrentPosition();
 
-            if (((leftPos > 10 && leftPos < 1400) && (rightPos > 10 && rightPos < 1400)) && (extend)) {
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (extend) && (!miniExtend)) {
                 leftSwerverPos = leftSwerverPropel;
                 rightSwerverPos = rightSwerverPropel;
             }
 
-            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend)) {
+            if (((leftPos > 10 && leftPos < 600) && (rightPos > 10 && rightPos < 600)) && (!extend) && (!miniExtend)) {
                 leftSwerverPos = leftSwerverVert;
                 rightSwerverPos = rightSwerverVert;
             }
@@ -381,22 +425,30 @@ public class AutoBlueFront extends LinearOpMode {
             rightSwerver.setPosition(rightSwerverPos);
 
             if (intaking) {
-                intake.setTargetPosition(-5000);
+                intake.setTargetPosition(-15000);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(-0.8);
-            } else if (extaking) {
-                intake.setTargetPosition(300);
+                intake.setPower(-1);
+            }
+            else if (extaking) {
+                intake.setTargetPosition(40);
                 intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                intake.setPower(0.22);
-            } else {
+                intake.setPower(0.2);
+            }
+            else {
                 intake.setPower(0);
             }
 
 
-            if (extend) {
+            if (miniExtend && extend) {
+                leftSlide.setTargetPosition(-1000);
+                rightSlide.setTargetPosition(1000);
+            }
+
+            else if (extend) {
                 leftSlide.setTargetPosition(-1500);
                 rightSlide.setTargetPosition(1500);
-            } else {
+            }
+            else {
                 leftSlide.setTargetPosition(0);
                 rightSlide.setTargetPosition(0);
             }

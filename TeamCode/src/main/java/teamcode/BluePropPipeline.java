@@ -15,18 +15,15 @@ class BluePropPipeline extends OpenCvPipeline {
     double location = 0;
     Mat mat;
     Telemetry telemetry;
-    final Rect LEFT_ROI = new Rect(
+    Rect LEFT_ROI = new Rect(
             new Point(0, 200),
             new Point(530, 720));
-
-    final Rect MIDDLE_ROI = new Rect(
+    Rect MIDDLE_ROI = new Rect(
             new Point(530, 200),
             new Point(980, 720));
-
-    final Rect RIGHT_ROI = new Rect(
+    Rect RIGHT_ROI = new Rect(
             new Point(980, 200),
             new Point(1280, 720));
-
     Scalar blue = new Scalar(0, 0, 200);
     Mat left;
     Mat right;
@@ -47,6 +44,7 @@ class BluePropPipeline extends OpenCvPipeline {
         mat = firstFrame;
 
     }
+
 
     @Override
     public Mat processFrame(Mat input)

@@ -32,16 +32,16 @@ public class AutoBlueBack extends LinearOpMode {
     double rightClawPos;
     double leftSwerverPos;
     double rightSwerverPos;
-    double rightClawOpen = 0.55;
-    double rightClawClosed = 0.7;
-    double leftClawOpen = 0.44;
-    double leftClawClosed = 0.29;
-    double rightSwerverDropper = 0.00;
-    double rightSwerverVert = 0.54;
-    double rightSwerverPropel = 0.62;
-    double leftSwerverDropper = 0.92;
-    double leftSwerverVert = 0.38;
-    double leftSwerverPropel = 0.3;
+    double rightClawOpen = 0.59;
+    double rightClawClosed = 0.71;
+    double leftClawOpen = 0.45;
+    double leftClawClosed = 0.34;
+    double rightSwerverDropper = 0.4;
+    double rightSwerverVert = 0.09;
+    double rightSwerverPropel = 0;
+    double leftSwerverDropper = 0.4;
+    double leftSwerverVert = 0.09;
+    double leftSwerverPropel = 0;
 
 
     private DcMotor leftSlide = null;
@@ -134,7 +134,7 @@ public class AutoBlueBack extends LinearOpMode {
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.2)
                 .setTangent(Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(50, 31.50),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 31.50),Math.toRadians(0))
                 .build();
 
 
@@ -147,7 +147,7 @@ public class AutoBlueBack extends LinearOpMode {
         TrajectorySequence traj2c = drive.trajectorySequenceBuilder(traj2.end())
                 .waitSeconds(0.2)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(50, 37.50),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 37.50),Math.toRadians(0))
                 .build();
 
 
@@ -159,7 +159,7 @@ public class AutoBlueBack extends LinearOpMode {
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.2)
                 .setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(50, 41.50, Math.toRadians(180.00)),Math.toRadians(315))
+                .splineToLinearHeading(new Pose2d(52, 41.50, Math.toRadians(180.00)),Math.toRadians(315))
                 .build();
 
 
