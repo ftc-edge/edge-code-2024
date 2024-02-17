@@ -37,10 +37,10 @@ public class AutoBlueFront extends LinearOpMode {
     double rightClawClosed = 0.71;
     double leftClawOpen = 0.45;
     double leftClawClosed = 0.34;
-    double rightSwerverDropper = 0.4;
+    double rightSwerverDropper = 0.42;
     double rightSwerverVert = 0.09;
     double rightSwerverPropel = 0;
-    double leftSwerverDropper = 0.4;
+    double leftSwerverDropper = 0.42;
     double leftSwerverVert = 0.09;
     double leftSwerverPropel = 0;
 
@@ -121,12 +121,12 @@ public class AutoBlueFront extends LinearOpMode {
         });
 
 
-        Pose2d startPose = new Pose2d(-36, 59, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(-36, 57, Math.toRadians(270));
 
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-28, 35.00,Math.toRadians(0)), Math.toRadians(0.00))
+                .splineToLinearHeading(new Pose2d(-26, 35.00,Math.toRadians(0)), Math.toRadians(0.00))
                 .build();
 
 
@@ -134,10 +134,10 @@ public class AutoBlueFront extends LinearOpMode {
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(180))
-                .splineTo(new Vector2d(-30, 12),Math.toRadians(0))
-                .splineTo(new Vector2d(-10, 12),Math.toRadians(0))
+                .splineTo(new Vector2d(-40, 25),Math.toRadians(270))
+                .splineTo(new Vector2d(-10, 10),Math.toRadians(0))
                 .setVelConstraint(new TranslationalVelocityConstraint(30))
-                .splineToSplineHeading(new Pose2d(52, 35, Math.toRadians(180.00)),Math.toRadians(30))
+                .splineToSplineHeading(new Pose2d(52.5, 37, Math.toRadians(180.00)),Math.toRadians(30))
                 .build();
 
 
@@ -153,21 +153,21 @@ public class AutoBlueFront extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(-45, 35.00,Math.toRadians(180)),Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(0, 35.00),Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(10, 38.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(52, 33.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52, 36.00),Math.toRadians(0))
                 .build();
 
 
 
         TrajectorySequence traj3 = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-39.00, 36.00, Math.toRadians(180)), Math.toRadians(270.00))
+                .splineToLinearHeading(new Pose2d(-39.00, 34.00, Math.toRadians(180)), Math.toRadians(270.00))
                 .build();
 
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-30, 12.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(0, 12.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(50, 32.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-30, 10.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(0, 10.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(52.5, 31),Math.toRadians(0))
                 .build();
 
 
@@ -440,8 +440,8 @@ public class AutoBlueFront extends LinearOpMode {
 
 
             if (miniExtend && extend) {
-                leftSlide.setTargetPosition(-1000);
-                rightSlide.setTargetPosition(1000);
+                leftSlide.setTargetPosition(-900);
+                rightSlide.setTargetPosition(900);
             }
 
             else if (extend) {

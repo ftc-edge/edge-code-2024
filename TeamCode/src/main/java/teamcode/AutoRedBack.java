@@ -41,10 +41,10 @@ public class AutoRedBack extends LinearOpMode {
     double rightClawClosed = 0.71;
     double leftClawOpen = 0.45;
     double leftClawClosed = 0.34;
-    double rightSwerverDropper = 0.4;
+    double rightSwerverDropper = 0.42;
     double rightSwerverVert = 0.09;
     double rightSwerverPropel = 0;
-    double leftSwerverDropper = 0.4;
+    double leftSwerverDropper = 0.42;
     double leftSwerverVert = 0.09;
     double leftSwerverPropel = 0;
 
@@ -389,7 +389,7 @@ public class AutoRedBack extends LinearOpMode {
                     drive.followTrajectorySequence(wait);
                     drive.followTrajectorySequence(wait);
                     extend = false;
-                    currentState = AutoRedBack.State.MOVE_IN;
+                    currentState = State.MOVE_IN;
                     break;
 
 
@@ -587,8 +587,8 @@ public class AutoRedBack extends LinearOpMode {
 
 
             if (miniExtend && extend) {
-                leftSlide.setTargetPosition(-1000);
-                rightSlide.setTargetPosition(1000);
+                leftSlide.setTargetPosition(-900);
+                rightSlide.setTargetPosition(900);
             }
 
             else if (extend) {

@@ -37,10 +37,10 @@ public class AutoRedFront extends LinearOpMode {
     double rightClawClosed = 0.71;
     double leftClawOpen = 0.45;
     double leftClawClosed = 0.34;
-    double rightSwerverDropper = 0.4;
+    double rightSwerverDropper = 0.42;
     double rightSwerverVert = 0.09;
     double rightSwerverPropel = 0;
-    double leftSwerverDropper = 0.4;
+    double leftSwerverDropper = 0.42;
     double leftSwerverVert = 0.09;
     double leftSwerverPropel = 0;
 
@@ -134,8 +134,8 @@ public class AutoRedFront extends LinearOpMode {
         TrajectorySequence traj3c = drive.trajectorySequenceBuilder(traj3.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(180))
-                .splineTo(new Vector2d(-30, -12),Math.toRadians(0))
-                .splineTo(new Vector2d(-10, -12),Math.toRadians(0))
+                .splineTo(new Vector2d(-30, -10),Math.toRadians(0))
+                .splineTo(new Vector2d(-10, -10),Math.toRadians(0))
                 .setVelConstraint(new TranslationalVelocityConstraint(30))
                 .splineToSplineHeading(new Pose2d(52, -35, Math.toRadians(180.00)),Math.toRadians(330))
                 .build();
@@ -165,9 +165,10 @@ public class AutoRedFront extends LinearOpMode {
         TrajectorySequence traj1c = drive.trajectorySequenceBuilder(traj1.end())
                 .waitSeconds(0.5)
                 .setTangent(Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-30, -12.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(0, -12.00),Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(50, -32.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-29.5, -10.00),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(0, -10.00),Math.toRadians(0))
+                .setVelConstraint(new TranslationalVelocityConstraint(30))
+                .splineToConstantHeading(new Vector2d(52.5, -30.50),Math.toRadians(0))
                 .build();
 
 
@@ -441,8 +442,8 @@ public class AutoRedFront extends LinearOpMode {
 
 
             if (miniExtend && extend) {
-                leftSlide.setTargetPosition(-1000);
-                rightSlide.setTargetPosition(1000);
+                leftSlide.setTargetPosition(-900);
+                rightSlide.setTargetPosition(900);
             }
 
             else if (extend) {

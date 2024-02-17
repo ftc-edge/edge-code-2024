@@ -44,10 +44,10 @@ public class MecanumDrive extends OpMode {
     double rightClawClosed = 0.71;
     double leftClawOpen = 0.45;
     double leftClawClosed = 0.34;
-    double rightSwerverDropper = 0.4;
+    double rightSwerverDropper = 0.42;
     double rightSwerverVert = 0.09;
     double rightSwerverPropel = 0;
-    double leftSwerverDropper = 0.4;
+    double leftSwerverDropper = 0.42;
     double leftSwerverVert = 0.09;
     double leftSwerverPropel = 0;
     double leftSwerverPos;
@@ -222,11 +222,11 @@ public class MecanumDrive extends OpMode {
             rightSwerverPos = rightSwerverPropel;
         }
 
-        if (gamepad2.left_trigger == 1) {
+        if (gamepad2.right_trigger == 1) {
             leftClaw.setPosition(leftClawOpen);
         }
 
-        if (gamepad2.right_trigger == 1) {
+        if (gamepad2.left_trigger == 1) {
             rightClaw.setPosition(rightClawOpen);
         }
 
